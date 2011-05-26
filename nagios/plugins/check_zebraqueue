@@ -1,0 +1,54 @@
+#!/usr/bin/perl
+
+# This is a nagios plugin that ensures that your zebra reindexing is occurring
+# (i.e. that new items are getting added to your index.) It checks that there
+# is nothing in the zebraqueue table that is too old.
+#
+# Note: this version is suited for standalone installations, in the future
+# it will be made to support packages correctly.
+#
+# This is distributed under the terms of the GNU General Public License,
+# version 3 or, at your option, later.
+
+# Copyright 2011 Catalyst IT Ltd
+# Author: Robin Sheat <robin@catalyst.net.nz>
+
+use Nagios::Plugin;
+
+$np = Nagios::Plugin->new(
+    shortname   => 'ZEBRAQUEUE',
+    usage       =>
+"Usage: %s [-C <kohaconf>] [-I <kohalibs>] [-c <critical time (mins)>]
+    [-w <warning time (mins)]",
+    blurb       => "This plugin ensures that your zebraqueue is correctly processing your zebra queue.",
+    version     => "1.0",
+);
+
+$np->add_arg(
+    spec        => 'warning|w=s',
+    help        => '-w, --warning=MINUTES - the amount of time something must be in the zebra queue to trigger a warning.'
+);
+$np->add_arg(
+    spec        => 'critical|c=s',
+    help        => '-c, --critical=MINUTES - the amount of time something must be in the zebra queue to be a real problem.'
+);
+$np->add_arg(
+    spec        => 'conf|C=s',
+    help        => '-C, --conf=path/to/koha-conf.xml - the full path to the koha-conf.xml that defines the database to check.',
+    required    => 1,
+);
+$np->add_arg(
+    spec        => 'I=s',
+    help        => '-I path/to/koha/libs - the full path to the koha Perl libraries. May be omitted if they\'re already in the environment.'
+);
+
+$np->getopts;
+
+my $warn_time = $np->opts->get('warning');
+my $crit_time = $np->opts->get('critical');
+my $koha_conf = $np->opts->get('conf');
+my $perl_libs = $np->opts->get('I');
+
+push @INC, $perl_libs if $perl_libs;
+$ENV{KOHA_CONF} = $koha_conf if $koha_conf;
+
