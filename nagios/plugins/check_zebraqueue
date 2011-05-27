@@ -13,12 +13,14 @@
 # Copyright 2011 Catalyst IT Ltd
 # Author: Robin Sheat <robin@catalyst.net.nz>
 
+use strict;
+use warnings;
+
 use Nagios::Plugin;
 
-$np = Nagios::Plugin->new(
+my $np = Nagios::Plugin->new(
     shortname   => 'ZEBRAQUEUE',
-    usage       =>
-"Usage: %s [-C <kohaconf>] [-I <kohalibs>] [-c <critical time (mins)>]
+    usage       => "Usage: %s [-C <kohaconf>] [-I <kohalibs>] [-c <critical time (mins)>]
     [-w <warning time (mins)]",
     blurb       => "This plugin ensures that your zebraqueue is correctly processing your zebra queue.",
     version     => "1.0",
@@ -26,20 +28,22 @@ $np = Nagios::Plugin->new(
 
 $np->add_arg(
     spec        => 'warning|w=s',
-    help        => '-w, --warning=MINUTES - the amount of time something must be in the zebra queue to trigger a warning.'
+    help        => "-w, --warning=MINUTES\n   the amount of time something must be in the zebra queue to trigger a warning.",
+    required    => 1,
 );
 $np->add_arg(
     spec        => 'critical|c=s',
-    help        => '-c, --critical=MINUTES - the amount of time something must be in the zebra queue to be a real problem.'
+    help        => "-c, --critical=MINUTES\n   the amount of time something must be in the zebra queue to be a real problem.",
+    required    => 1,
 );
 $np->add_arg(
     spec        => 'conf|C=s',
-    help        => '-C, --conf=path/to/koha-conf.xml - the full path to the koha-conf.xml that defines the database to check.',
+    help        => "-C, --conf=path/to/koha-conf.xml\n   the full path to the koha-conf.xml that defines the database to check.",
     required    => 1,
 );
 $np->add_arg(
     spec        => 'I=s',
-    help        => '-I path/to/koha/libs - the full path to the koha Perl libraries. May be omitted if they\'re already in the environment.'
+    help        => "-I path/to/koha/libs\n   the full path to the koha Perl libraries. May be omitted if they\'re already in the environment."
 );
 
 $np->getopts;
@@ -51,4 +55,37 @@ my $perl_libs = $np->opts->get('I');
 
 push @INC, $perl_libs if $perl_libs;
 $ENV{KOHA_CONF} = $koha_conf if $koha_conf;
+
+# Any C4 requirements should go in here.
+require C4::Context;
+
+my $context = new C4::Context;
+$context->set_context;
+
+# Now we connect to the database and issue our query.
+my $dbh = $context->dbh;
+
+my $sql = 'SELECT COUNT(*) FROM zebraqueue WHERE DATE_SUB(NOW(), INTERVAL ? MINUTE) > time AND done <> 1';
+my $sql2= 'SELECT COUNT(*) FROM zebraqueue WHERE done <> 1';
+
+my $query = $dbh->prepare($sql);
+my $query2 = $dbh->prepare($sql2);
+
+# Check for critical things first
+$query->execute($crit_time);
+my $crit_count = $query->fetchrow_arrayref->[0];
+# Now warnings
+$query->execute($warn_time);
+my $warn_count = $query->fetchrow_arrayref->[0];
+# Just informational
+$query2->execute;
+my $total_count = $query2->fetchrow_arrayref->[0];
+
+if ($crit_count || $warn_count) {
+    my $str = "$crit_count delayed >$crit_time min, $warn_count delayed >$warn_time min, $total_count total waiting";
+    $np->nagios_exit($crit_count ? CRITICAL : WARNING, $str);
+} else {
+	my $str = "$total_count waiting to be indexed";
+	$np->nagios_exit(OK, $str);
+}
 
