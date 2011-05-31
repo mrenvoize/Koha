@@ -1,0 +1,100 @@
+#!/usr/bin/perl
+
+# This is a nagios plugin that ensures that Koha is correctly wired up to
+# the search system. It will perform a search through the web interface and
+# ensure that results are returned.
+#
+# Note: this version is suited for standalone installations, in the future
+# it will be made to support packages correctly.
+#
+# This is distributed under the terms of the GNU General Public License,
+# version 3 or, at your option, later.
+
+# Copyright 2011 Catalyst IT Ltd
+# Author: Robin Sheat <robin@catalyst.net.nz>
+
+use strict;
+use warnings;
+
+use Nagios::Plugin;
+use LWP::UserAgent;
+
+use constant VERSION => '1.0';
+
+my $np = Nagios::Plugin->new(
+    shortname   => 'KOHASEARCH',
+    usage       => "Usage: %s [-c <critical number>] [-w <warning number>] [-m <regex for count>] [-f <regex for no results>] [-q <query>] [-v] -H <hostname>",
+    blurb       => "This plugin ensures that Koha is returning search results.",
+    version     => VERSION,
+);
+
+$np->add_arg(
+    spec        => 'warning|w=s',
+    help        => "-w, --warning=COUNT\n   if the number of results is equal to or below this, it will be a warning.",
+);
+$np->add_arg(
+    spec        => 'critical|c=s',
+    help        => "-c, --critical=COUNT\n   if the number of results is equal to or below this, it will be a critical failure.",
+);
+$np->add_arg(
+    spec        => 'm=s',
+    help        => "-m regex\n   a regex that will be used to find the results count. It should return a single captured value, being the number of results."
+);
+$np->add_arg(
+    spec        => 'f=s',
+    help        => "-f regex\n   a regex that will match what is returned when no results are found."
+);
+$np->add_arg(
+    spec        => 'q=s',
+    help        => "-q query\n   the value that will be searched for. Default is 'a'."
+);
+$np->add_arg(
+    spec        => 'H=s',
+    help        => "-H hostname\n   the hostname to perform the search on.",
+    required    => 1,
+);
+$np->add_arg(
+    spec        => 'v',
+    help        => "-v\n   provides extra output to help diagnose problems",
+);
+
+$np->getopts;
+
+my $warn_count  = $np->opts->get('warning') || 0;
+my $crit_count  = $np->opts->get('critical') || 0;
+my $pattern     = $np->opts->get('m') || 'returned (\d+) results\.';
+my $fail_pattern= $np->opts->get('f') || 'No Results Found!';
+my $query       = $np->opts->get('q') || 'a';
+my $hostname    = $np->opts->get('H');
+my $verbose     = $np->opts->get('v');
+
+my $ua = LWP::UserAgent->new;
+$ua->agent('check_koha_search-nagios/'.VERSION);
+my $req = HTTP::Request->new(GET => "http://${hostname}/cgi-bin/koha/opac-search.pl?q=$query");
+my $res = $ua->request($req);
+
+if (!$res->is_success) {
+	$np->nagios_exit(CRITICAL, "Unexpected failure from server: ".$res->status_line);
+}
+
+my $content = $res->content;
+
+# Now seach for the pattern in the result
+my ($res_count) = $content =~ /$pattern/;
+
+if (!defined($res_count) && $content =~ m/$fail_pattern/) {
+	$res_count = 0;
+}
+
+if (!defined($res_count)) {
+	$verbose && print STDERR $content."\n";
+	$np->nagios_die("Result count not found, maybe use '-m' and/or '-f'");
+}
+
+if ($res_count <= $crit_count) {
+	$np->nagios_exit(CRITICAL, "$res_count results returned for '$query', expected over $crit_count");
+}
+if ($res_count <= $warn_count) {
+	$np->nagios_exit(WARNING, "$res_count results returned for '$query', expected over $warn_count");
+}
+$np->nagios_exit(OK, "$res_count results returned for '$query'");
