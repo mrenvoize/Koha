@@ -1,0 +1,6 @@
+This is a set of sample configuration suitable for monitoring a Koha server
+with nagios, and some plugins to make it able to hook in a bit deeper. 
+Hopefully everything you need can be figured out from reading the files
+themselves.
+
+ -- Robin Sheat <robin@catalyst.net.nz> 2011
