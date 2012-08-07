@@ -2352,6 +2352,24 @@ span.koha_url {
 a.koha_url {
     text-decoration:none;
 }
+
+/* PTFS URL */
+.ptfs_url {
+    color: #666666;
+}
+
+div.ptfs_url {
+    border-top: none !important;
+}
+span.ptfs_url {
+    position: absolute;
+    right: 0;
+    font-size: 85%;
+}
+a.ptfs_url {
+    text-decoration:none;
+}
+
 /* pagination */
 .pagination {
     position: absolute;
