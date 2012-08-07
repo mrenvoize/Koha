@@ -54,6 +54,9 @@
         [% ELSE %]
             <a class="koha_url" rel="nofollow" href="http://koha-community.org">Koha</a>
         [% END %]
+        </strong>
+        , Supported by <strong>
+            <a class="ptfs_url" href="http://ptfs-europe.com">PTFS-Europe</a>
         </strong>&nbsp;&nbsp;
     </span>
     [% END %]
