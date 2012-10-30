@@ -25,6 +25,23 @@
 </script>
 <script src="[% themelang %]/js/pages/preferences.js" type="text/javascript"></script>
 <script src="[% themelang %]/lib/jquery/plugins/jquery.highlight-3.js" type="text/javascript"></script>
+<script src="[% themelang %]/lib/ace/ace.js" type="text/javascript" charset="utf-8"></script>
+<script>
+window.onload = function() {
+    [% FOREACH TAB IN TABS %][% FOREACH LINE IN TAB.LINES %][% FOREACH CHUNK IN LINE.CHUNKS %][% IF ( CHUNK.type_textarea ) %]
+    var textarea_[% CHUNK.name %] = $('textarea[name="pref_[% CHUNK.name %]"]').hide();
+    var pref_[% CHUNK.name %] = ace.edit("pref_[% CHUNK.name %]");
+    pref_[% CHUNK.name %].getSession().setValue(textarea_[% CHUNK.name %].val());
+    pref_[% CHUNK.name %].getSession().setMode("ace/mode/html");
+    pref_[% CHUNK.name %].setShowPrintMargin(false);
+    pref_[% CHUNK.name %].getSession().on('change', function(){
+      textarea_[% CHUNK.name %].val(pref_[% CHUNK.name %].getSession().getValue());
+      textarea_[% CHUNK.name %].addClass( 'modified' );
+      $('.save-all').removeAttr( 'disabled' );
+    });
+    [% END %][% END %][% END %][% END %]
+};
+</script>
 </head>
 <body id="admin_preferences" class="admin">
 [% INCLUDE 'header.inc' %]
@@ -102,8 +119,10 @@
                         [% END %]
                     </select>
                     [% ELSIF ( CHUNK.type_textarea ) %]
-					<a class="expand-textarea" style="display: none" href="#">Click to Edit</a>
-					<textarea name="pref_[% CHUNK.name %]" id="pref_[% CHUNK.name %]" class="preference preference-[% CHUNK.class or "short" %]" rows="10" cols="40">[% CHUNK.value %]</textarea>
+                                        <div style="position:relative; height: 250px; width: 100%;">
+                                            <textarea name="pref_[% CHUNK.name %]">[% CHUNK.value %]</textarea>
+                                            <div id="pref_[% CHUNK.name %]" class="acebox"></div>
+                                        </div>
                     [% ELSIF ( CHUNK.type_languages ) %]
                     <dl>
                     [% FOREACH language IN CHUNK.languages %]
