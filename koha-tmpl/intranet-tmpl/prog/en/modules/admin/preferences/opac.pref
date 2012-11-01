@@ -146,7 +146,7 @@ OPAC:
             - "Include the following JavaScript on all pages in the OPAC:"
             - pref: opacuserjs
               type: textarea
-              class: code
+              class: javascript
         -
             - Include the additional CSS stylesheet
             - pref: opaccolorstylesheet
@@ -161,22 +161,22 @@ OPAC:
             - "Include the following CSS on all pages in the OPAC:"
             - pref: OPACUserCSS
               type: textarea
-              class: code
+              class: css
         -
             - "Include the following CSS for the mobile view on all pages in the OPAC:"
             - pref: OPACMobileUserCSS
               type: textarea
-              class: code
+              class: css
         -
             - "Show the following HTML in its own column on the main page of the OPAC:"
             - pref: OpacMainUserBlock
               type: textarea
-              class: code
+              class: html
         -
             - "Show the following HTML in its own column on the main page of the OPAC (mobile version):"
             - pref: OpacMainUserBlockMobile
               type: textarea
-              class: code
+              class: html
         -
             - pref: OpacShowLibrariesPulldownMobile
               choices:
@@ -193,44 +193,44 @@ OPAC:
             - "Show the following HTML on the left hand column of the main page and patron account on the OPAC (generally navigation links):"
             - pref: OpacNav
               type: textarea
-              class: code
+              class: html
         -
             - "Show the following HTML in the right hand column of the main page under the main login form:"
             - pref: OpacNavRight
               type: textarea
-              class: code
+              class: html
         -
             - "Show the following HTML on the left hand column of the main page and patron account on the OPAC, after OpacNav, and before patron account links if available:"
             - pref: OpacNavBottom
               type: textarea
-              class: code
+              class: html
         -
             - "Include the following HTML in the header of all pages in the OPAC:"
             - pref: opacheader
               type: textarea
-              class: code
+              class: html
         -
             - "Include the following HTML in the footer of all pages in the OPAC:"
             - pref: opaccredits
               type: textarea
-              class: code
+              class: html
         -
             - 'Include a "More Searches" box on the detail pages of items on the OPAC, with the following HTML (leave blank to disable):'
             - '<br />Note: The placeholders {BIBLIONUMBER}, {CONTROLNUMBER}, {TITLE}, {ISBN}, {ISSN} and {AUTHOR} will be replaced with information from the displayed record.'
             - pref: OPACSearchForTitleIn
               type: textarea
-              class: code
+              class: html
         -
             - 'Include a "Links" column on the "my summary" and "my reading history" tabs when a user is logged in to the OPAC, with the following HTML (leave blank to disable):'
             - '<br />Note: The placeholders {BIBLIONUMBER}, {TITLE}, {ISBN} and {AUTHOR} will be replaced with information from the displayed record.'
             - pref: OPACMySummaryHTML
               type: textarea
-              class: code
+              class: html
         -
             - "Include the following HTML under the facets in OPAC search results:"
             - pref: OPACResultsSidebar
               type: textarea
-              class: code
+              class: html
         -
             - pref: OpacAddMastheadLibraryPulldown
               choices: 
@@ -242,7 +242,7 @@ OPAC:
             - '<br />Note: You can insert placeholders {QUERY_KW} that will be replaced with the keywords of the query.'
             - pref: OPACNoResultsFound
               type: textarea
-              class: code
+              class: html
         -
             - 'Display the URI in the 856u field as an image on: '
             - pref: OPACDisplay856uAsImage
@@ -461,7 +461,7 @@ OPAC:
         -
             - pref: OpacHiddenItems
               type: textarea
-              class: code
+              class: yaml
             - Allows to define custom rules for hiding specific items at opac. See docs/opac/OpacHiddenItems.txt for more informations
         -
             - pref: OpacAllowPublicListCreation

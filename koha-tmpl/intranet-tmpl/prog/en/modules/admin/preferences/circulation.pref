@@ -514,7 +514,7 @@ Circulation:
             - "Include the following HTML in the Help page of the web-based self checkout system:"
             - pref: SelfCheckHelpMessage
               type: textarea
-              class: code
+              class: html
         -
             - pref: AutoSelfCheckAllowed
               choices:

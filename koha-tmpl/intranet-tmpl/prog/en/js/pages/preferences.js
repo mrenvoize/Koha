@@ -82,13 +82,15 @@ $( document ).ready( function () {
         return false;
     } );
 
-    $( '.prefs-tab .expand-textarea' ).show().click( function () {
-        $( this ).hide().nextAll( 'textarea, input[type=submit]' )
-            .animate( { height: 'show', queue: false } )
-            .animate( { opacity: 1 } );
+    //$( '.prefs-tab .expand-textarea' ).show().click( function () {
+    //    $( this ).hide();
+    //    var pref_opaccredits = ace.edit("pref_opaccredits_ed");
+    //    var lang = this.attr(data-lang);
+    //    pref_opaccredits.getSession().setMode("ace/mode/html");
+    //    pref_opaccredits.resize();
 
-        return false;
-    } ).nextAll( 'textarea, input[type=submit]' ).hide().css( { opacity: 0 } );
+    //    return false;
+    //} ).nextAll( 'textarea, input[type=submit]' ).hide().css( { opacity: 0 } );
 
     $("h3").attr("class","expanded").attr("title",MSG_CLICK_TO_EXPAND);
     var collapsible = $(".collapsed,.expanded");

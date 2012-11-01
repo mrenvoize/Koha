@@ -19,12 +19,12 @@ Staff Client:
             - "Use the following JavaScript for printing slips. Define at least function printThenClose(). For use e.g. with Firefox PlugIn jsPrintSetup, see http://jsprintsetup.mozdev.org/:"
             - pref: IntranetSlipPrinterJS
               type: textarea
-              class: code
+              class: javascript
         -
             - "Include the following CSS on all pages in the staff client:"
             - pref: IntranetUserCSS
               type: textarea
-              class: code
+              class: css
         -
             - Include the stylesheet <code><!-- TMPL_VAR NAME="themelang" -->/css/</code>
             - pref: intranetcolorstylesheet
@@ -39,17 +39,17 @@ Staff Client:
             - "Show the following HTML in its own column on the main page of the staff client:"
             - pref: IntranetmainUserblock
               type: textarea
-              class: code
+              class: html
         -
             - "Show the following HTML to the left of the More menu at the top of each page on the staff client (should be a list of links or blank):"
             - pref: IntranetNav
               type: textarea
-              class: code
+              class: html
         -
             - "Include the following JavaScript on all pages in the staff client:"
             - pref: intranetuserjs
               type: textarea
-              class: code
+              class: javascript
         -
             - Use the image at
             - pref: IntranetFavicon

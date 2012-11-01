@@ -1,3 +1,9 @@
+.acebox {
+    position: absolute;
+    width: 100%;
+    height: 98%;
+}
+
 .preference-url, .preference-multi, .preference-long, .preference-file {
     width: 20em;
 }
@@ -16,7 +22,7 @@ textarea.preference {
 	display: block;
 }
 
-textarea.preference-code, .preference-file {
+textarea.preference-code, textarea.preference-html, textarea.preference-css, textarea.preference-javascript, textarea.preference-yaml, textarea.preference-json, .preference-file {
 	font-family: monospace;
 }
 
@@ -70,6 +76,7 @@ h3.collapsed {
 #yui-main {
 	margin-bottom:2em;
 }
+
 #toolbar.floating {
     box-shadow: 0 3px 2px 0 rgba(0, 0, 0, 0.5);
     border-radius: 0;
