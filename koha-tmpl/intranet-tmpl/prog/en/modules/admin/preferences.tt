@@ -44,7 +44,8 @@ window.onload = function() {
         });
         $(this).hide().next('div').slideDown('slow').children('div').slideDown('slow',function() {
             pref_[% CHUNK.name %]_ed.resize();
-        });    
+        });
+        return false;
     }).nextAll( 'textarea, input[type=submit]' ).hide().css( { opacity: 0 } );
     [% END %][% END %][% END %][% END %]
 };
