@@ -64,6 +64,7 @@ GetOptions(
 my $dbh = C4::Context->dbh;
 $|=1; # flushes output
 
+local $dbh->{RaiseError} = 0;
 
 # Record the version we are coming from
 
@@ -5283,6 +5284,11 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     SetVersion($DBversion);
 }
 
+$DBversion = "3.08.07.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion (3.8.7 release) done\n";
+    SetVersion($DBversion);
+}
 
 
 =head1 FUNCTIONS
