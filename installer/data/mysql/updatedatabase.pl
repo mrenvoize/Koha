@@ -5304,10 +5304,32 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
 
 $DBversion = "3.08.10.000";
 if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
-    print "Upgrade to $DBversion (3.8.9 release) done\n";
+    print "Upgrade to $DBversion (3.8.10 release) done\n";
     SetVersion($DBversion);
 }
 
+
+$DBversion = "3.08.10.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do("UPDATE z3950servers SET host = 'lx2.loc.gov', port = 210, db = 'LCDB', syntax = 'USMARC', encoding = 'utf8' WHERE name = 'LIBRARY OF CONGRESS'");
+    print "Upgrade to $DBversion done (Bug 9520 - Update default LOC Z39.50 target)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.08.10.002";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(qq{
+        ALTER TABLE import_records ADD INDEX batch_id_record_type ( import_batch_id, record_type );
+    });
+    print "Upgrade to $DBversion done (Bug 9207: Add new index batch_id_record_type to import_records)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.08.11.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion (3.8.11 release) done\n";
+    SetVersion($DBversion);
+}
 
 =head1 FUNCTIONS
 
