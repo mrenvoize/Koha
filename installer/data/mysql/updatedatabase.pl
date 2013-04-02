@@ -6142,6 +6142,36 @@ $DBversion = "3.10.03.000";
 if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     print "Upgrade to $DBversion done (3.10.3 release)\n";
     SetVersion($DBversion);
+}    
+
+$DBversion = "3.10.03.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+   $dbh->do("INSERT INTO systempreferences (variable,value,options,explanation,type) VALUES ('OPACNumbersPreferPhrase','0', NULL, 'Control the use of phr operator in callnumber and standard number OPAC searches', 'YesNo')");
+   $dbh->do("INSERT INTO systempreferences (variable,value,options,explanation,type) VALUES ('IntranetNumbersPreferPhrase','0', NULL, 'Control the use of phr operator in callnumber and standard number staff client searches', 'YesNo')");
+   print "Upgrade to $DBversion done (Bug 9395: Problem with callnumber and standard number search in OPAC and Staff Client)\n";
+   SetVersion ($DBversion);
+}
+
+$DBversion = "3.10.03.002";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do("UPDATE z3950servers SET host = 'lx2.loc.gov', port = 210, db = 'LCDB', syntax = 'USMARC', encoding = 'utf8' WHERE name = 'LIBRARY OF CONGRESS'");
+    print "Upgrade to $DBversion done (Bug 9520 - Update default LOC Z39.50 target)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.10.03.003";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(qq{
+        ALTER TABLE import_records ADD INDEX batch_id_record_type ( import_batch_id, record_type );
+    });
+    print "Upgrade to $DBversion done (Bug 9207: Add new index batch_id_record_type to import_records)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.10.04.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion done (3.10.4 release)\n";
+    SetVersion($DBversion);
 }
 
 =head1 FUNCTIONS
