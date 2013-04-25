@@ -6091,43 +6091,43 @@ if (C4::Context->preference("Version") < TransformToNum($DBversion)) {
 $DBversion = "3.10.02.001";
 if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="<b>Required for staff login.</b> Staff access, allows viewing of catalogue in staff client." where flag="catalogue";
+        UPDATE userflags SET flagdesc="<b>Required for staff login.</b> Staff access, allows viewing of catalogue in staff client." where flagdesc="Modify login / permissions for staff users";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Edit Authorities" where flag="editauthorities";
+        UPDATE userflags SET flagdesc="Edit Authorities" where flagdesc="Allow to edit authorities";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Allow access to the reports module" where flag="reports";
+        UPDATE userflags SET flagdesc="Allow access to the reports module" where flagdesc="Allow to access to the reports module";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Set library management parameters (deprecated)" where flag="management";
+        UPDATE userflags SET flagdesc="Set library management parameters (deprecated)" where flagdesc="Set library management parameters";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Manage serial subscriptions" where flag="serials";
+        UPDATE userflags SET flagdesc="Manage serial subscriptions" where flagdesc="Allow to manage serials subscriptions";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Manage patrons fines and fees" where flag="updatecharges";
+        UPDATE userflags SET flagdesc="Manage patrons fines and fees" where flagdesc="Update borrower charges";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Check out and check in items" where flag="circulate";
+        UPDATE userflags SET flagdesc="Check out and check in items" where flagdesc="Circulate books";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Manage Koha system settings (Administration panel)" where flag="parameters";
+        UPDATE userflags SET flagdesc="Manage Koha system settings (Administration panel)" where flagdesc="Set Koha system parameters";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Add or modify patrons" where flag="borrowers";
+        UPDATE userflags SET flagdesc="Add or modify patrons" where flagdesc="Add or modify borrowers";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Use all tools (expand for granular tools permissions)" where flag="tools";
+        UPDATE userflags SET flagdesc="Use all tools (expand for granular tools permissions)" where flagdesc="Use tools (export, import, barcodes)";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Allow staff members to modify permissions for other staff members" where flag="staffaccess";
+        UPDATE userflags SET flagdesc="Allow staff members to modify permissions for other staff members" where flagdesc="Set user permissions";
         });
    $dbh->do(q{
-        UPDATE userflags SET flagdesc="Perform batch modification of patrons" where flag="edit_patrons";
+        UPDATE permissions SET description="Perform batch modification of patrons" where description="Perform batch modifivation of patrons";
         });
 
-   print "Upgrade to $DBversion done (Bug 9382 - refresh permission descriptions to make more sense)\n";
+   print "Upgrade to $DBversion done (Bug 9382 (updated with bug 9745) - refresh permission descriptions to make more sense)\n";
    SetVersion ($DBversion);
 }
 
@@ -6173,6 +6173,47 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     print "Upgrade to $DBversion done (3.10.4 release)\n";
     SetVersion($DBversion);
 }
+
+$DBversion = "3.10.04.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+   $dbh->do("INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES ('UNIMARCAuthorsFacetsSeparator',', ', 'UNIMARC authors facets separator', NULL, 'short')");
+   print "Upgrade to $DBversion done (Bug 9341: Problem with UNIMARC authors facets)\n";
+   SetVersion ($DBversion);
+}
+
+$DBversion = '3.10.04.002';
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    my $sth = $dbh->prepare("
+        SELECT module, code, branchcode, content
+        FROM letter
+        WHERE content LIKE '%<fine>%'
+    ");
+    $sth->execute;
+    my $sth_update = $dbh->prepare("UPDATE letter SET content = ? WHERE module = ? AND code = ? AND branchcode = ?");
+    while(my $row = $sth->fetchrow_hashref){
+        $row->{content} =~ s/<fine>\w+<\/fine>/<<items.fine>>/;
+        $sth_update->execute($row->{content}, $row->{module}, $row->{code}, $row->{branchcode});
+    }
+    print "Upgrade to $DBversion done (use new <<items.fine>> syntax in notices)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.10.04.003";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do("UPDATE z3950servers SET encoding = 'ISO_8859-1' WHERE name = 'BIBSYS' AND host LIKE 'z3950.bibsys.no'");
+    $dbh->do("UPDATE z3950servers SET encoding = 'ISO_8859-1' WHERE name = 'NORBOK' AND host LIKE 'z3950.nb.no'");
+    $dbh->do("UPDATE z3950servers SET encoding = 'ISO_8859-1' WHERE name = 'SAMBOK' AND host LIKE 'z3950.nb.no'");
+    $dbh->do("UPDATE z3950servers SET encoding = 'ISO_8859-1' WHERE name = 'DEICHMAN' AND host like 'z3950.deich.folkebibl.no'");
+    print "Upgrade to $DBversion done (Bug 9498 - Update encoding for Norwegian sample Z39.50 servers)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.10.05.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion done (3.10.5 release)\n";
+    SetVersion($DBversion);
+}
+
 
 =head1 FUNCTIONS
 

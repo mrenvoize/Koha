@@ -95,9 +95,11 @@ function highlightOff() {
 function highlightOn() {
     var x;
     for (x in q_array) {
-        $(".title").highlight(q_array[x]);
-        $(".author").highlight(q_array[x]);
-        $(".results_summary").highlight(q_array[x]);
+        if ( q_array[x].length > 0 ) {
+            $(".title").highlight(q_array[x]);
+            $(".author").highlight(q_array[x]);
+            $(".results_summary").highlight(q_array[x]);
+        }
     }
     $(".highlight_toggle").toggle();
 }
@@ -105,7 +107,7 @@ function highlightOn() {
 $(document).ready(function(){
     [% IF ( OpacHighlightedWords ) %]
         $('a.title').each(function() {
-            $(this).attr('href', $(this).attr('href') + '&query_desc=[% query_desc | url %]');
+            $(this).attr("href", $(this).attr("href") + "&query_desc=[% query_desc | uri %]");
         });
     [% END %]
 
@@ -178,12 +180,12 @@ $(document).ready(function(){
         } else if($("#addto").find("option:selected").attr("value") == "newlist"){
             [% IF ( loggedinusername ) %]if (vShelfAdd()) {
             Dopop('/cgi-bin/koha/opac-addbybiblionumber.pl?newshelf=1&' + vShelfAdd());
-            }[% ELSE %] alert(_('You must be logged in to create or add to lists')); [% END %]
+            }[% ELSE %] alert(_("You must be logged in to create or add to lists")); [% END %]
             return false;
         } else if($("#addto").find("option:selected").attr("value") == "morelists"){
             [% IF ( loggedinusername ) %]if (vShelfAdd()) {
             Dopop('/cgi-bin/koha/opac-addbybiblionumber.pl?' + vShelfAdd());
-            }[% ELSE %] alert(_('You must be logged in to create or add to lists')); [% END %]
+            }[% ELSE %] alert(_("You must be logged in to create or add to lists")); [% END %]
             return false;
         }
         if($("#addto").find("option:selected").attr("value") == "addtocart" || $("#addto").attr("class") == "addtocart"){
@@ -270,12 +272,16 @@ $(document).ready(function(){
     [% IF OPACLocalCoverImages %]KOHA.LocalCover.GetCoverFromBibnumber(false);[% END %]
     [% IF ( GoogleJackets ) %]KOHA.Google.GetCoverFromIsbn();[% END %]
 
-    $('#didyoumean').load('/cgi-bin/koha/svc/suggestion?render=stub&q=[% querystring | uri %]',
+[% IF ( DidYouMean ) %]
+    $("#didyoumean").load("/cgi-bin/koha/svc/suggestion?render=stub&q=[% querystring |uri %]",
         function() {
-            $('.searchsuggestion').parent().parent().css({
-                'border-color': '#F4ECBE',
-                'background-color': '#FFFBEA'});
-            } );
+            $(".searchsuggestion").parent().parent().css({
+                "border-color": "#F4ECBE",
+                "background-color": "#FFFBEA"
+            });
+        });
+[% END %]
+
 });
 
 //]]>
@@ -292,7 +298,7 @@ $(document).ready(function(){
     <div class="yui-b">
     <div id="userresults" class="container">
     [% IF ( DidYouMean ) %]
-        <div id='didyoumean'>Not what you expected? Check for <a href='/cgi-bin/koha/svc/suggestion?render=standalone&amp;q=[% querystring | uri %]'>suggestions</a></div>
+        <div id="didyoumean">Not what you expected? Check for <a href="/cgi-bin/koha/svc/suggestion?render=standalone&amp;q=[% querystring |uri %]">suggestions</a></div>
     [% END %]
     <div id="top-pages">[% INCLUDE 'page-numbers.inc' %]</div>
   [% IF ( koha_spsuggest ) %]
@@ -574,8 +580,8 @@ $(document).ready(function(){
 [% END %]
 
 [% END %]
-                <input type="hidden" name='biblionumber'  value="[% SEARCH_RESULT.biblionumber %]" />
-                <input type="hidden" name='loggedinuser'  value="[% loggedinuser %]" />
+                <input type="hidden" name="biblionumber"  value="[% SEARCH_RESULT.biblionumber %]" />
+                <input type="hidden" name="loggedinuser"  value="[% loggedinuser %]" />
 
                 [% IF (  SEARCH_RESULT.rating_total ) > 0  %]
                     <span id="rating_total_[% SEARCH_RESULT.biblionumber %]">&nbsp;&nbsp;([% SEARCH_RESULT.rating_total %] votes)</span>
