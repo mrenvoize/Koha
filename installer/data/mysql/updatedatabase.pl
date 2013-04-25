@@ -5331,6 +5331,37 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     SetVersion($DBversion);
 }
 
+$DBversion = "3.08.11.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+   $dbh->do("INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES ('UNIMARCAuthorsFacetsSeparator',', ', 'UNIMARC authors facets separator', NULL, 'short')");
+   print "Upgrade to $DBversion done (Bug 9341: Problem with UNIMARC authors facets)\n";
+   SetVersion ($DBversion);
+}
+
+$DBversion = '3.08.11.002';
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    my $sth = $dbh->prepare("
+        SELECT module, code, branchcode, content
+        FROM letter
+        WHERE content LIKE '%<fine>%'
+    ");
+    $sth->execute;
+    my $sth_update = $dbh->prepare("UPDATE letter SET content = ? WHERE module = ? AND code = ? AND branchcode = ?");
+    while(my $row = $sth->fetchrow_hashref){
+        $row->{content} =~ s/<fine>\w+<\/fine>/<<items.fine>>/;
+        $sth_update->execute($row->{content}, $row->{module}, $row->{code}, $row->{branchcode});
+    }
+    print "Upgrade to $DBversion done (use new <<items.fine>> syntax in notices)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.08.12.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion (3.8.12 release) done\n";
+    SetVersion($DBversion);
+}
+
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

@@ -89,9 +89,11 @@ function highlightOff() {
 function highlightOn() {
     var x;
     for (x in q_array) {
-        $(".title").highlight(q_array[x]);
-        $(".author").highlight(q_array[x]);
-        $(".results_summary").highlight(q_array[x]);
+        if ( q_array[x].length > 0 ) {
+            $(".title").highlight(q_array[x]);
+            $(".author").highlight(q_array[x]);
+            $(".results_summary").highlight(q_array[x]);
+        }
     }
     $(".highlight_toggle").toggle();
 }
@@ -167,12 +169,12 @@ $(document).ready(function(){
         } else if($("#addto").find("option:selected").attr("value") == "newlist"){
             [% IF ( loggedinusername ) %]if (vShelfAdd()) {
             Dopop('/cgi-bin/koha/opac-addbybiblionumber.pl?newshelf=1&' + vShelfAdd());
-            }[% ELSE %] alert(_('You must be logged in to create or add to lists')); [% END %]
+            }[% ELSE %] alert(_("You must be logged in to create or add to lists")); [% END %]
             return false;
         } else if($("#addto").find("option:selected").attr("value") == "morelists"){
             [% IF ( loggedinusername ) %]if (vShelfAdd()) {
             Dopop('/cgi-bin/koha/opac-addbybiblionumber.pl?' + vShelfAdd());
-            }[% ELSE %] alert(_('You must be logged in to create or add to lists')); [% END %]
+            }[% ELSE %] alert(_("You must be logged in to create or add to lists")); [% END %]
             return false;
         }
         if($("#addto").find("option:selected").attr("value") == "addtocart" || $("#addto").attr("class") == "addtocart"){

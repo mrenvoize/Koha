@@ -250,7 +250,7 @@ sub index_records {
         }
         my $record_fmt = ($as_xml) ? 'marcxml' : 'iso2709' ;
         if ($process_zebraqueue) {
-            do_indexing($record_type, 'delete', "$directory/del_$record_type", $reset, $noshadow, $record_fmt, $zebraidx_log_opt)
+            do_indexing($record_type, 'adelete', "$directory/del_$record_type", $reset, $noshadow, $record_fmt, $zebraidx_log_opt)
                 if %$records_deleted;
             do_indexing($record_type, 'update', "$directory/upd_$record_type", $reset, $noshadow, $record_fmt, $zebraidx_log_opt)
                 if $num_records_exported;
@@ -436,7 +436,6 @@ sub export_marc_records_from_list {
             if ($@) {
               warn "Error exporting record $record_number ($record_type) ".($noxml ? "not XML" : "XML");
             }
-            $num_exported++;
         }
     }
     print "\nRecords exported: $num_exported\n" if ( $verbose_logging );
