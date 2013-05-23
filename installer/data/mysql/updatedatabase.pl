@@ -5486,13 +5486,15 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
           constrainttype, branchcode, notificationdate,
           reminderdate, cancellationdate, reservenotes,
           priority, found, timestamp, itemnumber,
-          waitingdate, expirationdate, lowestPriority
+          waitingdate, expirationdate, lowestPriority,
+          suspend, suspend_until
         ) SELECT
           borrowernumber, reservedate, biblionumber,
           constrainttype, branchcode, notificationdate,
           reminderdate, cancellationdate, reservenotes,
           priority, found, timestamp, itemnumber,
-          waitingdate, expirationdate, lowestPriority
+          waitingdate, expirationdate, lowestPriority,
+          suspend, suspend_until
         FROM old_reserves ORDER BY reservedate
     ");
     $dbh->do('SET @ai = ( SELECT MAX( reserve_id ) FROM tmp_reserves )');
@@ -5505,18 +5507,20 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
           constrainttype, branchcode, notificationdate,
           reminderdate, cancellationdate, reservenotes,
           priority, found, timestamp, itemnumber,
-          waitingdate, expirationdate, lowestPriority
+          waitingdate, expirationdate, lowestPriority,
+          suspend, suspend_until
         ) SELECT
           borrowernumber, reservedate, biblionumber,
           constrainttype, branchcode, notificationdate,
           reminderdate, cancellationdate, reservenotes,
           priority, found, timestamp, itemnumber,
-          waitingdate, expirationdate, lowestPriority
+          waitingdate, expirationdate, lowestPriority,
+          suspend, suspend_until
         FROM reserves ORDER BY reservedate
     ");
     $dbh->do('TRUNCATE reserves');
     $dbh->do('ALTER TABLE reserves ADD reserve_id INT( 11 ) NOT NULL AUTO_INCREMENT PRIMARY KEY FIRST');
-    $dbh->do('INSERT INTO reserves SELECT * FROM tmp_reserves WHERE reserve_id > @ai');
+    $dbh->do('INSERT INTO reserves SELECT * FROM tmp_reserves WHERE reserve_id > COALESCE(@ai, 0)');
     $dbh->do('DROP TABLE tmp_reserves');
     $dbh->do('COMMIT');
 
@@ -6212,6 +6216,41 @@ $DBversion = "3.10.05.000";
 if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     print "Upgrade to $DBversion done (3.10.5 release)\n";
     SetVersion($DBversion);
+}
+
+$DBversion = "3.10.05.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do("ALTER TABLE action_logs CHANGE timestamp timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP;");
+    $dbh->do("UPDATE action_logs SET info=(SELECT itemnumber FROM items WHERE biblionumber= action_logs.info LIMIT 1) WHERE module='CIRCULATION' AND action in ('ISSUE','RETURN');");
+    $dbh->do("ALTER TABLE action_logs CHANGE timestamp timestamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP;");
+    print "Upgrade to $DBversion done (Bug 7241: Fix on circulation logs)\n";
+    print "WARNING about bug 7241: to partially correct the broken logs, the log history is filled with the first found item for each biblio.\n";
+}
+
+$DBversion = "3.10.05.002";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(q{
+        INSERT INTO permissions ( module_bit, code, description )
+        VALUES  ( '1', 'overdues_report', 'Execute overdue items report' )
+    });
+    # add new permission for users with all report permissions and circulation remaining permission
+    my $sth = $dbh->prepare(q{
+        INSERT INTO user_permissions (borrowernumber, module_bit, code)
+        SELECT user_permissions.borrowernumber, 1, 'overdues_report'
+        FROM user_permissions
+        LEFT JOIN borrowers USING(borrowernumber)
+        WHERE borrowers.flags & (1 << 16)
+        AND user_permissions.code = 'circulate_remaining_permissions'
+    });
+    print "Upgrade to $DBversion done ( Add circ permission overdues_report )\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.10.05.003";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(q{ALTER TABLE suggestions CHANGE COLUMN title title VARCHAR(255) DEFAULT NULL;});
+    print "Upgrade to $DBversion done (Bug 2046 - increasing title column length for suggestions)\n";
+    SetVersion ($DBversion);
 }
 
 
