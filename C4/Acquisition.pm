@@ -568,7 +568,11 @@ sub GetBasketsByBookseller {
 
 =head3 GetBasketsInfosByBookseller
 
-    my $baskets = GetBasketsInfosByBookseller($supplierid);
+    my $baskets = GetBasketsInfosByBookseller($supplierid, $allbaskets);
+
+The optional second parameter allbaskets is a boolean allowing you to
+select all baskets from the supplier; by default only active baskets (open or 
+closed but still something to receive) are returned.
 
 Returns in a arrayref of hashref all about booksellers baskets, plus:
     total_biblios: Number of distinct biblios in basket
@@ -2049,6 +2053,7 @@ sub GetHistory {
             aqorders.quantityreceived,
             aqorders.ecost,
             aqorders.ordernumber,
+            aqorders.invoiceid,
             aqinvoices.invoicenumber,
             aqbooksellers.id as id,
             aqorders.biblionumber
