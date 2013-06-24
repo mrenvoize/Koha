@@ -568,7 +568,11 @@ sub GetBasketsByBookseller {
 
 =head3 GetBasketsInfosByBookseller
 
-    my $baskets = GetBasketsInfosByBookseller($supplierid);
+    my $baskets = GetBasketsInfosByBookseller($supplierid, $allbaskets);
+
+The optional second parameter allbaskets is a boolean allowing you to
+select all baskets from the supplier; by default only active baskets (open or 
+closed but still something to receive) are returned.
 
 Returns in a arrayref of hashref all about booksellers baskets, plus:
     total_biblios: Number of distinct biblios in basket
@@ -578,7 +582,7 @@ Returns in a arrayref of hashref all about booksellers baskets, plus:
 =cut
 
 sub GetBasketsInfosByBookseller {
-    my ($supplierid) = @_;
+    my ($supplierid, $allbaskets) = @_;
 
     return unless $supplierid;
 
@@ -595,9 +599,12 @@ sub GetBasketsInfosByBookseller {
           ) AS expected_items
         FROM aqbasket
           LEFT JOIN aqorders ON aqorders.basketno = aqbasket.basketno
-        WHERE booksellerid = ?
-        GROUP BY aqbasket.basketno
-    };
+        WHERE booksellerid = ?};
+    if(!$allbaskets) {
+        $query.=" AND (closedate IS NULL OR (aqorders.quantity > aqorders.quantityreceived AND datecancellationprinted IS NULL))";
+    }
+    $query.=" GROUP BY aqbasket.basketno";
+
     my $sth = $dbh->prepare($query);
     $sth->execute($supplierid);
     return $sth->fetchall_arrayref({});
@@ -1952,6 +1959,7 @@ sub GetHistory {
             aqorders.quantityreceived,
             aqorders.ecost,
             aqorders.ordernumber,
+            aqorders.invoiceid,
             aqinvoices.invoicenumber,
             aqbooksellers.id as id,
             aqorders.biblionumber

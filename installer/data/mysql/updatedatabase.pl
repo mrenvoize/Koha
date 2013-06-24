@@ -6253,6 +6253,23 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.10.06.001";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(
+        q{
+INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES ('CalculateFinesOnReturn','1','Switch to control if overdue fines are calculated on return or not', '', 'YesNo');
+}
+    );
+    print
+"Upgrade to $DBversion done (Bug 10120 - Fines on item return controlled by a systempreference)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.10.07.000";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    print "Upgrade to $DBversion done (3.10.7 release)\n";
+    SetVersion($DBversion);
+}
 
 =head1 FUNCTIONS
 

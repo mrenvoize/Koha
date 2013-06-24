@@ -390,7 +390,7 @@ RECORD: while (  ) {
     last if $i == $number;
 }
 $dbh->commit();
-
+$dbh->{AutoCommit} = 1;
 
 
 if ($fk_off) {
