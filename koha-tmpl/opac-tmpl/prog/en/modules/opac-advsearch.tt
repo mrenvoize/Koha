@@ -125,8 +125,8 @@
 [% IF ( expanded_options ) %]
         <!--   [% IF ( search_box.scan_index ) %]<input type="checkbox" name="scan" id="scan" value="1" /> Scan Indexes[% END %] -->
         [% IF ( !loop.first ) %]
-            <a class="ButtonPlus" name="ButtonPlus" title="Add another field">[+]</a>
-            <a class="ButtonLess" title="Remove field">[-]</a>
+            <a class="ButtonPlus" name="ButtonPlus" title="Add another field" href="#">[+]</a>
+            <a class="ButtonLess" title="Remove field" href="#">[-]</a>
         [% END %]
 [% END %]
         </p>
@@ -338,7 +338,8 @@
 <script type="text/javascript" language="javascript">
     /* This function allows to display a new field to search.
     */
-    $(document).on("click", '.ButtonPlus', function() {
+    $(document).on("click", '.ButtonPlus', function(e) {
+        e.preventDefault();
         $('.ButtonLess').show();
         var thisLine = $(this).parent();
         var newLine = thisLine.clone();
@@ -346,7 +347,8 @@
         thisLine.after(newLine);
     });
 
-    $(document).on("click", '.ButtonLess', function() {
+    $(document).on("click", '.ButtonLess', function(e) {
+        e.preventDefault();
         if($(this).parent().siblings().length <= 3 ) {
            $('.ButtonLess').hide();
         }

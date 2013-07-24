@@ -5561,7 +5561,7 @@ if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
 
 $DBversion = '3.09.00.027';
 if (C4::Context->preference("Version") < TransformToNum($DBversion)) {
-    $dbh->do("ALTER TABLE issuingrules ADD overduefinescap decimal DEFAULT NULL");
+    $dbh->do("ALTER TABLE issuingrules ADD overduefinescap decimal(28,6) DEFAULT NULL");
     my $maxfine = C4::Context->preference('MaxFine');
     if ($maxfine && $maxfine < 900) { # an arbitrary value that tells us it's not "some huge value"
       $dbh->do("UPDATE issuingrules SET overduefinescap=?",undef,$maxfine);
@@ -6855,6 +6855,59 @@ INSERT INTO systempreferences (variable,value,explanation,options,type) VALUES (
 $DBversion = "3.12.01.000";
 if ( CheckVersion($DBversion) ) {
     print "Upgrade to $DBversion done (3.12.1 release)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.12.01.001";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("
+CREATE TABLE IF NOT EXISTS borrower_files (
+  file_id int(11) NOT NULL AUTO_INCREMENT,
+  borrowernumber int(11) NOT NULL,
+  file_name varchar(255) NOT NULL,
+  file_type varchar(255) NOT NULL,
+  file_description varchar(255) DEFAULT NULL,
+  file_content longblob NOT NULL,
+  date_uploaded timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (file_id),
+  KEY borrowernumber (borrowernumber),
+  CONSTRAINT borrower_files_ibfk_1 FOREIGN KEY (borrowernumber) REFERENCES borrowers (borrowernumber) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
+    ");
+    print "Upgrade to $DBversion done (Bug 10443: make sure borrower_files table exists)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.01.002";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("UPDATE language_rfc4646_to_iso639 SET iso639_2_code='ita' WHERE rfc4646_subtag='it'");
+    print "Upgrade to $DBversion done (Bug 9519: Wrong language code for Italian in the advanced search language limitations)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.01.003";
+if (C4::Context->preference("Version") < TransformToNum($DBversion)) {
+    print "The default MARC21 framework has been updated to April 2013 revision. Use installer/data/mysql/en/marcflavour/marc21/mandatory/marc21_framework_DEFAULT.sql to update your (english) default MARC21 framework from the command line.\n";
+    SetVersion($DBversion);
+}
+
+
+$DBversion = "3.12.01.004";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("ALTER TABLE issuingrules MODIFY COLUMN overduefinescap decimal(28,6) DEFAULT NULL;");
+    print "Upgrade to $DBversion done (Bug 10490: Correct datatype for overduefinescap in issuingrules)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.01.005";
+if (C4::Context->preference("Version") < TransformToNum($DBversion)) {
+    print "About Koha > Timeline was fixed for new instances. If you want it fixed on previously created instances you need to add <docdir>/usr/share/doc/koha-common</docdir> to the instance's koha-conf.xml file, on the <config> section.\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.02.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.12.2 release)\n";
     SetVersion ($DBversion);
 }
 

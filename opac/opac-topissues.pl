@@ -52,7 +52,9 @@ my ($template, $borrowernumber, $cookie)
 				});
 my $dbh = C4::Context->dbh;
 # Displaying results
-my $limit = $input->param('limit') || 10;
+my $limit = $input->param('limit');
+$limit = 10 unless ($limit && $limit =~ /^\d+$/); # control user input for SQL query
+$limit = 100 if $limit > 100;
 my $branch = $input->param('branch') || '';
 my $itemtype = $input->param('itemtype') || '';
 my $timeLimit = $input->param('timeLimit') || 3;
@@ -80,7 +82,7 @@ if($advanced_search_types eq 'ccode'){
                     GROUP BY biblio.biblionumber
                     HAVING tot >0
                     ORDER BY tot DESC
-                    LIMIT $limit
+                    LIMIT ?
                     ";
     $template->param(ccodesearch => 1);
 }else{
@@ -105,13 +107,13 @@ if($advanced_search_types eq 'ccode'){
                     GROUP BY biblio.biblionumber
                     HAVING tot >0
                     ORDER BY tot DESC
-                    LIMIT $limit
+                    LIMIT ?
                     ";
      $template->param(itemtypesearch => 1);
 }
 
 my $sth = $dbh->prepare($query);
-$sth->execute();
+$sth->execute($limit);
 my @results;
 while (my $line= $sth->fetchrow_hashref) {
     push @results, $line;

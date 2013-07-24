@@ -21,7 +21,7 @@ set -e
 
 usage="Usage: $0 [--create-db|--request-db|--populate-db|--use-db] \
     [--marcflavor marc21|normarc|unimarc] \
-    [--zebralang en|nb|fr] \
+    [--zebralang en|es|fr|nb|ru|uk] \
     [--defaultsql /path/to/some.sql] \
     [--configfile /path/to/config] [--passwdfile /path/to/passwd] \
     [--database database] [--adminuser n] instancename"
@@ -51,6 +51,7 @@ generate_config_file() {
         -e "s/__DB_PASS__/$mysqlpwd/g" \
         -e "s/__UNIXUSER__/$username/g" \
         -e "s/__UNIXGROUP__/$username/g" \
+        -e "s/__PLUGINS_DIR__/\/var\/lib\/koha\/$name\/plugins/g" \
         "/etc/koha/$1" > "$2"
 }
 

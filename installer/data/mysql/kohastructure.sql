@@ -1028,7 +1028,7 @@ CREATE TABLE `issuingrules` ( -- circulation and fine rules
   `renewalperiod` int(4) default NULL, -- renewal period in the unit set in issuingrules.lengthunit
   `reservesallowed` smallint(6) NOT NULL default "0", -- how many holds are allowed
   `branchcode` varchar(10) NOT NULL default '', -- the branch this rule is for (branches.branchcode)
-  overduefinescap decimal default NULL, -- the maximum amount of an overdue fine
+  overduefinescap decimal(28,6) default NULL, -- the maximum amount of an overdue fine
   PRIMARY KEY  (`branchcode`,`categorycode`,`itemtype`),
   KEY `categorycode` (`categorycode`),
   KEY `itemtype` (`itemtype`)
@@ -2415,6 +2415,24 @@ CREATE TABLE `message_transports` (
   CONSTRAINT `message_transports_ibfk_1` FOREIGN KEY (`message_attribute_id`) REFERENCES `message_attributes` (`message_attribute_id`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `message_transports_ibfk_2` FOREIGN KEY (`message_transport_type`) REFERENCES `message_transport_types` (`message_transport_type`) ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT `message_transports_ibfk_3` FOREIGN KEY (`letter_module`, `letter_code`, `branchcode`) REFERENCES `letter` (`module`, `code`, `branchcode`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--
+-- Table structure for table `borrower_files`
+--
+
+DROP TABLE IF EXISTS `borrower_files`;
+CREATE TABLE IF NOT EXISTS `borrower_files` (
+  `file_id` int(11) NOT NULL AUTO_INCREMENT,
+  `borrowernumber` int(11) NOT NULL,
+  `file_name` varchar(255) NOT NULL,
+  `file_type` varchar(255) NOT NULL,
+  `file_description` varchar(255) DEFAULT NULL,
+  `file_content` longblob NOT NULL,
+  `date_uploaded` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`file_id`),
+  KEY `borrowernumber` (`borrowernumber`),
+  CONSTRAINT borrower_files_ibfk_1 FOREIGN KEY (borrowernumber) REFERENCES borrowers (borrowernumber) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --
