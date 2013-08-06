@@ -20,7 +20,7 @@ package C4::Auth;
 use strict;
 use warnings;
 use Digest::MD5 qw(md5_base64);
-use Storable qw(thaw freeze);
+use JSON qw/encode_json decode_json/;
 use URI::Escape;
 use CGI::Session;
 
@@ -46,7 +46,9 @@ BEGIN {
     $debug       = $ENV{DEBUG};
     @ISA         = qw(Exporter);
     @EXPORT      = qw(&checkauth &get_template_and_user &haspermission &get_user_subpermissions);
-    @EXPORT_OK   = qw(&check_api_auth &get_session &check_cookie_auth &checkpw &get_all_subpermissions &get_user_subpermissions);
+    @EXPORT_OK   = qw(&check_api_auth &get_session &check_cookie_auth &checkpw &get_all_subpermissions &get_user_subpermissions
+                      ParseSearchHistoryCookie
+                   );
     %EXPORT_TAGS = ( EditPermissions => [qw(get_all_subpermissions get_user_subpermissions)] );
     $ldap        = C4::Context->config('useldapserver') || 0;
     $cas         = C4::Context->preference('casAuthentication');
@@ -250,10 +252,7 @@ sub get_template_and_user {
 
 			# And if there's a cookie with searches performed when the user was not logged in, 
 			# we add them to the logged-in search history
-			my $searchcookie = $in->{'query'}->cookie('KohaOpacRecentSearches');
-			if ($searchcookie){
-				$searchcookie = uri_unescape($searchcookie);
-			        my @recentSearches = @{thaw($searchcookie) || []};
+            my @recentSearches = ParseSearchHistoryCookie($in->{'query'});
 				if (@recentSearches) {
 					my $sth = $dbh->prepare($SEARCH_HISTORY_INSERT_SQL);
 					$sth->execute( $borrowernumber,
@@ -267,14 +266,14 @@ sub get_template_and_user {
 					# And then, delete the cookie's content
 					my $newsearchcookie = $in->{'query'}->cookie(
 												-name => 'KohaOpacRecentSearches',
-												-value => freeze([]),
+                                                -value => encode_json([]),
+                                                -HttpOnly => 1,
 												-expires => ''
 											 );
 					$cookie = [$cookie, $newsearchcookie];
 				}
 			}
 		}
-    }
 	else {	# if this is an anonymous session, setup to display public lists...
 
         $template->param( sessionID        => $sessionID );
@@ -288,16 +287,11 @@ sub get_template_and_user {
  	# Anonymous opac search history
  	# If opac search history is enabled and at least one search has already been performed
  	if (C4::Context->preference('EnableOpacSearchHistory')) {
-		my $searchcookie = $in->{'query'}->cookie('KohaOpacRecentSearches');
-		if ($searchcookie){
-			$searchcookie = uri_unescape($searchcookie);
-		        my @recentSearches = @{thaw($searchcookie) || []};
- 	    # We show the link in opac
+        my @recentSearches = ParseSearchHistoryCookie($in->{'query'}); 
 			if (@recentSearches) {
 				$template->param(ShowOpacRecentSearchLink => 1);
 			}
 	    }
- 	}
 
     if(C4::Context->preference('dateformat')){
         if(C4::Context->preference('dateformat') eq "metric"){
@@ -992,7 +986,8 @@ sub checkauth {
         intranetuserjs     => C4::Context->preference("intranetuserjs"),
         IndependantBranches=> C4::Context->preference("IndependantBranches"),
         AutoLocation       => C4::Context->preference("AutoLocation"),
-		wrongip            => $info{'wrongip'},
+        wrongip            => $info{'wrongip'},
+        opac_css_override  => $ENV{'OPAC_CSS_OVERRIDE'},
     );
 
     $template->param( OpacPublic => C4::Context->preference("OpacPublic"));
@@ -1673,6 +1668,15 @@ sub getborrowernumber {
     return 0;
 }
 
+sub ParseSearchHistoryCookie {
+    my $input = shift;
+    my $search_cookie = $input->cookie('KohaOpacRecentSearches');
+    return () unless $search_cookie;
+    my $obj = eval { decode_json(uri_unescape($search_cookie)) };
+    return () unless defined $obj;
+    return () unless ref $obj eq 'ARRAY';
+    return @{ $obj };
+}
 
 END { }    # module clean-up code here (global destructor)
 1;

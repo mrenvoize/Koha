@@ -258,7 +258,13 @@ sub shelfpage {
                 if ( $sortfield eq 'year' ) {
                     $yearsort = 'year';
                 }
-                ( $items, $totitems ) = GetShelfContents( $shelfnumber, $shelflimit, $shelfoffset, $sortfield eq 'year' ? 'copyrightdate' : $sortfield );
+                $sortfield = $query->param('sort') || $sortfield; ## Passed in sorting overrides default sorting
+                my $direction = $query->param('direction') || 'asc';
+                $template->param(
+                    sort      => $sortfield,
+                    direction => $direction,
+                );
+                ( $items, $totitems ) = GetShelfContents( $shelfnumber, $shelflimit, $shelfoffset, $sortfield, $direction );
                 for my $this_item (@$items) {
                     my $biblionumber = $this_item->{'biblionumber'};
                     my $record = GetMarcBiblio($biblionumber);
@@ -278,6 +284,7 @@ sub shelfpage {
                     $this_item->{'normalized_ean'}  = GetNormalizedEAN(       $record,$marcflavour);
                     $this_item->{'normalized_oclc'} = GetNormalizedOCLCNumber($record,$marcflavour);
                     $this_item->{'normalized_isbn'} = GetNormalizedISBN(undef,$record,$marcflavour);
+                    if(!defined($this_item->{'size'})) { $this_item->{'size'} = "" }; #TT has problems with size
                     # Getting items infos for location display
                     my @items_infos = &GetItemsLocationInfo( $this_item->{'biblionumber'});
                     $this_item->{'itemsissued'} = CountItemsIssued( $this_item->{'biblionumber'} );
@@ -437,7 +444,7 @@ sub shelfpage {
 
     my $url = $type eq 'opac' ? "/cgi-bin/koha/opac-shelves.pl" : "/cgi-bin/koha/virtualshelves/shelves.pl";
     my %qhash = ();
-    foreach (qw(display viewshelf sortfield)) {
+    foreach (qw(display viewshelf sortfield sort direction)) {
         $qhash{$_} = $query->param($_) if $query->param($_);
     }
     ( scalar keys %qhash ) and $url .= '?' . join '&', map { "$_=$qhash{$_}" } keys %qhash;

@@ -6,13 +6,17 @@
 # MySQL WARNING: This makes sense only if your tables are InnoDB, otherwise
 # transactions are not supported and mess is left behind
 
-use strict;
-use warnings;
+use Modern::Perl;
+
 use C4::Context;
 
 use Data::Dumper;
 
 use Test::More tests => 18;
+
+use C4::Branch;
+use C4::ItemType;
+use C4::Members;
 
 BEGIN {
     use FindBin;
@@ -21,27 +25,32 @@ BEGIN {
     use_ok('C4::HoldsQueue');
 }
 
-my $TITLE = "Test Holds Queue XXX";
-# Pick a plausible borrower. Easier than creating one.
-my $BORROWER_QRY = <<EOQ;
-select *
-from borrowers
-where borrowernumber = (select max(borrowernumber) from issues)
-EOQ
-my $dbh = C4::Context->dbh;
-my $borrower = $dbh->selectrow_hashref($BORROWER_QRY);
-my $borrowernumber = $borrower->{borrowernumber};
-# Set special (for this test) branches
-my $borrower_branchcode = $borrower->{branchcode};
-my @other_branches = grep { $_ ne $borrower_branchcode } @{ $dbh->selectcol_arrayref("SELECT branchcode FROM branches") };
-my $least_cost_branch_code = pop @other_branches
-  or BAIL_OUT("No point testing only one branch...");
-my $itemtype = $dbh->selectrow_array("SELECT min(itemtype) FROM itemtypes WHERE notforloan = 0")
-  or BAIL_OUT("No adequate itemtype");
-
 # Start transaction
+my $dbh = C4::Context->dbh;
 $dbh->{AutoCommit} = 0;
 $dbh->{RaiseError} = 1;
+
+my $TITLE = "Test Holds Queue XXX";
+
+my %data = (
+    cardnumber => 'CARDNUMBER42',
+    firstname =>  'my firstname',
+    surname => 'my surname',
+    categorycode => 'S',
+    branchcode => 'CPL',
+);
+
+my $borrowernumber = AddMember(%data);
+my $borrower = GetMember( borrowernumber => $borrowernumber );
+# Set special (for this test) branches
+my $borrower_branchcode = $borrower->{branchcode};
+my $branches = C4::Branch::GetBranches;
+my @other_branches = grep { $_ ne $borrower_branchcode } keys %$branches;
+my $least_cost_branch_code = pop @other_branches
+  or BAIL_OUT("No point testing only one branch...");
+my @item_types = C4::ItemType->all;
+my $itemtype = grep { $_->{notforloan} == 1 } @item_types
+  or BAIL_OUT("No adequate itemtype");
 
 #Set up the stage
 # Sysprefs and cost matrix
@@ -101,6 +110,7 @@ my $test_sth = $dbh->prepare("SELECT * FROM hold_fill_targets
                               WHERE borrowernumber = $borrowernumber");
 
 # We have a book available homed in borrower branch, no point fiddling with AutomaticItemReturn
+C4::Context->set_preference('AutomaticItemReturn', 0);
 test_queue ('take from homebranch',  0, $borrower_branchcode, $borrower_branchcode);
 test_queue ('take from homebranch',  1, $borrower_branchcode, $borrower_branchcode);
 
@@ -109,7 +119,7 @@ $dbh->do("DELETE FROM hold_fill_targets");
 $dbh->do("DELETE FROM issues WHERE itemnumber IN (SELECT itemnumber FROM items WHERE homebranch = '$borrower_branchcode' AND holdingbranch = '$borrower_branchcode')");
 $dbh->do("DELETE FROM items WHERE homebranch = '$borrower_branchcode' AND holdingbranch = '$borrower_branchcode'");
 # test_queue will flush
-$dbh->do("UPDATE systempreferences SET value = 1 WHERE variable = 'AutomaticItemReturn'");
+C4::Context->set_preference('AutomaticItemReturn', 1);
 # Not sure how to make this test more difficult - holding branch does not matter
 test_queue ('take from holdingbranch AutomaticItemReturn on', 0, $borrower_branchcode, undef);
 test_queue ('take from holdingbranch AutomaticItemReturn on', 1, $borrower_branchcode, $least_cost_branch_code);
@@ -118,7 +128,7 @@ $dbh->do("DELETE FROM tmp_holdsqueue");
 $dbh->do("DELETE FROM hold_fill_targets");
 $dbh->do("DELETE FROM issues WHERE itemnumber IN (SELECT itemnumber FROM items WHERE homebranch = '$borrower_branchcode')");
 $dbh->do("DELETE FROM items WHERE homebranch = '$borrower_branchcode'");
-$dbh->do("UPDATE systempreferences SET value = 0 WHERE variable = 'AutomaticItemReturn'");
+C4::Context->set_preference('AutomaticItemReturn', 0);
 # We have a book available held in borrower branch
 test_queue ('take from holdingbranch', 0, $borrower_branchcode, $borrower_branchcode);
 test_queue ('take from holdingbranch', 1, $borrower_branchcode, $borrower_branchcode);
@@ -143,8 +153,6 @@ ok( $queue_item
 
 # Cleanup
 $dbh->rollback;
-
-exit;
 
 sub test_queue {
     my ($test_name, $use_cost_matrix, $pick_branch, $hold_branch) = @_;
