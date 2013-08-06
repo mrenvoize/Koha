@@ -6494,7 +6494,7 @@ if ( CheckVersion($DBversion) ) {
         VALUES  ( '1', 'overdues_report', 'Execute overdue items report' )
     });
     # add new permission for users with all report permissions and circulation remaining permission
-    my $sth = $dbh->prepare(q{
+    $dbh->do(q{
         INSERT INTO user_permissions (borrowernumber, module_bit, code)
         SELECT user_permissions.borrowernumber, 1, 'overdues_report'
         FROM user_permissions
@@ -6908,6 +6908,12 @@ if (C4::Context->preference("Version") < TransformToNum($DBversion)) {
 $DBversion = "3.12.02.000";
 if ( CheckVersion($DBversion) ) {
     print "Upgrade to $DBversion done (3.12.2 release)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.12.03.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.12.3 release)\n";
     SetVersion ($DBversion);
 }
 
