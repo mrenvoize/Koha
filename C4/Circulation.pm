@@ -2419,8 +2419,8 @@ SELECT issues.*, items.itype as itemtype, items.homebranch, TO_DAYS( date_due )-
 FROM issues 
 LEFT JOIN items USING (itemnumber)
 LEFT OUTER JOIN branches USING (branchcode)
-WhERE returndate is NULL
-AND ( TO_DAYS( NOW() )-TO_DAYS( date_due ) ) < ?
+WHERE returndate is NULL
+HAVING days_until_due > 0 AND days_until_due < ?
 END_SQL
 
     my @bind_parameters = ( $params->{'days_in_advance'} );
@@ -2478,8 +2478,9 @@ sub CanBookBeRenewed {
         $error = "too_many";
     }
 
-    my $resstatus = C4::Reserves::GetReserveStatus($itemnumber);
-    if ( $resstatus eq "Waiting" or $resstatus eq "Reserved" ) {
+    my ( $resfound, $resrec, undef ) = C4::Reserves::CheckReserves( $itemnumber );
+
+    if ( $resfound ) { # '' when no hold was found
         $renewokay = 0;
         $error = "on_reserve";
     }
