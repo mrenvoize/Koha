@@ -588,22 +588,6 @@ div#listsmenu a:hover {
     width: auto;
 }
 
-#main_footer .colright .koha {
-    float:left;
-    background: url(../../images/img_logo_koha.jpg) no-repeat bottom right;
-    width: 168px;
-    height: 40px;
-}
-#main_footer .colright .koha a {
-    display:block;
-    padding:0;
-    width: 168px;
-    height: 40px;
-    color:#5f5f5f;
-    text-decoration: none;
-    font-weight: normal;
-}
-
 div#changelanguage {
     padding-bottom: 2em;
 }
