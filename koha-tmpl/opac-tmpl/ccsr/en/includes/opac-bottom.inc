@@ -26,11 +26,20 @@
     [% IF ( OpacKohaUrl ) %]
     <div class="colright">
         <div class="koha">
+            <p>Powered by <strong>
             [% IF template.name.match('opac-main.tt') %]
-                <a class="koha_url" href="http://koha-community.org">Powered by</a>
+                <a class="koha_url" href="http://koha-community.org">Koha</a>
             [% ELSE %]
-                <a class="koha_url" rel="nofollow" href="http://koha-community.org">Powered by</a>
+                <a class="koha_url" rel="nofollow" href="http://koha-community.org">Koha</a>
             [% END %]
+            </strong>
+            , Supported by <strong>
+            [% IF template.name.match('opac-main.tt') %]
+                <a class="ptfs_url" href="http://ptfs-europe.com">PTFS-Europe</a>
+            [% ELSE %]
+                <a class="ptfs_url" rel="nofollow" href="http://ptfs-europe.com">PTFS-Europe</a>
+            [% END %]
+            </strong></p>
         </div>
     </div>
     [% END %]
