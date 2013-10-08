@@ -9669,6 +9669,13 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.19.00.007";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("INSERT INTO `systempreferences` (variable,value,explanation,options,type) VALUES('SessionRestrictionByIP','0','Check for Change in  Remote IP address for Session Security. Disable when remote ip address changes frequently.','','YesNo')");
+    print "Upgrade to $DBversion done (Bug 5511 - SessionRestrictionByIP)";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)
