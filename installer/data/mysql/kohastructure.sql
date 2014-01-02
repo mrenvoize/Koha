@@ -120,7 +120,7 @@ CREATE TABLE `biblio` ( -- table that stores bibliographic information
   `title` mediumtext, -- title (without the subtitle) from the MARC record (245$a in MARC21)
   `unititle` mediumtext, -- uniform title (without the subtitle) from the MARC record (240$a in MARC21)
   `notes` mediumtext, -- values from the general notes field in the MARC record (500$a in MARC21) split by bar (|)
-  `serial` tinyint(1) default NULL, -- foreign key, linking to the subscriptionid in the serial table
+  `serial` tinyint(1) default NULL, -- Boolean indicating whether biblio is for a serial
   `seriestitle` mediumtext,
   `copyrightdate` smallint(6) default NULL, -- publication or copyright date from the MARC record
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP, -- date and time this record was last touched
@@ -607,7 +607,7 @@ CREATE TABLE `deletedbiblio` ( -- stores information about bibliographic records
   `title` mediumtext, -- title (without the subtitle) from the MARC record (245$a in MARC21)
   `unititle` mediumtext, -- uniform title (without the subtitle) from the MARC record (240$a in MARC21)
   `notes` mediumtext, -- values from the general notes field in the MARC record (500$a in MARC21) split by bar (|)
-  `serial` tinyint(1) default NULL, -- foreign key, linking to the subscriptionid in the serial table
+  `serial` tinyint(1) default NULL, -- Boolean indicating whether biblio is for a serial
   `seriestitle` mediumtext,
   `copyrightdate` smallint(6) default NULL, -- publication or copyright date from the MARC record
   `timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP, -- date and time this record was last touched
@@ -781,7 +781,7 @@ CREATE TABLE `deleteditems` (
   `cn_source` varchar(10) default NULL, -- classification source used on this item (MARC21 952$2)
   `cn_sort` varchar(30) default NULL, -- normalized form of the call number (MARC21 952$o) used for sorting
   `ccode` varchar(10) default NULL, -- authorized value for the collection code associated with this item (MARC21 952$8)
-  `materials` varchar(10) default NULL, -- materials specified (MARC21 952$3)
+  `materials` text default NULL, -- materials specified (MARC21 952$3)
   `uri` varchar(255) default NULL, -- URL for the item (MARC21 952$u)
   `itype` varchar(10) default NULL, -- foreign key from the itemtypes table defining the type for this item (MARC21 952$y)
   `more_subfields_xml` longtext default NULL, -- additional 952 subfields in XML format
