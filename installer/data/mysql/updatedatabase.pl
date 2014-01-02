@@ -7756,6 +7756,48 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.14.00.001";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("UPDATE systempreferences SET value='clear' where variable = 'CircAutoPrintQuickSlip' and value = '0'");
+    $dbh->do("UPDATE systempreferences SET value='qslip' where variable = 'CircAutoPrintQuickSlip' and value = '1'");
+    $dbh->do("UPDATE systempreferences SET explanation = 'Choose what should happen when an empty barcode field is submitted in circulation: Display a print quick slip window, Display a print slip window or Clear the screen.', type = 'Choice' where variable = 'CircAutoPrintQuickSlip'");
+    print "Upgrade to $DBversion done (Bug 11040: Add option to print full slip when checking out a null barcode)";
+    SetVersion($DBversion);
+}
+
+
+$DBversion = "3.14.00.002";
+if(CheckVersion($DBversion)) {
+    $dbh->do("ALTER TABLE deleteditems MODIFY materials text;");
+    print "Upgrade to $DBversion done (Bug 11275: alter deleteditems.materials from varchar(10) to text)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.00.003";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        UPDATE accountlines
+        SET description = ''
+        WHERE description IN (
+            ' New Card',
+            ' Fine',
+            ' Sundry',
+            'Writeoff',
+            ' Account Management fee',
+            'Payment,thanks', 'Payment,thanks - ',
+            ' Lost Item'
+        )
+    });
+    print "Upgrade to $DBversion done (Bug 2546: Update fine descriptions)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.01.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.1 release)\n";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

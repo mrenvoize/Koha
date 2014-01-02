@@ -21,6 +21,8 @@ $|=1; # flushes output
 # If the cron job starts us in an unreadable dir, we will break without
 # this.
 chdir $ENV{HOME} if (!(-r '.'));
+my $daemon_mode;
+my $daemon_sleep = 5;
 my $directory;
 my $nosanitize;
 my $skip_export;
@@ -45,6 +47,8 @@ my $run_user = (getpwuid($<))[0];
 my $verbose_logging = 0;
 my $zebraidx_log_opt = " -v none,fatal,warn ";
 my $result = GetOptions(
+    'daemon'        => \$daemon_mode,
+    'sleep:i'       => \$daemon_sleep,
     'd:s'           => \$directory,
     'r|reset'       => \$reset,
     's'             => \$skip_export,
@@ -79,12 +83,6 @@ if( not defined $run_as_root and $run_user eq 'root') {
     die $msg;
 }
 
-if (not $biblios and not $authorities) {
-    my $msg = "Must specify -b or -a to reindex bibs or authorities\n";
-    $msg   .= "Please do '$0 --help' to see usage.\n";
-    die $msg;
-}
-
 if ( !$as_xml and $nosanitize ) {
     my $msg = "Cannot specify both -no_xml and -nosanitize\n";
     $msg   .= "Please do '$0 --help' to see usage.\n";
@@ -110,6 +108,26 @@ if ($reset) {
 if ($noshadow) {
     $noshadow = ' -n ';
 }
+
+if ($daemon_mode) {
+    # incompatible flags handled above: help, reset, and do_not_clear_zebraqueue
+    if ($skip_export or $keep_export or $skip_index or
+          $where or $length or $offset) {
+        my $msg = "Cannot specify -s, -k, -I, -where, -length, or -offset with -daemon.\n";
+        $msg   .= "Please do '$0 --help' to see usage.\n";
+        die $msg;
+    }
+    $authorities = 1;
+    $biblios = 1;
+    $process_zebraqueue = 1;
+}
+
+if (not $biblios and not $authorities) {
+    my $msg = "Must specify -b or -a to reindex bibs or authorities\n";
+    $msg   .= "Please do '$0 --help' to see usage.\n";
+    die $msg;
+}
+
 
 #  -v is for verbose, which seems backwards here because of how logging is set
 #    on the CLI of zebraidx.  It works this way.  The default is to not log much
@@ -152,16 +170,13 @@ if ($do_munge) {
 
 my $tester = XML::LibXML->new();
 
-if ($authorities) {
-    index_records('authority', $directory, $skip_export, $skip_index, $process_zebraqueue, $as_xml, $noxml, $nosanitize, $do_not_clear_zebraqueue, $verbose_logging, $zebraidx_log_opt, $authorityserverdir);
+if ($daemon_mode) {
+    while (1) {
+        do_one_pass() if ( zebraqueue_not_empty() );
+        sleep $daemon_sleep;
+    }
 } else {
-    print "skipping authorities\n" if ( $verbose_logging );
-}
-
-if ($biblios) {
-    index_records('biblio', $directory, $skip_export, $skip_index, $process_zebraqueue, $as_xml, $noxml, $nosanitize, $do_not_clear_zebraqueue, $verbose_logging, $zebraidx_log_opt, $biblioserverdir);
-} else {
-    print "skipping biblios\n" if ( $verbose_logging );
+    do_one_pass();
 }
 
 
@@ -189,6 +204,42 @@ if ($keep_export) {
         rmtree($directory, 0, 1);
         print "directory $directory deleted\n";
     }
+}
+
+sub do_one_pass {
+    if ($authorities) {
+        index_records('authority', $directory, $skip_export, $skip_index, $process_zebraqueue, $as_xml, $noxml, $nosanitize, $do_not_clear_zebraqueue, $verbose_logging, $zebraidx_log_opt, $authorityserverdir);
+    } else {
+        print "skipping authorities\n" if ( $verbose_logging );
+    }
+
+    if ($biblios) {
+        index_records('biblio', $directory, $skip_export, $skip_index, $process_zebraqueue, $as_xml, $noxml, $nosanitize, $do_not_clear_zebraqueue, $verbose_logging, $zebraidx_log_opt, $biblioserverdir);
+    } else {
+        print "skipping biblios\n" if ( $verbose_logging );
+    }
+}
+
+# Check the zebra update queue and return true if there are records to process
+# This routine will handle each of -ab, -a, or -b, but in practice we force
+# -ab when in daemon mode.
+sub zebraqueue_not_empty {
+    my $where_str;
+
+    if ($authorities && $biblios) {
+        $where_str = 'done = 0;';
+    } elsif ($biblios) {
+        $where_str = 'server = "biblioserver" AND done = 0;';
+    } else {
+        $where_str = 'server = "authorityserver" AND done = 0;';
+    }
+    my $query =
+      $dbh->prepare( 'SELECT COUNT(*) FROM zebraqueue WHERE ' . $where_str );
+
+    $query->execute;
+    my $count = $query->fetchrow_arrayref->[0];
+    print "queued records: $count\n" if $verbose_logging > 0;
+    return $count > 0;
 }
 
 # This checks to see if the zebra directories exist under the provided path.
@@ -691,6 +742,23 @@ Parameters:
     -b                      index bibliographic records
 
     -a                      index authority records
+
+    -daemon                 Run in daemon mode.  The program will loop checking
+                            for entries on the zebraqueue table, processing
+                            them incrementally if present, and then sleep
+                            for a few seconds before repeating the process
+                            Checking the zebraqueue table is done with a cheap
+                            SQL query.  This allows for near realtime update of
+                            the zebra search index with low system overhead.
+                            Use -sleep to control the checking interval.
+
+                            Daemon mode implies -z, -a, -b.  The program will
+                            refuse to start if options are present that do not
+                            make sense while running as an incremental update
+                            daemon (e.g. -r or -offset).
+
+    -sleep 10               Seconds to sleep between checks of the zebraqueue
+                            table in daemon mode.  The default is 5 seconds.
 
     -z                      select only updated and deleted
                             records marked in the zebraqueue

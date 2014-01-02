@@ -110,7 +110,43 @@ $template->param( skip_confirm_reopen => 1) if $confirm_pref eq '2';
 
 if ( $op eq 'delete_confirm' ) {
     my $basketno = $query->param('basketno');
-    DelBasket($basketno);
+    my $delbiblio = $query->param('delbiblio');
+    my @orders = GetOrders($basketno);
+#Delete all orders included in that basket, and all items received.
+    foreach my $myorder (@orders){
+        DelOrder($myorder->{biblionumber},$myorder->{ordernumber});
+    }
+# if $delbiblio = 1, delete the records if possible
+    if ((defined $delbiblio)and ($delbiblio ==1)){
+        my @cannotdelbiblios ;
+        foreach my $myorder (@orders){
+            my $biblionumber = $myorder->{'biblionumber'};
+            my $countbiblio = CountBiblioInOrders($biblionumber);
+            my $ordernumber = $myorder->{'ordernumber'};
+            my $subscriptions = scalar GetSubscriptionsId ($biblionumber);
+            my $itemcount = GetItemsCount($biblionumber);
+            my $error;
+            if ($countbiblio == 0 && $itemcount == 0 && $subscriptions == 0) {
+                $error = DelBiblio($myorder->{biblionumber}) }
+            else {
+                push @cannotdelbiblios, {biblionumber=> ($myorder->{biblionumber}),
+                                         title=> $myorder->{'title'},
+                                         author=> $myorder->{'author'},
+                                         countbiblio=> $countbiblio,
+                                         itemcount=>$itemcount,
+                                         subscriptions=>$subscriptions};
+            }
+            if ($error) {
+                push @cannotdelbiblios, {biblionumber=> ($myorder->{biblionumber}),
+                                         title=> $myorder->{'title'},
+                                         author=> $myorder->{'author'},
+                                         othererror=> $error};
+            }
+        }
+        $template->param( cannotdelbiblios => \@cannotdelbiblios );
+    }
+ # delete the basket
+    DelBasket($basketno,);
     $template->param( delete_confirmed => 1 );
 } elsif ( !$bookseller ) {
     $template->param( NO_BOOKSELLER => 1 );
