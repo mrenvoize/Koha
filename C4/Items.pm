@@ -30,6 +30,7 @@ use MARC::Record;
 use C4::ClassSource;
 use C4::Log;
 use List::MoreUtils qw/any/;
+use YAML qw/Load/;
 use Data::Dumper; # used as part of logging item record changes, not just for
                   # debugging; so please don't remove this
 
@@ -1616,11 +1617,11 @@ sub GetBarcodeFromItemnumber {
 
 =head2 GetHiddenItemnumbers
 
-=over 4
+    my @itemnumbers_to_hide = GetHiddenItemnumbers(@items);
 
-$result = GetHiddenItemnumbers(@items);
-
-=back
+Given a list of items it checks which should be hidden from the OPAC given
+the current configuration. Returns a list of itemnumbers corresponding to
+those that should be hidden.
 
 =cut
 
@@ -1629,6 +1630,7 @@ sub GetHiddenItemnumbers {
     my @resultitems;
 
     my $yaml = C4::Context->preference('OpacHiddenItems');
+    return () if (! $yaml =~ /\S/ );
     $yaml = "$yaml\n\n"; # YAML is anal on ending \n. Surplus does not hurt
     my $hidingrules;
     eval {

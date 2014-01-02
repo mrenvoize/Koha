@@ -1680,7 +1680,9 @@ sub searchResults {
     while ( ( my $column ) = $sth2->fetchrow ) {
         my ( $tagfield, $tagsubfield ) =
           &GetMarcFromKohaField( "items." . $column, "" );
-        $subfieldstosearch{$column} = $tagsubfield;
+        if ( defined $tagsubfield ) {
+            $subfieldstosearch{$column} = $tagsubfield;
+        }
     }
 
     # handle which records to actually retrieve
@@ -1698,7 +1700,12 @@ sub searchResults {
 
     # loop through all of the records we've retrieved
     for ( my $i = $offset ; $i <= $times - 1 ; $i++ ) {
-        my $marcrecord = MARC::File::USMARC::decode( $marcresults->[$i] );
+        my $marcrecord = eval { MARC::File::USMARC::decode( $marcresults->[$i] ); };
+        if ( $@ ) {
+            warn "ERROR DECODING RECORD - $@: " . $marcresults->[$i];
+            next;
+        }
+
         my $fw = $scan
              ? undef
              : $bibliotag < 10

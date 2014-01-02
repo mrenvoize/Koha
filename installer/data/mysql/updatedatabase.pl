@@ -6935,6 +6935,20 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.12.06.001";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do("DELETE from auth_tag_structure WHERE tagfield IN ('68a','68b')");
+    $dbh->do("DELETE from auth_subfield_structure WHERE tagfield IN ('68a','68b')");
+    print "Upgrade to $DBversion done (Bug 10687 - Delete erroneous tags 68a and 68b on default MARC21 auth framework)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.07.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.12.7 release)\n";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)
