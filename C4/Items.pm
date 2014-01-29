@@ -622,11 +622,6 @@ sub DelItem {
     my $record = GetMarcBiblio($biblionumber);
     ModZebra( $biblionumber, "specialUpdate", "biblioserver" );
 
-    # backup the record
-    my $copy2deleted = $dbh->prepare("UPDATE deleteditems SET marc=? WHERE itemnumber=?");
-    $copy2deleted->execute( $record->as_usmarc(), $itemnumber );
-    # This last update statement makes that the timestamp column in deleteditems is updated too. If you remove these lines, please add a line to update the timestamp separately. See Bugzilla report 7146 and Biblio.pm (DelBiblio).
-
     #search item field code
     logaction("CATALOGUING", "DELETE", $itemnumber, "item") if C4::Context->preference("CataloguingLog");
 }
@@ -2231,11 +2226,14 @@ sub DelItemCheck {
 
 
     # check that there is no issue on this item before deletion.
-    my $sth=$dbh->prepare("select * from issues i where i.itemnumber=?");
+    my $sth = $dbh->prepare(q{
+        SELECT COUNT(*) FROM issues
+        WHERE itemnumber = ?
+    });
     $sth->execute($itemnumber);
+    my ($onloan) = $sth->fetchrow;
 
     my $item = GetItem($itemnumber);
-    my $onloan=$sth->fetchrow;
 
     if ($onloan){
         $error = "book_on_loan" 
@@ -2248,9 +2246,13 @@ sub DelItemCheck {
     }
 	else{
         # check it doesnt have a waiting reserve
-        $sth=$dbh->prepare("SELECT * FROM reserves WHERE (found = 'W' or found = 'T') AND itemnumber = ?");
+        $sth = $dbh->prepare(q{
+            SELECT COUNT(*) FROM reserves
+            WHERE (found = 'W' OR found = 'T')
+            AND itemnumber = ?
+        });
         $sth->execute($itemnumber);
-        my $reserve=$sth->fetchrow;
+        my ($reserve) = $sth->fetchrow;
         if ($reserve){
             $error = "book_reserved";
         } elsif ($countanalytics > 0){
@@ -2314,6 +2316,7 @@ sub _koha_delete_item {
     my $query = "INSERT INTO deleteditems SET ";
     my @bind  = ();
     foreach my $key ( keys %$data ) {
+        next if ( $key eq 'timestamp' ); # timestamp will be set by db
         $query .= "$key = ?,";
         push( @bind, $data->{$key} );
     }
@@ -2797,21 +2800,21 @@ sub PrepareItemrecordDisplay {
                             my $extended_param = plugin_parameters( $dbh, undef, $tagslib, $subfield_data{id}, undef );
                             my ( $function_name, $javascript ) = plugin_javascript( $dbh, undef, $tagslib, $subfield_data{id}, undef );
                             $subfield_data{random}     = int(rand(1000000));    # why do we need 2 different randoms?
-                            $subfield_data{marc_value} = qq[<input tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255"
+                            $subfield_data{marc_value} = qq[<input type="text" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="50" maxlength="255"
                                 onfocus="Focus$function_name($subfield_data{random}, '$subfield_data{id}');"
                                  onblur=" Blur$function_name($subfield_data{random}, '$subfield_data{id}');" />
                                 <a href="#" class="buttonDot" onclick="Clic$function_name('$subfield_data{id}'); return false;" title="Tag Editor">...</a>
                                 $javascript];
                         } else {
                             warn "Plugin Failed: $plugin";
-                            $subfield_data{marc_value} = qq(<input tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255" />); # supply default input form
+                            $subfield_data{marc_value} = qq(<input type="text" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="50" maxlength="255" />); # supply default input form
                         }
                 }
                 elsif ( $tag eq '' ) {       # it's an hidden field
-                    $subfield_data{marc_value} = qq(<input type="hidden" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255" value="$defaultvalue" />);
+                    $subfield_data{marc_value} = qq(<input type="hidden" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="50" maxlength="255" value="$defaultvalue" />);
                 }
                 elsif ( $tagslib->{$tag}->{$subfield}->{'hidden'} ) {   # FIXME: shouldn't input type be "hidden" ?
-                    $subfield_data{marc_value} = qq(<input type="text" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255" value="$defaultvalue" />);
+                    $subfield_data{marc_value} = qq(<input type="text" tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="50" maxlength="255" value="$defaultvalue" />);
                 }
                 elsif ( length($defaultvalue) > 100
                             or (C4::Context->preference("marcflavour") eq "UNIMARC" and
@@ -2820,7 +2823,7 @@ sub PrepareItemrecordDisplay {
                                   500 <= $tag && $tag < 600                     )
                           ) {
                     # oversize field (textarea)
-                    $subfield_data{marc_value} = qq(<textarea tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="67" maxlength="255">$defaultvalue</textarea>\n");
+                    $subfield_data{marc_value} = qq(<textarea tabindex="1" id="$subfield_data{id}" name="field_value" class="input_marceditor" size="50" maxlength="255">$defaultvalue</textarea>\n");
                 } else {
                     $subfield_data{marc_value} = "<input type=\"text\" name=\"field_value\" value=\"$defaultvalue\" size=\"50\" maxlength=\"255\" />";
                 }

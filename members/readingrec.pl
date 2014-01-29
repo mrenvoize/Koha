@@ -63,7 +63,15 @@ if ($input->param('borrowernumber')) {
 
 my $order = 'date_due desc';
 my $limit = 0;
-my $issues = GetAllIssues($borrowernumber,$order,$limit);
+my $issues = ();
+# Do not request the old issues of anonymous patron
+if ( $borrowernumber eq C4::Context->preference('AnonymousPatron') ){
+    # use of 'eq' in the above comparison is intentional -- the
+    # system preference value could be blank
+    $template->param( is_anonymous => 1 );
+} else {
+    $issues = GetAllIssues($borrowernumber,$order,$limit);
+}
 
 my $branches = GetBranches();
 foreach my $issue ( @{$issues} ) {

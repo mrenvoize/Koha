@@ -484,10 +484,10 @@ CREATE TABLE collections (
 --
 DROP TABLE IF EXISTS collections_tracking;
 CREATE TABLE collections_tracking (
-  ctId integer(11) NOT NULL auto_increment,
+  collections_tracking_id integer(11) NOT NULL auto_increment,
   colId integer(11) NOT NULL DEFAULT 0 comment 'collections.colId',
   itemnumber integer(11) NOT NULL DEFAULT 0 comment 'items.itemnumber',
-  PRIMARY KEY (ctId)
+  PRIMARY KEY (collections_tracking_id)
 ) ENGINE=InnoDB DEFAULT CHARACTER SET utf8;
 
 --
@@ -912,7 +912,6 @@ CREATE TABLE `deleteditems` (
   `enumchron` text default NULL, -- serial enumeration/chronology for the item (MARC21 952$h)
   `copynumber` varchar(32) default NULL, -- copy number (MARC21 952$t)
   `stocknumber` varchar(32) default NULL, -- inventory number (MARC21 952$i)
-  `marc` longblob, -- unused in Koha
   PRIMARY KEY  (`itemnumber`),
   KEY `delitembarcodeidx` (`barcode`),
   KEY `delitemstocknumberidx` (`stocknumber`),
@@ -2140,7 +2139,7 @@ DROP TABLE IF EXISTS `suggestions`;
 CREATE TABLE `suggestions` ( -- purchase suggestions
   `suggestionid` int(8) NOT NULL auto_increment, -- unique identifier assigned automatically by Koha
   `suggestedby` int(11) NOT NULL default 0, -- borrowernumber for the person making the suggestion, foreign key linking to the borrowers table
-  `suggesteddate` date NOT NULL default 0, -- date the suggestion was submitted
+  `suggesteddate` date NOT NULL, -- date the suggestion was submitted
   `managedby` int(11) default NULL, -- borrowernumber for the librarian managing the suggestion, foreign key linking to the borrowers table
   `manageddate` date default NULL, -- date the suggestion was updated
    acceptedby INT(11) default NULL, -- borrowernumber for the librarian who accepted the suggestion, foreign key linking to the borrowers table

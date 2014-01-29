@@ -7798,6 +7798,72 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.14.01.001";
+if ( CheckVersion($DBversion) ) {
+    if ( C4::Context->preference("marcflavour") eq 'MARC21' ) {
+        $dbh->do(qq{
+            INSERT IGNORE INTO marc_subfield_structure (tagfield, tagsubfield, liblibrarian, libopac, repeatable, mandatory,
+            kohafield, tab, authorised_value, authtypecode, value_builder, isurl, hidden, frameworkcode, seealso, link,
+            defaultvalue) VALUES
+            ('015', 'q', 'Qualifying information', 'Qualifying information', 1, 0, '', 0, '', '', '', 0, 0, '', '', '', NULL),
+            ('020', 'q', 'Qualifying information', 'Qualifying information', 1, 0, '', 0, '', '', '', 0, 0, '', '', '', NULL),
+            ('024', 'q', 'Qualifying information', 'Qualifying information', 1, 0, '', 0, '', '', '', 0, 0, '', '', '', NULL),
+            ('027', 'q', 'Qualifying information', 'Qualifying information', 1, 0, '', 0, '', '', '', 0, 0, '', '', '', NULL),
+            ('800', '7', 'Control subfield', 'Control subfield', 0, 0, '', 8, '', '', '', NULL, -6, '', '', '', NULL),
+            ('810', '7', 'Control subfield', 'Control subfield', 0, 0, '', 8, '', '', '', NULL, -6, '', '', '', NULL),
+            ('811', '7', 'Control subfield', 'Control subfield', 0, 0, '', 8, '', '', '', NULL, -6, '', '', '', NULL),
+            ('830', '7', 'Control subfield', 'Control subfield', 0, 0, '', 8, '', '', '', NULL, -6, '', '', '', NULL);
+        });
+        $dbh->do(qq{
+            INSERT IGNORE INTO auth_subfield_structure (authtypecode, tagfield, tagsubfield, liblibrarian, libopac, repeatable,
+            mandatory, tab, authorised_value, value_builder, seealso, isurl, hidden, linkid, kohafield, frameworkcode) VALUES
+            ('', '020', 'q', 'Qualifying information', 'Qualifying information', 1, 0, 0, NULL, NULL, NULL, 0, 0, '', '', ''),
+            ('', '024', 'q', 'Qualifying information', 'Qualifying information', 1, 0, 0, NULL, NULL, NULL, 0, 0, '', '', '');
+        });
+    }
+    print "Upgrade to $DBversion done (Bug 10970 - Update MARC21 frameworks to Update Nr. 17 - DB update)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.01.002";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        ALTER TABLE collections_tracking CHANGE ctId collections_tracking_id integer(11) NOT NULL auto_increment;
+    });
+    print "Upgrade to $DBversion done (Bug 11384) - change name of collections_tracker.ctId column)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.14.01.003";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        ALTER TABLE suggestions MODIFY suggesteddate DATE NOT NULL
+    });
+    print "Upgrade to $DBversion done (Bug 11391) - drop default value on suggestions.suggesteddate column)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.14.01.004";
+if(CheckVersion($DBversion)) {
+    $dbh->do("ALTER TABLE deleteditems DROP COLUMN marc");
+    print "Upgrade to $DBversion done (Bug 6331: Obsolete marc column in deleteditems)\n";
+    print "Upgrade to $DBversion done (Bug 6331: remove obsolete column in deleteditems.marc)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.14.01.005";
+if(CheckVersion($DBversion)) {
+    $dbh->do("UPDATE marc_subfield_structure SET maxlength=9999 WHERE maxlength IS NULL OR maxlength=0;");
+    print "Upgrade to $DBversion done (Bug 8018: new subfields have a default max length of zero)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.02.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.2 release)\n";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

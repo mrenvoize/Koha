@@ -2,7 +2,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 17;
+use Test::More tests => 18;
 use MARC::Record;
 use DateTime::Duration;
 
@@ -11,12 +11,18 @@ use C4::Biblio;
 use C4::Items;
 use C4::Members;
 use C4::Circulation;
+use t::lib::Mocks;
 
 use Koha::DateUtils;
 
 BEGIN {
     use_ok('C4::Reserves');
 }
+
+# a very minimal mack of userenv for use by the test of DelItemCheck
+*C4::Context::userenv = sub {
+    return {};
+};
 
 my $dbh = C4::Context->dbh;
 
@@ -262,6 +268,17 @@ C4::Context->set_preference('ConfirmFutureHolds', 7);
 is(exists $messages->{ResFound}?1:0, 1, 'AddReturn considers future reserve within ConfirmFutureHolds days');
 
 # End of tests for bug 9761 (ConfirmFutureHolds)
+
+# test marking a hold as captured
+ModReserveAffect($itemnumber, $requesters{'CPL'}, 0);
+
+# avoiding the not_same_branch error
+t::lib::Mocks::mock_preference('IndependentBranches', 0);
+is(
+    DelItemCheck($dbh, $bibnum, $itemnumber),
+    'book_reserved',
+    'item that is captured to fill a hold cannot be deleted',
+);
 
 my $letter = ReserveSlip('CPL', $requesters{'CPL'}, $bibnum);
 ok(defined($letter), 'can successfully generate hold slip (bug 10949)');

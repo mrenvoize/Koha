@@ -628,13 +628,27 @@ sub GetSubscriptions {
 
 =head2 SearchSubscriptions
 
-@results = SearchSubscriptions($args);
-$args is a hashref. Its keys can be contained: title, issn, ean, publisher, bookseller and branchcode
+  @results = SearchSubscriptions($args);
 
-this function gets all subscriptions which have title like $title, ISSN like $issn, EAN like $ean, publisher like $publisher, bookseller like $bookseller AND branchcode eq $branch.
+This function returns a list of hashrefs, one for each subscription
+that meets the conditions specified by the $args hashref.
 
-return:
-a table of hashref. Each hash containt the subscription.
+The valid search fields are:
+
+  biblionumber
+  title
+  issn
+  ean
+  callnumber
+  location
+  publisher
+  bookseller
+  branch
+  expiration_date
+  closed
+
+The expiration_date search field is special; it specifies the maximum
+subscription expiration date.
 
 =cut
 
@@ -682,6 +696,10 @@ sub SearchSubscriptions {
         push @where_strs, "biblioitems.ean LIKE ?";
         push @where_args, "%$args->{ean}%";
     }
+    if ( $args->{callnumber} ) {
+        push @where_strs, "subscription.callnumber LIKE ?";
+        push @where_args, "%$args->{callnumber}%";
+    }
     if( $args->{publisher} ){
         push @where_strs, "biblioitems.publishercode LIKE ?";
         push @where_args, "%$args->{publisher}%";
@@ -693,6 +711,14 @@ sub SearchSubscriptions {
     if( $args->{branch} ){
         push @where_strs, "subscription.branchcode = ?";
         push @where_args, "$args->{branch}";
+    }
+    if ( $args->{location} ) {
+        push @where_strs, "subscription.location = ?";
+        push @where_args, "$args->{location}";
+    }
+    if ( $args->{expiration_date} ) {
+        push @where_strs, "subscription.enddate <= ?";
+        push @where_args, "$args->{expiration_date}";
     }
     if( defined $args->{closed} ){
         push @where_strs, "subscription.closed = ?";
@@ -1430,7 +1456,7 @@ $subscriptionid = &NewSubscription($auser,branchcode,$aqbooksellerid,$cost,$aqbu
     $startdate,$periodicity,$numberlength,$weeklength,$monthlength,
     $lastvalue1,$innerloop1,$lastvalue2,$innerloop2,$lastvalue3,$innerloop3,
     $status, $notes, $letter, $firstacquidate, $irregularity, $numberpattern,
-    $callnumber, $hemisphere, $manualhistory, $internalnotes, $serialsadditems,
+    $locale, $callnumber, $manualhistory, $internalnotes, $serialsadditems,
     $staffdisplaycount, $opacdisplaycount, $graceperiod, $location, $enddate, $skip_serialseq);
 
 Create a new subscription with value given on input args.

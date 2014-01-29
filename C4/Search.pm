@@ -986,6 +986,7 @@ sub getIndexes{
                     'Koha-Auth-Number',
                     'l-format',
                     'language',
+                    'language-original',
                     'lc-card',
                     'LC-card-number',
                     'lcn',
@@ -1188,7 +1189,10 @@ sub parseQuery {
             next unless $operands[$ii];
             $query .= $operators[ $ii - 1 ] eq 'or' ? ' || ' : ' && '
               if ($query);
-            if ( $indexes[$ii] =~ m/su-/ ) {
+            if ( $operands[$ii] =~ /^[^"]\W*[-|_\w]*:\w.*[^"]$/ ) {
+                $query .= $operands[$ii];
+            }
+            elsif ( $indexes[$ii] =~ m/su-/ ) {
                 $query .= $indexes[$ii] . '(' . $operands[$ii] . ')';
             }
             else {
@@ -1281,7 +1285,7 @@ sub buildQuery {
 
     my $cclq       = 0;
     my $cclindexes = getIndexes();
-    if ( $query !~ /\s*ccl=/ ) {
+    if ( $query !~ /\s*(ccl=|pqf=|cql=)/ ) {
         while ( !$cclq && $query =~ /(?:^|\W)([\w-]+)(,[\w-]+)*[:=]/g ) {
             my $dx = lc($1);
             $cclq = grep { lc($_) eq $dx } @$cclindexes;
