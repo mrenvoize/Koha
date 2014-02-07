@@ -7864,6 +7864,24 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.14.02.001";
+if(CheckVersion($DBversion)) {
+    $dbh->do(q{
+        ALTER TABLE `borrowers`
+        ADD KEY `surname_idx` (`surname`(255)),
+        ADD KEY `firstname_idx` (`firstname`(255)),
+        ADD KEY `othernames_idx` (`othernames`(255))
+    });
+    print "Upgrade to $DBversion done (Bug 11249 - Add db indexes on borrowers names)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.03.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.3 release)\n";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

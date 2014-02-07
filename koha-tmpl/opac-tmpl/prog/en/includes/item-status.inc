@@ -1,5 +1,12 @@
 [% USE AuthorisedValues %]
 
+[%#-
+This include takes two parameters: an item structure
+and an optional loan (issue) structure.  The issue
+structure is used by course reserves pages, which do
+not use an API to fetch items that populates item.datedue.
+-%]
+
 [% IF ( item.itemlost ) %]
     [% av_lib_include = AuthorisedValues.GetByCode( 'LOST', item.itemlost, 1 ) %]
     [% IF ( av_lib_include ) %]
@@ -11,7 +18,7 @@
             Item lost
         [% END %]
     [% END %]
-[% ELSIF ( item.datedue ) %]
+[% ELSIF ( item.datedue || issue.date_due ) %]
     [% IF ( OPACShowCheckoutName ) %]
         Checked out to [% item.cardnumber %] [% item.firstname %] [% item.surname %]
     [% ELSE %]
