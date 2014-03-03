@@ -6974,6 +6974,19 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
+$DBversion = "3.12.10.001";
+if(CheckVersion($DBversion)) {
+    $dbh->do("UPDATE marc_subfield_structure SET maxlength=9999 WHERE maxlength IS NULL OR maxlength=0;");
+    print "Upgrade to $DBversion done (Bug 8018: new subfields have a default max length of zero)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.11.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.12.11 release)\n";
+    SetVersion ($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)
