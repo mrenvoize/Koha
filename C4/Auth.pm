@@ -49,7 +49,7 @@ BEGIN {
     @EXPORT      = qw(&checkauth &get_template_and_user &haspermission &get_user_subpermissions);
     @EXPORT_OK   = qw(&check_api_auth &get_session &check_cookie_auth &checkpw &checkpw_internal &checkpw_hash
                       &get_all_subpermissions &get_user_subpermissions
-                      ParseSearchHistoryCookie
+                      ParseSearchHistorySession SetSearchHistorySession
                    );
     %EXPORT_TAGS = ( EditPermissions => [qw(get_all_subpermissions get_user_subpermissions)] );
     $ldap        = C4::Context->config('useldapserver') || 0;
@@ -260,9 +260,9 @@ sub get_template_and_user {
             $template->param(ShowOpacRecentSearchLink => 1);
             }
 
-            # And if there's a cookie with searches performed when the user was not logged in,
+            # And if there are searches performed when the user was not logged in,
             # we add them to the logged-in search history
-            my @recentSearches = ParseSearchHistoryCookie($in->{'query'});
+            my @recentSearches = ParseSearchHistorySession($in->{'query'});
             if (@recentSearches) {
                 my $sth = $dbh->prepare($SEARCH_HISTORY_INSERT_SQL);
                 $sth->execute( $borrowernumber,
@@ -273,14 +273,9 @@ sub get_template_and_user {
                            $_->{'time'},
                         ) foreach @recentSearches;
 
-                # And then, delete the cookie's content
-                my $newsearchcookie = $in->{'query'}->cookie(
-                                            -name => 'KohaOpacRecentSearches',
-                                            -value => encode_json([]),
-                                            -HttpOnly => 1,
-                                            -expires => ''
-                                         );
-                $cookie = [$cookie, $newsearchcookie];
+                # clear out the search history from the session now that
+                # we've saved it to the database
+                SetSearchHistorySession($in->{'query'}, []);
             }
         }
     }
@@ -297,7 +292,7 @@ sub get_template_and_user {
      # Anonymous opac search history
      # If opac search history is enabled and at least one search has already been performed
      if (C4::Context->preference('EnableOpacSearchHistory')) {
-        my @recentSearches = ParseSearchHistoryCookie($in->{'query'}); 
+        my @recentSearches = ParseSearchHistorySession($in->{'query'});
         if (@recentSearches) {
             $template->param(ShowOpacRecentSearchLink => 1);
         }
@@ -647,6 +642,8 @@ sub checkauth {
     my ( $userid, $cookie, $sessionID, $flags, $barshelves, $pubshelves );
     my $logout = $query->param('logout.x');
 
+    my $anon_search_history;
+
     # This parameter is the name of the CAS server we want to authenticate against,
     # when using authentication against multiple CAS servers, as configured in Auth_cas_servers.yaml
     my $casparam = $query->param('cas');
@@ -695,16 +692,17 @@ sub checkauth {
             #if a user enters an id ne to the id in the current session, we need to log them in...
             #first we need to clear the anonymous session...
             $debug and warn "query id = $q_userid but session id = $s_userid";
-            $session->flush;      
+            $anon_search_history = $session->param('search_history');
             $session->delete();
+            $session->flush;
             C4::Context->_unset_userenv($sessionID);
             $sessionID = undef;
             $userid = undef;
         }
         elsif ($logout) {
             # voluntary logout the user
-            $session->flush;
             $session->delete();
+            $session->flush;
             C4::Context->_unset_userenv($sessionID);
             #_session_log(sprintf "%20s from %16s logged out at %30s (manually).\n", $userid,$ip,(strftime "%c",localtime));
             $sessionID = undef;
@@ -717,7 +715,10 @@ sub checkauth {
         elsif ( !$lasttime || ($lasttime < time() - $timeout) ) {
             # timed logout
             $info{'timed_out'} = 1;
-            $session->delete() if $session;
+            if ($session) {
+                $session->delete();
+                $session->flush;
+            }
             C4::Context->_unset_userenv($sessionID);
             #_session_log(sprintf "%20s from %16s logged out at %30s (inactivity).\n", $userid,$ip,(strftime "%c",localtime));
             $userid    = undef;
@@ -729,6 +730,7 @@ sub checkauth {
             $info{'newip'}        = $ENV{'REMOTE_ADDR'};
             $info{'different_ip'} = 1;
             $session->delete();
+            $session->flush;
             C4::Context->_unset_userenv($sessionID);
             #_session_log(sprintf "%20s from %16s logged out at %30s (ip changed to %16s).\n", $userid,$ip,(strftime "%c",localtime), $info{'newip'});
             $sessionID = undef;
@@ -755,6 +757,14 @@ sub checkauth {
 
         #we initiate a session prior to checking for a username to allow for anonymous sessions...
         my $session = get_session("") or die "Auth ERROR: Cannot get_session()";
+
+        # Save anonymous search history in new session so it can be retrieved
+        # by get_template_and_user to store it in user's search history after
+        # a successful login.
+        if ($anon_search_history) {
+            $session->param('search_history', $anon_search_history);
+        }
+
         my $sessionID = $session->id;
         C4::Context->_new_userenv($sessionID);
         $cookie = $query->cookie(
@@ -966,6 +976,8 @@ sub checkauth {
                     $info{'invalid_username_or_password'} = 1;
                     C4::Context->_unset_userenv($sessionID);
                 }
+                $session->param('lasttime',time());
+                $session->param('ip',$session->remote_addr());
             }
         }    # END if ( $userid    = $query->param('userid') )
         elsif ($type eq "opac") {
@@ -1196,6 +1208,7 @@ sub check_api_auth {
             if ( $lasttime < time() - $timeout ) {
                 # time out
                 $session->delete();
+                $session->flush;
                 C4::Context->_unset_userenv($sessionID);
                 $userid    = undef;
                 $sessionID = undef;
@@ -1203,6 +1216,7 @@ sub check_api_auth {
             } elsif ( $ip ne $ENV{'REMOTE_ADDR'} ) {
                 # IP address changed
                 $session->delete();
+                $session->flush;
                 C4::Context->_unset_userenv($sessionID);
                 $userid    = undef;
                 $sessionID = undef;
@@ -1219,6 +1233,7 @@ sub check_api_auth {
                     return ("ok", $cookie, $sessionID);
                 } else {
                     $session->delete();
+                    $session->flush;
                     C4::Context->_unset_userenv($sessionID);
                     $userid    = undef;
                     $sessionID = undef;
@@ -1435,6 +1450,7 @@ sub check_cookie_auth {
         if ( $lasttime < time() - $timeout ) {
             # time out
             $session->delete();
+            $session->flush;
             C4::Context->_unset_userenv($sessionID);
             $userid    = undef;
             $sessionID = undef;
@@ -1442,6 +1458,7 @@ sub check_cookie_auth {
         } elsif ( $ip ne $ENV{'REMOTE_ADDR'} ) {
             # IP address changed
             $session->delete();
+            $session->flush;
             C4::Context->_unset_userenv($sessionID);
             $userid    = undef;
             $sessionID = undef;
@@ -1453,6 +1470,7 @@ sub check_cookie_auth {
                 return ("ok", $sessionID);
             } else {
                 $session->delete();
+                $session->flush;
                 C4::Context->_unset_userenv($sessionID);
                 $userid    = undef;
                 $sessionID = undef;
@@ -1773,14 +1791,25 @@ sub getborrowernumber {
     return 0;
 }
 
-sub ParseSearchHistoryCookie {
-    my $input = shift;
-    my $search_cookie = $input->cookie('KohaOpacRecentSearches');
-    return () unless $search_cookie;
-    my $obj = eval { decode_json(uri_unescape($search_cookie)) };
+sub ParseSearchHistorySession {
+    my $cgi = shift;
+    my $sessionID = $cgi->cookie('CGISESSID');
+    return () unless $sessionID;
+    my $session = get_session($sessionID);
+    return () unless $session and $session->param('search_history');
+    my $obj = eval { decode_json(uri_unescape($session->param('search_history'))) };
     return () unless defined $obj;
     return () unless ref $obj eq 'ARRAY';
     return @{ $obj };
+}
+
+sub SetSearchHistorySession {
+    my ($cgi, $search_history) = @_;
+    my $sessionID = $cgi->cookie('CGISESSID');
+    return () unless $sessionID;
+    my $session = get_session($sessionID);
+    return () unless $session;
+    $session->param('search_history', uri_escape(encode_json($search_history)));
 }
 
 END { }    # module clean-up code here (global destructor)

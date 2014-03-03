@@ -42,7 +42,7 @@ for ( $searchengine ) {
 }
 
 use C4::Output;
-use C4::Auth qw(:DEFAULT get_session ParseSearchHistoryCookie);
+use C4::Auth qw(:DEFAULT get_session ParseSearchHistorySession SetSearchHistorySession);
 use C4::Languages qw(getAllLanguages);
 use C4::Search;
 use C4::Biblio;  # GetBiblioData
@@ -614,9 +614,8 @@ for (my $i=0;$i<@servers;$i++) {
         }
 
         # Opac search history
-        my $newsearchcookie;
         if (C4::Context->preference('EnableOpacSearchHistory')) {
-            my @recentSearches = ParseSearchHistoryCookie($cgi);
+            my @recentSearches = ParseSearchHistorySession($cgi);
 
             # Adding the new search if needed
             my $path_info = $cgi->url(-path_info=>1);
@@ -626,7 +625,7 @@ for (my $i=0;$i<@servers;$i++) {
             my $query_desc_history = join ", ", grep { defined $_ } $query_desc, $limit_desc;
 
             if (!$borrowernumber || $borrowernumber eq '') {
-                # To a cookie (the user is not logged in)
+                # To the session (the user is not logged in)
                 if (!$offset) {
                     push @recentSearches, {
                                 "query_desc" => Encode::decode_utf8($query_desc_history) || "unknown",
@@ -638,17 +637,10 @@ for (my $i=0;$i<@servers;$i++) {
                 }
 
                 shift @recentSearches if (@recentSearches > 15);
-                # Pushing the cookie back
-                $newsearchcookie = $cgi->cookie(
-                            -name => 'KohaOpacRecentSearches',
-                            # We uri_escape the whole serialized structure so we're sure we won't have any encoding problems
-                            -value => uri_escape( encode_json(\@recentSearches) ),
-                            -expires => ''
-                );
-                $cookie = [$cookie, $newsearchcookie];
+                SetSearchHistorySession($cgi, \@recentSearches);
             }
             else {
-                # To the session (the user is logged in)
+                # To the database (the user is logged in)
                 if (!$offset) {
                     AddSearchHistory($borrowernumber, $cgi->cookie("CGISESSID"), $query_desc_history, $query_cgi_history, $total);
                     $template->param(ShowOpacRecentSearchLink => 1);

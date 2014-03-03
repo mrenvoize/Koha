@@ -7827,9 +7827,11 @@ if ( CheckVersion($DBversion) ) {
 
 $DBversion = "3.14.01.002";
 if ( CheckVersion($DBversion) ) {
-    $dbh->do(q{
-        ALTER TABLE collections_tracking CHANGE ctId collections_tracking_id integer(11) NOT NULL auto_increment;
-    });
+    if ( TableExists('collections_tracking') ) {
+        $dbh->do(q{
+            ALTER TABLE collections_tracking CHANGE ctId collections_tracking_id integer(11) NOT NULL auto_increment;
+        });
+    }
     print "Upgrade to $DBversion done (Bug 11384) - change name of collections_tracker.ctId column)\n";
     SetVersion ($DBversion);
 }
@@ -7879,6 +7881,12 @@ if(CheckVersion($DBversion)) {
 $DBversion = "3.14.03.000";
 if ( CheckVersion($DBversion) ) {
     print "Upgrade to $DBversion done (3.14.3 release)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.14.04.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.4 release)\n";
     SetVersion ($DBversion);
 }
 
