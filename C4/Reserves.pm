@@ -358,27 +358,28 @@ sub GetReservesFromBiblionumber {
 
 =head2 GetReservesFromItemnumber
 
- ( $reservedate, $borrowernumber, $branchcode, $reserve_id ) = GetReservesFromItemnumber($itemnumber);
+ ( $reservedate, $borrowernumber, $branchcode, $reserve_id, $waitingdate ) = GetReservesFromItemnumber($itemnumber);
 
-TODO :: Description here
+Get the first reserve for a specific item number (based on priority). Returns the abovementioned values for that reserve.
+
+The routine does not look at future reserves (read: item level holds), but DOES include future waits (a confirmed future hold).
 
 =cut
 
 sub GetReservesFromItemnumber {
-    my ( $itemnumber, $all_dates ) = @_;
+    my ( $itemnumber ) = @_;
     my $dbh   = C4::Context->dbh;
     my $query = "
-    SELECT reservedate,borrowernumber,branchcode,reserve_id
+    SELECT reservedate,borrowernumber,branchcode,reserve_id,waitingdate
     FROM   reserves
-    WHERE  itemnumber=?
+    WHERE  itemnumber=? AND ( reservedate <= CAST(now() AS date) OR
+           waitingdate IS NOT NULL )
+    ORDER BY priority
     ";
-    unless ( $all_dates ) {
-	$query .= " AND reservedate <= CURRENT_DATE()";
-    }
     my $sth_res = $dbh->prepare($query);
     $sth_res->execute($itemnumber);
-    my ( $reservedate, $borrowernumber, $branchcode, $reserve_id ) = $sth_res->fetchrow_array;
-    return ( $reservedate, $borrowernumber, $branchcode, $reserve_id );
+    my ( $reservedate, $borrowernumber,$branchcode, $reserve_id, $wait ) = $sth_res->fetchrow_array;
+    return ( $reservedate, $borrowernumber, $branchcode, $reserve_id, $wait );
 }
 
 =head2 GetReservesFromBorrowernumber
