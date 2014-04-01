@@ -105,3 +105,86 @@ sub checkpw_shib {
 }
 
 1;
+__END__
+
+=head1 NAME
+
+C4::Auth_with_shibboleth
+
+=head1 SYNOPSIS
+
+use C4::Auth_with_shibboleth
+
+=head1 DESCRIPTION
+
+This module is specific to Shibboleth authentication in koha and relies heavily upon the native shibboleth service provider package in your operating system.
+
+=head1 CONFIGURATION
+
+To use this type of authentication these additional packages are required:
+
+=over
+
+=item *
+
+libapache2-mod-shib2
+
+=item *
+
+libshibsp5:amd64
+
+=item *
+
+shibboleth-sp2-schemas
+
+=back
+
+We let the native shibboleth service provider packages handle all the complexities of shibboleth negotiation for use and configuring this is beyond the scope of this documentation; But to sum up, you will need to:
+
+=over
+
+=item 1.
+
+Create some metadata for your koha instance (if you're in a single instance setup then the default metadata available at https://youraddress.com/Shibboleth.sso/Metadata should be adequate)
+
+=item 2.
+
+Swap metadata with your Identidy Provider (IdP)
+
+=item 3.
+
+Map their attributes to what you want to see in koha
+
+=item 4.
+
+Tell apache that we wish to allow koha to authenticate via shibboleth; This is as simple as adding the below to your virtualhost config:
+
+=begin text
+
+<Location />
+  AuthType shibboleth
+  Require shibboleth
+</Location>
+
+=end text
+
+=item 5.
+
+Configure koha to listen for shibboleth environment variables; To do this we add <useshibboleth>1</useshibboleth> for the koha-conf.xml file
+
+=item 6.
+
+Map shibboleth attributes to koha fields in koha-conf.xml.
+
+<shibboleth>
+  <mapping>
+    <userid match="1" default="">eduPersonID</userid>
+    <categorycode default=""></categorycode>
+  </mapping>
+</shibboleth>
+
+=back
+
+=head1 FUNCTIONS
+
+=cut

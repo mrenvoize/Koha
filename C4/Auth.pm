@@ -63,8 +63,10 @@ BEGIN {
     import C4::Auth_with_ldap qw(checkpw_ldap);
     }
     if ($shib) {
-        import C4::Auth_with_Shibboleth qw(checkpw_shib logout_shib login_shib_url get_login_shib);
-        # Getting user login
+        import C4::Auth_with_Shibboleth
+          qw(checkpw_shib logout_shib login_shib_url get_login_shib);
+
+        # Get shibboleth login attribute
         $shib_login = get_login_shib();
     }
     if ($cas) {
@@ -287,6 +289,13 @@ sub get_template_and_user {
         }
     }
     else {    # if this is an anonymous session, setup to display public lists...
+
+	# If shibboleth is enabled, and we have a shibboleth login attribute,
+	# but we are in an anonymouse session, we clearly have an invalid
+	# Shibboleth account.
+	if ( $shib && $shib_login ) {
+	    $template->param( invalidShibLogin => '1');
+        }
 
         $template->param( sessionID        => $sessionID );
         
@@ -718,6 +727,8 @@ sub checkauth {
         }
         elsif ($logout) {
             # voluntary logout the user
+	    # check wether the user was using their shibboleth session or a local one
+            my $shibSuccess = C4::Context->userenv->{'shibboleth'};
             $session->delete();
             $session->flush;
             C4::Context->_unset_userenv($sessionID);
@@ -729,8 +740,8 @@ sub checkauth {
                 logout_cas($query);
             }
 
-            # If we are in a shibboleth session (shibboleth is enabled, and a shibboleth username is set)
-            if ( $shib and $shib_login and $type eq 'opac') {
+            # If we are in a shibboleth session (shibboleth is enabled, a shibboleth match attribute is set and matches koha matchpoint)
+            if ( $shib and $shib_login and $shibSuccess and $type eq 'opac') {
             # (Note: $type eq 'opac' condition should be removed when shibboleth authentication for intranet will be implemented)
                 logout_shib($query);
             }
@@ -803,20 +814,26 @@ sub checkauth {
         }
         if (   ( $cas && $query->param('ticket') )
             || $userid
-            || $shib
+            || ( $shib && $shib_login )
             || $pki_field ne 'None'
             || $persona )
         {
             my $password = $query->param('password');
+	    my $shibSuccess = 0;
 
             my ( $return, $cardnumber );
-            if ($shib && $shib_login && $type eq 'opac' && !$password) {
+	    # If shib is enabled and we have a shib login, does the login match a valid koha user
+            if ( $shib && $shib_login && $type eq 'opac' ) {
                 my $retuserid;
-                ( $return, $cardnumber, $retuserid ) = checkpw( $dbh, $userid, $password, $query );
+		# Do not pass password here, else shib will not be checked in checkpw.
+                ( $return, $cardnumber, $retuserid ) = checkpw( $dbh, $userid, undef, $query );
                 $userid = $retuserid;
+		$shibSuccess = $return;
                 $info{'invalidShibLogin'} = 1 unless ($return);
-
-            } elsif ( $cas && $query->param('ticket') ) {
+            }
+	    # If shib login and match were successfull, skip further login methods
+	    unless ( $shibSuccess ) {
+	    if ( $cas && $query->param('ticket') ) {
                 my $retuserid;
                 ( $return, $cardnumber, $retuserid ) =
                   checkpw( $dbh, $userid, $password, $query );
@@ -883,7 +900,8 @@ sub checkauth {
                 ( $return, $cardnumber, $retuserid ) =
                   checkpw( $dbh, $userid, $password, $query );
                 $userid = $retuserid if ( $retuserid );
-        }
+		$info{'invalid_username_or_password'} = 1 unless ($return);
+        } }
         if ($return) {
                #_session_log(sprintf "%20s from %16s logged in  at %30s.\n", $userid,$ENV{'REMOTE_ADDR'},(strftime '%c', localtime));
                 if ( $flags = haspermission(  $userid, $flagsrequired ) ) {
@@ -971,6 +989,7 @@ sub checkauth {
                     $session->param('emailaddress',$emailaddress);
                     $session->param('ip',$session->remote_addr());
                     $session->param('lasttime',time());
+		    $session->param('shibboleth',$shibSuccess);
                     $debug and printf STDERR "AUTH_4: (%s)\t%s %s - %s\n", map {$session->param($_)} qw(cardnumber firstname surname branch) ;
                 }
                 elsif ( $return == 2 ) {
@@ -997,7 +1016,7 @@ sub checkauth {
                     $session->param('surname'),      $session->param('branch'),
                     $session->param('branchname'),   $session->param('flags'),
                     $session->param('emailaddress'), $session->param('branchprinter'),
-                    $session->param('persona')
+                    $session->param('persona'),      $session->param('shibboleth')
                 );
 
             }
@@ -1557,7 +1576,6 @@ sub get_session {
 
 sub checkpw {
     my ( $dbh, $userid, $password, $query ) = @_;
-
     if ($ldap) {
         $debug and print STDERR "## checkpw - checking LDAP\n";
         my ($retval,$retcard,$retuserid) = checkpw_ldap(@_);    # EXTERNAL AUTH
@@ -1573,12 +1591,14 @@ sub checkpw {
         return 0;
     }
 
-    # If we are in a shibboleth session (shibboleth is enabled and no password has been provided)
-    if ($shib && !$password) {
+    # If we are in a shibboleth session (shibboleth is enabled, and a shibboleth match attribute is present)
+    # Check for password to asertain whether we want to be testing against shibboleth or another method this
+    # time around.
+    if ($shib && $shib_login && !$password) {
 
         $debug and print STDERR "## checkpw - checking Shibboleth\n";
         # In case of a Shibboleth authentication, we expect a shibboleth user attribute
-        # (defined in the shibbolethLoginAttribute) tto contain the login of the
+        # (defined under shibboleth mapping in koha-conf.xml) to contain the login of the
         # shibboleth-authenticated user
 
         # Then, we check if it matches a valid koha user
