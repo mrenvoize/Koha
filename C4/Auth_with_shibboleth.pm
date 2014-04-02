@@ -22,6 +22,8 @@ use warnings;
 
 use C4::Debug;
 use C4::Context;
+use C4::Members qw( AddMember_Auto );
+use C4::Members::Messaging;
 use Carp;
 use CGI;
 
@@ -95,9 +97,28 @@ sub checkpw_shib {
         return ( 1, $retnumber, $userid );
     }
 
-    # If we reach this point, the user is not a valid koha user
-    $debug and warn "User $userid is not a valid Koha user";
-    return 0;
+    if ( $shib->{'autocreate'} ) {
+        return _autocreate( $dbh, $shib, $userid );
+    } else {
+        # If we reach this point, the user is not a valid koha user
+        $debug and warn "User $userid is not a valid Koha user";
+        return 0;
+    }
+}
+
+sub _autocreate {
+    my ( $dbh, $shib, $userid ) = @_;
+
+    my %borrower = ( userid => $userid );
+
+    while ( my ( $key, $entry ) = each %{$shib->{'mapping'}} ) {
+        $borrower{$key} = ( $entry->{'is'} && $ENV{ $entry->{'is'} } ) || $entry->{'content'} || '';
+    }
+
+    %borrower = AddMember_Auto( %borrower );
+    C4::Members::Messaging::SetMessagingPreferencesFromDefaults( { borrowernumber => $borrower{'borrowernumber'}, categorycode => $borrower{'categorycode'} } );
+
+    return ( 1, $borrower{'cardnumber'}, $borrower{'userid'} );
 }
 
 1;
