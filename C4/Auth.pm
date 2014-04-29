@@ -230,6 +230,7 @@ sub get_template_and_user {
             $template->param( CAN_user_staffaccess      => 1 );
             $template->param( CAN_user_plugins          => 1 );
             $template->param( CAN_user_coursereserves   => 1 );
+            $template->param( CAN_user_ill              => 1 );
             foreach my $module (keys %$all_perms) {
                 foreach my $subperm (keys %{ $all_perms->{$module} }) {
                     $template->param( "CAN_user_${module}_${subperm}" => 1 );
@@ -402,6 +403,7 @@ sub get_template_and_user {
             EnableBorrowerFiles         => C4::Context->preference('EnableBorrowerFiles'),
             UseKohaPlugins              => C4::Context->preference('UseKohaPlugins'),
             UseCourseReserves            => C4::Context->preference("UseCourseReserves"),
+            ILLModule                   => C4::Context->preference('ILLModule'),
         );
     }
     else {
@@ -513,6 +515,7 @@ sub get_template_and_user {
             OPACLocalCoverImages         => C4::Context->preference("OPACLocalCoverImages"),
             PatronSelfRegistration       => C4::Context->preference("PatronSelfRegistration"),
             PatronSelfRegistrationDefaultCategory => C4::Context->preference("PatronSelfRegistrationDefaultCategory"),
+            ILLModule                    => C4::Context->preference('ILLModule'),
         );
 
         $template->param(OpacPublic => '1') if ($user || C4::Context->preference("OpacPublic"));
