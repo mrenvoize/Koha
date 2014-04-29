@@ -105,6 +105,15 @@
     [% IF CAN_user_borrowers && useDischarge %]
         [% IF dischargeview %]<li class="active">[% ELSE %]<li>[% END %]<a href="/cgi-bin/koha/members/discharge.pl?borrowernumber=[% borrowernumber %]">Discharge</a></li>
     [% END %]
+    [% IF ILLModule and CAN_user_ill %]
+       [% IF ill %]
+           <li class="active">
+       [% ELSE %]
+           <li>
+       [% END %]
+       <a href="/cgi-bin/koha/members/illrequests.pl?borrowernumber=[% borrowernumber %]">ILL Requests</a>
+       </li>
+    [% END %]
 </ul></div>
 [% END %]
 
