@@ -1,3 +1,4 @@
+[% USE Koha %]
 [% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %][% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha [% END %] &rsaquo; Self checkout </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -197,7 +198,7 @@
                 </div> <!-- / .span12/12 -->
                 [% IF ( display_patron_image ) %]
                     <div class="span2">
-                        <img src="/cgi-bin/koha/sco/sco-patron-image.pl?cardnumber=[% cardnumber %]" alt="" />
+                        <img src="/cgi-bin/koha/sco/sco-patron-image.pl?borrowernumber=[% borrowernumber %]" alt="" />
                     </div>
                 [% END %]
             </div> <!-- / .row-fluid -->
@@ -356,9 +357,12 @@
 
             $("#logout_form").submit(function(){
                 clearTimeout(mainTimeout);
-                if(confirm("Would you like to print a receipt?")){
-                    window.open("/cgi-bin/koha/sco/printslip.pl?borrowernumber=[% borrowernumber %]&amp;print=qslip");
-                }
+                [% IF Koha.Preference('SelfCheckReceiptPrompt') %]
+                    if(confirm("Would you like to print a receipt?")){
+                        window.open("/cgi-bin/koha/sco/printslip.pl?borrowernumber=[% borrowernumber %]&amp;print=qslip");
+                    }
+                [% END %]
+
                 return true;
             });
     });

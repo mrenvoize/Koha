@@ -568,7 +568,7 @@ sub getRecords {
                           )
                         {
                             $number_of_facets++;
-                            if (   ( $number_of_facets < 6 )
+                            if (   ( $number_of_facets <= 5 )
                                 || ( $expanded_facet eq $link_value )
                                 || ( $facets_info->{$link_value}->{'expanded'} )
                               )
@@ -645,7 +645,7 @@ sub getRecords {
                         # handle expanded option
                         unless ( $facets_info->{$link_value}->{'expanded'} ) {
                             $expandable = 1
-                              if ( ( $number_of_facets > 6 )
+                              if ( ( $number_of_facets > 5 )
                                 && ( $expanded_facet ne $link_value ) );
                         }
                         push @facets_loop,
@@ -964,6 +964,7 @@ sub getIndexes{
                     'Date-of-acquisition',
                     'Date-of-publication',
                     'Dewey-classification',
+                    'Dissertation-information',
                     'EAN',
                     'extent',
                     'fic',
@@ -1045,7 +1046,6 @@ sub getIndexes{
                     'su-to',
                     'su-ut',
                     'ut',
-                    'UPC',
                     'Term-genre-form',
                     'Term-genre-form-heading',
                     'Term-genre-form-see',
@@ -1054,7 +1054,6 @@ sub getIndexes{
                     'Title',
                     'Title-cover',
                     'Title-series',
-                    'Title-host',
                     'Title-uniform',
                     'Title-uniform-heading',
                     'Title-uniform-see',
@@ -1089,6 +1088,7 @@ sub getIndexes{
                     'mc-itype',
                     'mc-loc',
                     'notforloan',
+                    'Number-local-acquisition',
                     'onloan',
                     'price',
                     'renewals',

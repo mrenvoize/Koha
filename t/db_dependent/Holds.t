@@ -6,7 +6,7 @@ use t::lib::Mocks;
 use C4::Context;
 use C4::Branch;
 
-use Test::More tests => 25;
+use Test::More tests => 29;
 use MARC::Record;
 use C4::Biblio;
 use C4::Items;
@@ -71,8 +71,8 @@ foreach my $borrowernumber ( @borrowernumbers ) {
 }
 
 
-my ($count, $reserves) = GetReservesFromBiblionumber($biblionumber);
-is( $count, $borrowers_count, "Test GetReserves()" );
+my $reserves = GetReservesFromBiblionumber({ biblionumber => $biblionumber });
+is( scalar(@$reserves), $borrowers_count, "Test GetReserves()" );
 
 
 my ( $reservedate, $borrowernumber, $branchcode, $reserve_id ) = GetReservesFromItemnumber($itemnumber);
@@ -87,8 +87,8 @@ ok( GetReserveCount( $borrowernumbers[0] ), "Test GetReserveCount()" );
 
 
 CancelReserve({ 'reserve_id' => $reserve_id });
-($count, $reserves) = GetReservesFromBiblionumber($biblionumber);
-ok( $count == $borrowers_count - 1, "Test CancelReserve()" );
+$reserves = GetReservesFromBiblionumber({ biblionumber => $biblionumber });
+is( scalar(@$reserves), $borrowers_count - 1, "Test CancelReserve()" );
 
 
 ( $reservedate, $borrowernumber, $branchcode, $reserve_id ) = GetReservesFromItemnumber($itemnumber);
@@ -148,7 +148,7 @@ my $reserve2 = GetReserveInfo( $reserve->{'reserve_id'} );
 ok( $reserve->{'reserve_id'} eq $reserve2->{'reserve_id'}, "Test GetReserveInfo()" );
 
 
-($count, $reserves) = GetReservesFromBiblionumber($biblionumber,1);
+$reserves = GetReservesFromBiblionumber({ biblionumber => $biblionumber, all_dates => 1 });
 $reserve = $reserves->[1];
 AlterPriority( 'top', $reserve->{'reserve_id'} );
 $reserve = GetReserve( $reserve->{'reserve_id'} );
@@ -277,6 +277,14 @@ is( $reserve3->{priority}, 2, "New reserve for patron 0, the reserve has a prior
 ModReserve({ reserve_id => $reserveid2, rank => 'del' });
 $reserve3 = GetReserve( $reserveid3 );
 is( $reserve3->{priority}, 1, "After ModReserve, the 3rd reserve becomes the first on the waiting list" );
+
+ModItem({ damaged => 1 }, $item_bibnum, $itemnumber);
+C4::Context->set_preference( 'AllowHoldsOnDamagedItems', 1 );
+ok( CanItemBeReserved( $borrowernumbers[0], $itemnumber), "Patron can reserve damaged item with AllowHoldsOnDamagedItems enabled" );
+ok( defined( ( CheckReserves($itemnumber) )[1] ), "Hold can be trapped for damaged item with AllowHoldsOnDamagedItems enabled" );
+C4::Context->set_preference( 'AllowHoldsOnDamagedItems', 0 );
+ok( !CanItemBeReserved( $borrowernumbers[0], $itemnumber), "Patron cannot reserve damaged item with AllowHoldsOnDamagedItems disabled" );
+ok( !defined( ( CheckReserves($itemnumber) )[1] ), "Hold cannot be trapped for damaged item with AllowHoldsOnDamagedItems disabled" );
 
 
 # Helper method to set up a Biblio.

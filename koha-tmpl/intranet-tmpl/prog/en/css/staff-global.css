@@ -1767,20 +1767,6 @@ div.lang {
 	color : #999;
 	font-style : italic;
 }
-/* Tablesorter */
-.header {
-	background-image:url("../../img/ascdesc.gif");
-	background-position:right center;
-	background-repeat:no-repeat;
-	cursor:pointer;
-	padding : .2em 23px;
-}
-.headerSortUp {
-	background-image:url("../../img/asc.gif");
-}
-.headerSortDown {
-	background-image:url("../../img/desc.gif");
-}
 
 tr.reserved td {
 	background-color : #eeffd4;
@@ -2032,6 +2018,19 @@ a.localimage img {
 	margin : 0 .5em;
 	padding : .3em;
 }
+
+.no-image {
+    background-color : #FFF;
+    border: 1px solid #AAA;
+    color : #979797;
+    display:block;
+    font-size : 86%;
+    font-weight : bold;
+    text-align : center;
+    width : 75px;
+    border-radius : 3px;
+}
+
 div.pager p {
 	margin: 0;
 }

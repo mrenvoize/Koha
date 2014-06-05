@@ -7916,6 +7916,74 @@ if ( CheckVersion($DBversion) ) {
     SetVersion($DBversion);
 }
 
+$DBversion = "3.14.06.001";
+if (CheckVersion($DBversion)) {
+    $dbh->do("INSERT INTO systempreferences (variable,value,options,explanation,type) VALUES('SelfCheckReceiptPrompt', '1', 'NULL', 'If ON, print receipt dialog pops up when self checkout is finished.', 'YesNo');");
+    print "Upgrade to $DBversion done (Bug 11415: add system preference for self checkout receipt print)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.06.002";
+if(CheckVersion($DBversion)) {
+    $dbh->do(q{
+        UPDATE systempreferences
+        SET explanation = 'Define the contents of UNIMARC authority control field 100 position 08-35'
+        WHERE variable = "UNIMARCAuthorityField100"
+    });
+    $dbh->do(q{
+        UPDATE systempreferences
+        SET explanation = 'Define the contents of MARC21 authority control field 008 position 06-39'
+        WHERE variable = "MARCAuthorityControlField008"
+    });
+    $dbh->do(q{
+        UPDATE systempreferences
+        SET explanation = 'Define MARC Organization Code for MARC21 records - http://www.loc.gov/marc/organizations/orgshome.html'
+        WHERE variable = "MARCOrgCode"
+    });
+    print "Upgrade to $DBversion done (Bug 11611 - fix possible confusion between UNIMARC and MARC21 in some sysprefs)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.06.003";
+if ( C4::Context->preference("Version") < TransformToNum($DBversion) ) {
+    $dbh->do(q|
+        INSERT IGNORE INTO systempreferences (variable,value,options,explanation,type) VALUES('MaxItemsForBatch','1000',NULL,'Max number of items record to process in a batch (modification or deletion)','Integer')
+    |);
+    print "Upgrade to $DBversion done (Bug 11343: Add system preference MaxItemsForBatch )\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.06.004";
+if(CheckVersion($DBversion)) {
+    $dbh->do(q{
+        ALTER TABLE `action_logs`
+            DROP KEY timestamp,
+            ADD KEY `timestamp_idx` (`timestamp`),
+            ADD KEY `user_idx` (`user`),
+            ADD KEY `module_idx` (`module`(255)),
+            ADD KEY `action_idx` (`action`(255)),
+            ADD KEY `object_idx` (`object`),
+            ADD KEY `info_idx` (`info`(255))
+    });
+    print "Upgrade to $DBversion done (Bug 3445: Add indexes to action_logs table)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.06.005";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        DELETE FROM systempreferences WHERE variable = 'NoZebraIndexes'
+    });
+    print "Upgrade to $DBversion done (Bug 10012 - remove last vestiges of NoZebra)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.07.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.7 release)\n";
+    SetVersion($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

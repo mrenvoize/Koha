@@ -406,8 +406,10 @@ if (C4::Context->preference('TagsEnabled') and $tag_quantity = C4::Context->pref
                                 'sort'=>'-weight', limit=>$tag_quantity}));
 }
 
-my ( $holdcount, $holds ) = C4::Reserves::GetReservesFromBiblionumber($biblionumber,1);
-$template->param( holdcount => $holdcount, holds => $holds );
+#we only need to pass the number of holds to the template
+my $holds = C4::Reserves::GetReservesFromBiblionumber({ biblionumber => $biblionumber, all_dates => 1 });
+$template->param( holdcount => scalar ( @$holds ) );
+
 my $StaffDetailItemSelection = C4::Context->preference('StaffDetailItemSelection');
 if ($StaffDetailItemSelection) {
     # Only enable item selection if user can execute at least one action

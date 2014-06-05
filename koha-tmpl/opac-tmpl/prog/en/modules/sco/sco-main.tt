@@ -1,3 +1,4 @@
+[% USE Koha %]
 [% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %][% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha [% END %] &rsaquo; Self checkout </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -90,9 +91,11 @@ $(document).ready(function() {
     }));
     $("#logout_form").submit(function(){
         clearTimeout(mainTimeout);
-        if(confirm("Would you like to print a receipt?")){
-            window.open("/cgi-bin/koha/sco/printslip.pl?borrowernumber=[% borrowernumber %]&amp;print=qslip");
-        }
+        [% IF Koha.Preference('SelfCheckReceiptPrompt') %]
+            if( confirm("Would you like to print a receipt?") ) {
+                window.open("/cgi-bin/koha/sco/printslip.pl?borrowernumber=[% borrowernumber %]&amp;print=qslip");
+            }
+        [% END %]
         return true;
     });
 });
@@ -253,7 +256,7 @@ Sorry, this self-checkout station has lost authentication.  Please contact the a
   [% IF ( display_patron_image ) %]</div> <!-- /yui-u first -->[% END %]
   [% IF ( display_patron_image ) %]
   <div class="yui-u">
-        <img src="/cgi-bin/koha/sco/sco-patron-image.pl?cardnumber=[% cardnumber %]" alt="" />
+        <img src="/cgi-bin/koha/sco/sco-patron-image.pl?borrowernumber=[% borrowernumber %]" alt="" />
   </div>
   [% END %]
   </div> <!-- /yui-ge -->

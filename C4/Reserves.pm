@@ -268,17 +268,30 @@ sub GetReserve {
 
 =head2 GetReservesFromBiblionumber
 
-  ($count, $title_reserves) = GetReservesFromBiblionumber($biblionumber);
+  my $reserves = GetReservesFromBiblionumber({
+    biblionumber => $biblionumber,
+    [ itemnumber => $itemnumber, ]
+    [ all_dates => 1|0 ]
+  });
 
-This function gets the list of reservations for one C<$biblionumber>, returning a count
-of the reserves and an arrayref pointing to the reserves for C<$biblionumber>.
+This function gets the list of reservations for one C<$biblionumber>,
+returning an arrayref pointing to the reserves for C<$biblionumber>.
+
+By default, only reserves whose start date falls before the current
+time are returned.  To return all reserves, including future ones,
+the C<all_dates> parameter can be included and set to a true value.
+
+If the C<itemnumber> parameter is supplied, reserves must be targeted
+to that item or not targeted to any item at all; otherwise, they
+are excluded from the list.
 
 =cut
 
 sub GetReservesFromBiblionumber {
-    my ($biblionumber) = shift or return (0, []);
-    my ($all_dates) = shift;
-    my ($itemnumber) = shift;
+    my ( $params ) = @_;
+    my $biblionumber = $params->{biblionumber} or return [];
+    my $itemnumber = $params->{itemnumber};
+    my $all_dates = $params->{all_dates} // 0;
     my $dbh   = C4::Context->dbh;
 
     # Find the desired items in the reserves
@@ -353,7 +366,7 @@ sub GetReservesFromBiblionumber {
         }
         push @results, $data;
     }
-    return ( $#results + 1, \@results );
+    return \@results;
 }
 
 =head2 GetReservesFromItemnumber
@@ -452,13 +465,17 @@ sub CanItemBeReserved{
     my $dbh             = C4::Context->dbh;
     my $allowedreserves = 0;
             
+    # we retrieve borrowers and items informations #
+    my $item = GetItem($itemnumber);
+
+    # If an item is damaged and we don't allow holds on damaged items, we can stop right here
+    return 0 if ( $item->{damaged} && !C4::Context->preference('AllowHoldsOnDamagedItems') );
+
+    my $borrower = C4::Members::GetMember('borrowernumber'=>$borrowernumber);     
+    
     my $controlbranch = C4::Context->preference('ReservesControlBranch');
     my $itype         = C4::Context->preference('item-level_itypes') ? "itype" : "itemtype";
 
-    # we retrieve borrowers and items informations #
-    my $item     = GetItem($itemnumber);
-    my $borrower = C4::Members::GetMember('borrowernumber'=>$borrowernumber);     
-    
     # we retrieve user rights on this itemtype and branchcode
     my $sth = $dbh->prepare("SELECT categorycode, itemtype, branchcode, reservesallowed 
                              FROM issuingrules 
@@ -856,7 +873,8 @@ sub CheckReserves {
            items.biblioitemnumber,
            itemtypes.notforloan,
            items.notforloan AS itemnotforloan,
-           items.itemnumber
+           items.itemnumber,
+           items.damaged
            FROM   items
            LEFT JOIN biblioitems ON items.biblioitemnumber = biblioitems.biblioitemnumber
            LEFT JOIN itemtypes   ON items.itype   = itemtypes.itemtype
@@ -868,7 +886,8 @@ sub CheckReserves {
            items.biblioitemnumber,
            itemtypes.notforloan,
            items.notforloan AS itemnotforloan,
-           items.itemnumber
+           items.itemnumber,
+           items.damaged
            FROM   items
            LEFT JOIN biblioitems ON items.biblioitemnumber = biblioitems.biblioitemnumber
            LEFT JOIN itemtypes   ON biblioitems.itemtype   = itemtypes.itemtype
@@ -884,13 +903,15 @@ sub CheckReserves {
         $sth->execute($barcode);
     }
     # note: we get the itemnumber because we might have started w/ just the barcode.  Now we know for sure we have it.
-    my ( $biblio, $bibitem, $notforloan_per_itemtype, $notforloan_per_item, $itemnumber ) = $sth->fetchrow_array;
+    my ( $biblio, $bibitem, $notforloan_per_itemtype, $notforloan_per_item, $itemnumber, $damaged ) = $sth->fetchrow_array;
 
-    return ( '' ) unless $itemnumber; # bail if we got nothing.
+    return if ( $damaged && !C4::Context->preference('AllowHoldsOnDamagedItems') );
+
+    return unless $itemnumber; # bail if we got nothing.
 
     # if item is not for loan it cannot be reserved either.....
     #    execpt where items.notforloan < 0 :  This indicates the item is holdable. 
-    return ( '' ) if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype;
+    return if  ( $notforloan_per_item > 0 ) or $notforloan_per_itemtype;
 
     # Find this item in the reserves
     my @reserves = _Findgroupreserve( $bibitem, $biblio, $itemnumber, $lookahead_days);
@@ -2234,6 +2255,51 @@ sub GetReservesControlBranch {
       :                                              undef;
 
     return $branchcode;
+}
+
+=head2 CalculatePriority
+
+    my $p = CalculatePriority($biblionumber, $resdate);
+
+Calculate priority for a new reserve on biblionumber, placing it at
+the end of the line of all holds whose start date falls before
+the current system time and that are neither on the hold shelf
+or in transit.
+
+The reserve date parameter is optional; if it is supplied, the
+priority is based on the set of holds whose start date falls before
+the parameter value.
+
+After calculation of this priority, it is recommended to call
+_ShiftPriorityByDateAndPriority. Note that this is currently done in
+AddReserves.
+
+=cut
+
+sub CalculatePriority {
+    my ( $biblionumber, $resdate ) = @_;
+
+    my $sql = q{
+        SELECT COUNT(*) FROM reserves
+        WHERE biblionumber = ?
+        AND   priority > 0
+        AND   (found IS NULL OR found = '')
+    };
+    #skip found==W or found==T (waiting or transit holds)
+    if( $resdate ) {
+        $sql.= ' AND ( reservedate <= ? )';
+    }
+    else {
+        $sql.= ' AND ( reservedate < NOW() )';
+    }
+    my $dbh = C4::Context->dbh();
+    my @row = $dbh->selectrow_array(
+        $sql,
+        undef,
+        $resdate ? ($biblionumber, $resdate) : ($biblionumber)
+    );
+
+    return @row ? $row[0]+1 : 1;
 }
 
 =head1 AUTHOR
