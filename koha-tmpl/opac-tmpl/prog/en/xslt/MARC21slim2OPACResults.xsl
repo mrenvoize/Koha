@@ -410,16 +410,16 @@
                      <xsl:call-template name="subfieldSelect">
                         <xsl:with-param name="codes">a</xsl:with-param>
                     </xsl:call-template>
-                    <xsl:if test="marc:subfield[@code='b']">
-                        <xsl:text> </xsl:text>
-                        <xsl:call-template name="subfieldSelect">
-                            <xsl:with-param name="codes">b</xsl:with-param>
-                        </xsl:call-template>
-                    </xsl:if>
                     <xsl:if test="marc:subfield[@code='h']">
                         <xsl:text> </xsl:text>
                         <xsl:call-template name="subfieldSelect">
                             <xsl:with-param name="codes">h</xsl:with-param>
+                        </xsl:call-template>
+                    </xsl:if>
+                    <xsl:if test="marc:subfield[@code='b']">
+                        <xsl:text> </xsl:text>
+                        <xsl:call-template name="subfieldSelect">
+                            <xsl:with-param name="codes">b</xsl:with-param>
                         </xsl:call-template>
                     </xsl:if>
                 <xsl:text> </xsl:text>
@@ -1042,12 +1042,12 @@
                             </xsl:for-each>
                             (<xsl:value-of select="$AlternateHoldingsCount"/>)
                             </xsl:when>
-                            <xsl:otherwise>No copies available </xsl:otherwise>
+                            <xsl:otherwise>No items available </xsl:otherwise>
                         </xsl:choose>
 				   </xsl:when>
                    <xsl:when test="count(key('item-by-status', 'available'))>0">
                    <span class="available">
-                       <b><xsl:text>Copies available for loan: </xsl:text></b>
+                       <b><xsl:text>Items available for loan: </xsl:text></b>
                        <xsl:variable name="available_items"
                            select="key('item-by-status', 'available')"/>
                <xsl:choose>
@@ -1079,7 +1079,7 @@
             <xsl:choose>
                 <xsl:when test="count(key('item-by-status', 'reference'))>0">
                     <span class="available">
-                        <b><xsl:text>Copies available for reference: </xsl:text></b>
+                        <b><xsl:text>Items available for reference: </xsl:text></b>
                         <xsl:variable name="reference_items" select="key('item-by-status', 'reference')"/>
                         <xsl:for-each select="$reference_items[generate-id() = generate-id(key('item-by-status-and-branch', concat(items:status, ' ', items:homebranch))[1])]">
                             <xsl:if test="$singleBranchMode=0">

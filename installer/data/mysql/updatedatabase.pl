@@ -7984,6 +7984,53 @@ if ( CheckVersion($DBversion) ) {
     SetVersion($DBversion);
 }
 
+$DBversion = "3.14.07.001";
+if ( CheckVersion($DBversion) ) {
+    $dbh->{AutoCommit} = 0;
+    $dbh->{RaiseError} = 1;
+
+    my $av_added = $dbh->do(q|
+        INSERT INTO authorised_values(category, authorised_value, lib, lib_opac)
+            SELECT 'ROADTYPE', roadtypeid, road_type, road_type
+            FROM roadtype;
+    |);
+
+    my $rt_deleted = $dbh->do(q|
+        DELETE FROM roadtype
+    |);
+
+    if ( $av_added == $rt_deleted or $rt_deleted eq "0E0" ) {
+        $dbh->do(q|
+            DROP TABLE roadtype;
+        |);
+        $dbh->commit;
+        print "Upgrade to $DBversion done (Bug 7372: Move road types from the roadtype table to the ROADTYPE authorised values)\n";
+        SetVersion($DBversion);
+    } else {
+        print "Upgrade to $DBversion failed (Bug 7372: Move road types from the roadtype table to the ROADTYPE authorised values.\nTransaction aborted because $@\n)";
+        $dbh->rollback;
+    }
+
+    $dbh->{AutoCommit} = 1;
+    $dbh->{RaiseError} = 0;
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.07.002";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        UPDATE language_descriptions SET description = 'Հայերեն' WHERE subtag = 'hy' AND lang = 'hy';
+    });
+    print "Upgrade to $DBversion done (Bug 11973 - Fix Armenian language description)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.14.08.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.14.8 release)\n";
+    SetVersion($DBversion);
+}
+
 =head1 FUNCTIONS
 
 =head2 TableExists($table)

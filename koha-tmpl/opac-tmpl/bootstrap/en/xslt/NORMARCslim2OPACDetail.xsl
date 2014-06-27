@@ -66,17 +66,17 @@
                     <xsl:call-template name="subfieldSelect">
                         <xsl:with-param name="codes">a</xsl:with-param>
                     </xsl:call-template>
-                    <xsl:if test="marc:subfield[@code='b']">
-                        <xsl:text> : </xsl:text>
-                        <xsl:call-template name="subfieldSelect">
-                            <xsl:with-param name="codes">b</xsl:with-param>
-                        </xsl:call-template>
-                    </xsl:if>
                     <xsl:if test="marc:subfield[@code='h']">
                         <xsl:text> </xsl:text>
                         (<xsl:call-template name="subfieldSelect">
                             <xsl:with-param name="codes">h</xsl:with-param>
                         </xsl:call-template>)
+                    </xsl:if>
+                    <xsl:if test="marc:subfield[@code='b']">
+                        <xsl:text> : </xsl:text>
+                        <xsl:call-template name="subfieldSelect">
+                            <xsl:with-param name="codes">b</xsl:with-param>
+                        </xsl:call-template>
                     </xsl:if>
                     <xsl:text> </xsl:text>
                     <xsl:call-template name="subfieldSelect">
@@ -243,7 +243,7 @@
         </span>
                 <xsl:variable name="f773">
                     <xsl:call-template name="chopPunctuation"><xsl:with-param name="chopString"><xsl:call-template name="subfieldSelect">
-                        <xsl:with-param name="codes">at</xsl:with-param>
+                        <xsl:with-param name="codes">a_t</xsl:with-param>
                     </xsl:call-template></xsl:with-param></xsl:call-template>
                 </xsl:variable>
             <xsl:choose>

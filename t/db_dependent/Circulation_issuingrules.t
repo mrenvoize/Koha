@@ -62,10 +62,12 @@ is_deeply($loanlength, $default, 'none matches');
 #Set syspref ReturnBeforeExpiry = 1 and useDaysMode = 'Days'
 $contextmodule->mock('preference', sub {
     my ($self, $syspref) = @_;
-    given ( $syspref ) {
-        when ("ReturnBeforeExpiry"){ return 1; }
-        when ("useDaysMode"){ return 'Days'; }
-        default{ return; }
+    if ( $syspref eq "ReturnBeforeExpiry" ) {
+        return 1;
+    } elsif ( $syspref eq "useDaysMode" ) {
+        return 'Days';
+    } else {
+        return;
     }
 });
 
@@ -76,7 +78,6 @@ my $start_date = DateTime->new({year => 2013, month => 2, day => 9});
 $dbh->{mock_add_resultset} = $mock_loan_length;
 my $date = C4::Circulation::CalcDateDue( $start_date, $itemtype, $branchcode, $borrower );
 is($date, $dateexpiry . 'T23:59:00', 'date expiry');
-
 $dbh->{mock_add_resultset} = $mock_loan_length;
 $date = C4::Circulation::CalcDateDue( $start_date, $itemtype, $branchcode, $borrower, 1 );
 
@@ -84,10 +85,12 @@ $date = C4::Circulation::CalcDateDue( $start_date, $itemtype, $branchcode, $borr
 #Set syspref ReturnBeforeExpiry = 1 and useDaysMode != 'Days'
 $contextmodule->mock('preference', sub {
     my ($self, $syspref) = @_;
-    given ( $syspref ) {
-        when ("ReturnBeforeExpiry"){ return 1; }
-        when ("useDaysMode"){ return 'noDays'; }
-        default{ return; }
+    if ( $syspref eq "ReturnBeforeExpiry" ) {
+        return 1;
+    } elsif ( $syspref eq "useDaysMode" ) {
+        return 'noDays';
+    } else {
+        return;
     }
 });
 
@@ -104,10 +107,12 @@ $date = C4::Circulation::CalcDateDue( $start_date, $itemtype, $branchcode, $borr
 #Set syspref ReturnBeforeExpiry = 0 and useDaysMode = 'Days'
 $contextmodule->mock('preference', sub {
     my ($self, $syspref) = @_;
-    given ( $syspref ) {
-        when ("ReturnBeforeExpiry"){ return 0; }
-        when ("useDaysMode"){ return 'Days'; }
-        default{ return; }
+    if ( $syspref eq "ReturnBeforeExpiry" ) {
+        return 0;
+    } elsif ( $syspref eq "useDaysMode" ) {
+        return 'Days';
+    } else {
+        return;
     }
 });
 

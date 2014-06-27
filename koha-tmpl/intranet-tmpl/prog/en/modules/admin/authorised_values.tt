@@ -16,8 +16,6 @@
             { "aTargets": [ -1, -2 ], "bSortable": false, "bSearchable": false },
         ],
         "aaSorting": [[ 1, "asc" ]],
-        "iDisplayLength": 20,
-        "aLengthMenu": [[10, 20, 50, 100, -1], [10, 20, 50, 100, "All"]],
         "sPaginationType": "four_button"
     }));
 
@@ -44,7 +42,7 @@ $(document).ready(function() {
 
 <style type="text/css">
 	fieldset.rows div.toptabs li { clear:none;margin-right:.5em;padding-bottom:0;width:auto; }
-    fieldset.rows div.toptabs .ui-tabs-nav li.ui-tabs-selected {background-color : #F4F8F9; }
+    fieldset.rows div.toptabs .ui-tabs-nav li.ui-tabs-active {background-color : #F4F8F9; }
 	fieldset.rows .ui-tabs-panel { margin-right : 10px; margin-left : 10px;margin-bottom:10px;}
     fieldset.rows .ui-tabs-nav { margin-left : 10px; }
 </style>
@@ -112,8 +110,7 @@ $(document).ready(function() {
                   [% END %]
                 [% END %]
             </select>
-            <span>Select All if this authorized value must to be displayed all the time. Otherwise select libraries you want to associate with this value.
-            </span>
+            <span>Select 'All libraries' if this authorized value must be displayed all the time. Otherwise select libraries you want to associate with this value.</span>
         </li>
 
 		</ol>
@@ -122,7 +119,7 @@ $(document).ready(function() {
 			<ul>
                   <li><a href="#none">None</a></li>
 				  [% FOREACH imageset IN imagesets %]
-                        [% IF ( imageset.imagesetactive ) %]<li class="ui-tabs-selected">[% ELSE %]<li>[% END %]<a href="#[% imageset.imagesetname %]">[% imageset.imagesetname %]</a></li>
+                        [% IF ( imageset.imagesetactive ) %]<li class="ui-tabs-active">[% ELSE %]<li>[% END %]<a href="#[% imageset.imagesetname %]">[% imageset.imagesetname %]</a></li>
 				  [% END %]
 			</ul>
   <div id="none"><ul>

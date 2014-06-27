@@ -84,7 +84,7 @@ C4::Auth - Authenticates Koha users
             template_name   => "opac-main.tmpl",
             query           => $query,
       type            => "opac",
-      authnotrequired => 1,
+      authnotrequired => 0,
       flagsrequired   => {borrow => 1, catalogue => '*', tools => 'import_patrons' },
   }
     );
@@ -108,7 +108,7 @@ automatically. This gets loaded into the template.
          template_name   => "opac-main.tmpl",
          query           => $query,
          type            => "opac",
-         authnotrequired => 1,
+         authnotrequired => 0,
          flagsrequired   => {borrow => 1, catalogue => '*', tools => 'import_patrons' },
        }
      );
@@ -139,6 +139,7 @@ sub get_template_and_user {
     my $in       = shift;
     my ( $user, $cookie, $sessionID, $flags );
 
+    $in->{'authnotrequired'} ||= 0;
     my $template = C4::Templates::gettemplate(
         $in->{'template_name'},
         $in->{'type'},

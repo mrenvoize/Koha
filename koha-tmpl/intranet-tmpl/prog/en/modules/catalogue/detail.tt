@@ -518,13 +518,14 @@ function verify_images() {
                 <th>Barcode</th>
                 [% IF ( volinfo ) %]<th>Publication details</th>[% END %]
                 [% IF ( itemdata_uri ) %]<th>url</th>[% END %]
-                [% IF ( itemdata_copynumber ) %]<th>Copy no.</th>[% END %]
+                [% IF ( itemdata_copynumber ) %]<th>Copy number</th>[% END %]
                 [% IF materials %]<th>Materials specified</th>[% END %]
                 [% IF ( itemdata_itemnotes ) %]<th>Public notes</th>[% END %]
                 [% IF ( SpineLabelShowPrintOnBibDetails ) %]<th>Spine label</th>[% END %]
                 [% IF ( hostrecords ) %]<th>Host records</th>[% END %]
                 [% IF ( analyze ) %]<th>Used in</th><th></th>[% END %]
                 [% IF ( ShowCourseReserves ) %]<th>Course Reserves</th>[% END %]
+                [% IF ( CAN_user_editcatalogue_edit_items ) %]<th>Edit</th>[% END %]
             </tr>
         </thead>
         <tbody>
@@ -697,6 +698,9 @@ function verify_images() {
                            [% END %]
                        [% END %]
                     </td>
+                [% END %]
+                [% IF ( CAN_user_editcatalogue_edit_items ) %]
+                    <td><a href="/cgi-bin/koha/cataloguing/additem.pl?op=edititem&biblionumber=[% item.biblionumber %]&itemnumber=[% item.itemnumber %]#edititem">Edit</a></td>
                 [% END %]
                 </tr>
             [% END %]

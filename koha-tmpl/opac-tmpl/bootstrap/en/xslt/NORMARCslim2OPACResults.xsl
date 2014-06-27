@@ -293,17 +293,17 @@
                      <xsl:call-template name="subfieldSelect">
                         <xsl:with-param name="codes">a</xsl:with-param>
                     </xsl:call-template>
-                    <xsl:if test="marc:subfield[@code='b']">
-                        <xsl:text> : </xsl:text>
-                        <xsl:call-template name="subfieldSelect">
-                            <xsl:with-param name="codes">b</xsl:with-param>
-                        </xsl:call-template>
-                    </xsl:if>
                     <xsl:if test="marc:subfield[@code='h']">
                         <xsl:text> </xsl:text>
                         (<xsl:call-template name="subfieldSelect">
                             <xsl:with-param name="codes">h</xsl:with-param>
                         </xsl:call-template>)
+                    </xsl:if>
+                    <xsl:if test="marc:subfield[@code='b']">
+                        <xsl:text> : </xsl:text>
+                        <xsl:call-template name="subfieldSelect">
+                            <xsl:with-param name="codes">b</xsl:with-param>
+                        </xsl:call-template>
                     </xsl:if>
                     <xsl:text> </xsl:text>
                     <xsl:call-template name="subfieldSelect">
@@ -409,7 +409,7 @@
         </span>
                 <xsl:variable name="f773">
                     <xsl:call-template name="chopPunctuation"><xsl:with-param name="chopString"><xsl:call-template name="subfieldSelect">
-                        <xsl:with-param name="codes">at</xsl:with-param>
+                        <xsl:with-param name="codes">a_t</xsl:with-param>
                     </xsl:call-template></xsl:with-param></xsl:call-template>
                 </xsl:variable>
             <xsl:choose>
@@ -773,12 +773,12 @@
 <span class="results_summary">
                         <span class="label">Availability: </span>
                         <xsl:choose>
-				   <xsl:when test="count(key('item-by-status', 'available'))=0 and count(key('item-by-status', 'reference'))=0">No copies available
+                             <xsl:when test="count(key('item-by-status', 'available'))=0 and count(key('item-by-status', 'reference'))=0">No items available
 				   </xsl:when>
 
                    <xsl:when test="count(key('item-by-status', 'available'))>0">
                    <span class="available">
-                       <b><xsl:text>Copies available for loan: </xsl:text></b>
+                       <b><xsl:text>Items available for loan: </xsl:text></b>
                        <xsl:variable name="available_items" select="key('item-by-status', 'available')"/>
                <xsl:choose>
                <xsl:when test="$singleBranchMode=1">
@@ -810,12 +810,13 @@
                    <xsl:choose>
                    <xsl:when test="count(key('item-by-status', 'reference'))>0">
                    <span class="available">
-                       <b><xsl:text>Copies available for reference: </xsl:text></b>
+                       <b><xsl:text>Items available for reference: </xsl:text></b>
                        <xsl:variable name="reference_items"
                            select="key('item-by-status', 'reference')"/>
                        <xsl:for-each select="$reference_items[generate-id() = generate-id(key('item-by-status-and-branch', concat(items:status, ' ', items:homebranch))[1])]">
-                           <xsl:value-of select="items:homebranch"/>
-
+                           <xsl:if test="$singleBranchMode=0">
+                               <xsl:value-of select="items:homebranch"/>
+                           </xsl:if>
 						   <xsl:if test="items:itemcallnumber != '' and items:itemcallnumber"> [<xsl:value-of select="items:itemcallnumber"/>]</xsl:if>
                            <xsl:text> (</xsl:text>
                            <xsl:value-of select="count(key('item-by-status-and-branch', concat(items:status, ' ', items:homebranch)))"/>

@@ -9,6 +9,7 @@
 [% INCLUDE 'calendar.inc' %]
 <script type="text/javascript">
     // <![CDATA[
+var MSG_CONFIRM_DELETE_HOLD   = _("Are you sure you want to cancel this hold?");
 var patron_homebranch = "[% borrower_branchname |replace("'", "\'") |replace('"', '\"') |replace('\n', '\\n') |replace('\r', '\\r') %]";
 var override_items = {[% FOREACH bibitemloo IN bibitemloop %][% FOREACH itemloo IN bibitemloo.itemloop %][% IF ( itemloo.override ) %]
     [% itemloo.itemnumber %]: {
@@ -18,6 +19,12 @@ var override_items = {[% FOREACH bibitemloo IN bibitemloop %][% FOREACH itemloo 
 [% END %][% END %][% END %]
 };
 var MSG_NO_ITEMS_AVAILABLE = _("A hold cannot be requested on any of these items.");
+
+$(document).ready(function() {
+    [% IF AutoResumeSuspendedHolds %]
+        $(".suspend_until_datepicker").datepicker("option", "minDate", 1);
+    [% END %]
+});
 
 function check() {
 	var msg = "";
@@ -131,7 +138,7 @@ function checkMultiHold() {
 
     $('#hold-request-form').preventDoubleFormSubmit();
 
-[% UNLESS ( borrowernumber || borrower_list ) %]
+[% UNLESS ( borrowernumber || borrower_list || noitems ) %]
     [% IF ( CircAutocompl ) %]
     $( "#patron" ).autocomplete({
         source: "/cgi-bin/koha/circ/ysearch.pl",
@@ -142,9 +149,9 @@ function checkMultiHold() {
             return false;
         }
     })
-    .data( "autocomplete" )._renderItem = function( ul, item ) {
+    .data( "ui-autocomplete" )._renderItem = function( ul, item ) {
         return $( "<li></li>" )
-        .data( "item.autocomplete", item )
+        .data( "ui-autocomplete-item", item )
         .append( "<a>" + item.surname + ", " + item.firstname +
                  " (" + item.cardnumber + ") <small>" + item.address +
                  " " + item.city + " " + item.zipcode + " " +
@@ -243,7 +250,7 @@ function checkMultiHold() {
           <li><a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% borrowernumber %]">[% borrowerfirstname %] [% borrowersurname %]</a> <strong>already has a hold</strong> on this item </li>
         [% END %]
         [% IF ( none_available ) %]
-          <li> <strong>No copies are available</strong> to be placed on hold</li>
+          <li> <strong>No items are available</strong> to be placed on hold</li>
         [% END %]
         [% IF ( alreadypossession ) %]
           <li> <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% borrowernumber %]">[% borrowerfirstname %] [% borrowersurname %]</a> <strong>is already in possession</strong> of one item</li>
@@ -344,7 +351,7 @@ function checkMultiHold() {
 	</li>
 
         [% UNLESS ( multi_hold ) %]
-          <li> <label for="requestany">Place a hold on the next available copy </label>
+          <li> <label for="requestany">Place a hold on the next available item </label>
                <input type="checkbox" id="requestany" name="request" checked="checked" value="Any" />
                <input type="hidden" name="biblioitem" value="[% biblioitemnumber %]" />
                <input type="hidden" name="alreadyreserved" value="[% alreadyreserved %]" />
@@ -374,7 +381,7 @@ function checkMultiHold() {
           </ol>
 
         <table id="requestspecific">
-        <caption>Place a hold on a specific copy</caption>
+        <caption>Place a hold on a specific item</caption>
 		<tr>
             <th>Hold</th>
             [% IF ( item_level_itypes ) %]
@@ -384,7 +391,7 @@ function checkMultiHold() {
             <th>Home library</th>
             <th>Last location</th>
             <th>Call no.</th>
-            <th>Copy no.</th>
+            <th>Copy number</th>
             [% IF itemdata_enumchron %]
             <th>Vol no.</th>
             [% END %]
@@ -456,7 +463,7 @@ function checkMultiHold() {
                     [% IF ( itemloo.waitingdate ) %]Waiting[% ELSE %]On hold[% END %]
                     [% IF ( itemloo.canreservefromotherbranches ) %]for <a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% itemloo.ReservedForBorrowernumber %]">[% itemloo.ReservedForFirstname %] [% itemloo.ReservedForSurname %]</a>[% END %] [% IF ( itemloo.waitingdate ) %]at[% ELSE %]expected at[% END %] [% itemloo.ExpectedAtLibrary %]
                     since
-                    [% IF ( itemloo.waitingdate ) %][% itemloo.waitingdate | $KohaDates %][% ELSE %][% IF ( itemloo.reservedate ) %][% itemloo.reservedate %][% END %][% END %]. <a class="info" href="modrequest.pl?CancelBiblioNumber=[% itemloo.biblionumber %]&amp;CancelBorrowerNumber=[% itemloo.ReservedForBorrowernumber %]&amp;CancelItemnumber=[% itemloo.itemnumber %]"  onclick="if (window.confirm('Are you sure you want to delete this hold?')) {return true;} else {return false;}">Cancel hold</a>
+                    [% IF ( itemloo.waitingdate ) %][% itemloo.waitingdate | $KohaDates %][% ELSE %][% IF ( itemloo.reservedate ) %][% itemloo.reservedate %][% END %][% END %]. <a class="info" href="modrequest.pl?CancelBiblioNumber=[% itemloo.biblionumber %]&amp;CancelBorrowerNumber=[% itemloo.ReservedForBorrowernumber %]&amp;CancelItemnumber=[% itemloo.itemnumber %]"  onclick="return confirmDelete(MSG_CONFIRM_DELETE_HOLD);">Cancel hold</a>
 
                     [% END %]
             [% ELSE %]
@@ -523,7 +530,7 @@ function checkMultiHold() {
               <li><a href="/cgi-bin/koha/members/moremember.pl?borrowernumber=[% borrowernumber %]">[% borrowerfirstname %] [% borrowersurname %]</a> <strong>already has a hold</strong> on this item </li>
           [% END %]
           [% IF ( biblioloo.none_avail ) %]
-              <li> <strong>No copies are available</strong> to be placed on hold</li>
+              <li> <strong>No items are available</strong> to be placed on hold</li>
           [% END %]
 
             [% IF ( biblioloo.alreadyres ) %]
@@ -740,7 +747,7 @@ function checkMultiHold() {
 
             [% IF AutoResumeSuspendedHolds %]
         <label for="suspend_until_[% reserveloo.reserve_id %]">[% IF ( reserveloo.suspend ) %] on [% ELSE %] until [% END %]</label>
-            <input name="suspend_until" id="suspend_until_[% reserveloo.reserve_id %]" size="10" readonly="readonly" value="[% reserveloo.suspend_until | $KohaDates %]" class="datepicker" />
+            <input name="suspend_until" id="suspend_until_[% reserveloo.reserve_id %]" size="10" readonly="readonly" value="[% reserveloo.suspend_until | $KohaDates %]" class="datepicker suspend_until_datepicker" />
             <a href='#' onclick="document.getElementById('suspend_until_[% reserveloo.reserve_id %]').value='';">Clear date</a>
             [% END %]
 	[% ELSE %]
