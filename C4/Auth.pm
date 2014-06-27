@@ -85,7 +85,7 @@ C4::Auth - Authenticates Koha users
             template_name   => "opac-main.tmpl",
             query           => $query,
       type            => "opac",
-      authnotrequired => 1,
+      authnotrequired => 0,
       flagsrequired   => {borrow => 1, catalogue => '*', tools => 'import_patrons' },
   }
     );
@@ -109,7 +109,7 @@ automatically. This gets loaded into the template.
          template_name   => "opac-main.tmpl",
          query           => $query,
          type            => "opac",
-         authnotrequired => 1,
+         authnotrequired => 0,
          flagsrequired   => {borrow => 1, catalogue => '*', tools => 'import_patrons' },
        }
      );
@@ -137,6 +137,7 @@ sub get_template_and_user {
 
     C4::Context->interface($in->{type});
 
+    $in->{'authnotrequired'} ||= 0;
     my $template = C4::Templates::gettemplate(
         $in->{'template_name'},
         $in->{'type'},
@@ -1560,6 +1561,17 @@ sub checkpw {
 sub checkpw_internal {
     my ( $dbh, $userid, $password ) = @_;
 
+    if ( $userid && $userid eq C4::Context->config('user') ) {
+        if ( $password && $password eq C4::Context->config('pass') ) {
+        # Koha superuser account
+#     C4::Context->set_userenv(0,0,C4::Context->config('user'),C4::Context->config('user'),C4::Context->config('user'),"",1);
+            return 2;
+        }
+        else {
+            return 0;
+        }
+    }
+
     my $sth =
       $dbh->prepare(
 "select password,cardnumber,borrowernumber,userid,firstname,surname,branchcode,flags from borrowers where userid=?"
@@ -1593,14 +1605,6 @@ sub checkpw_internal {
                 $firstname, $surname, $branchcode, $flags );
             return 1, $cardnumber, $userid;
         }
-    }
-    if (   $userid && $userid eq C4::Context->config('user')
-        && "$password" eq C4::Context->config('pass') )
-    {
-
-# Koha superuser account
-#     C4::Context->set_userenv(0,0,C4::Context->config('user'),C4::Context->config('user'),C4::Context->config('user'),"",1);
-        return 2;
     }
     if (   $userid && $userid eq 'demo'
         && "$password" eq 'demo'

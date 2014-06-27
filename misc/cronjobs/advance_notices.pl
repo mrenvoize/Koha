@@ -91,7 +91,10 @@ the patrons are printed to standard out.
 
 Defines the maximum number of days in advance to send advance notices.
 
+=item B<-c>
 
+Confirm flag: Add this option. The script will only print a usage
+statement otherwise.
 
 =item B<--itemscontent>
 
@@ -160,7 +163,6 @@ messages to patrons when their messages are overdue.
 
 # These are defaults for command line options.
 my $confirm;                                                        # -c: Confirm that the user has read and configured this script.
-# my $confirm     = 1;                                                # -c: Confirm that the user has read and configured this script.
 my $nomail;                                                         # -n: No mail. Will not send any emails.
 my $mindays     = 0;                                                # -m: Maximum number of days in advance to send notices
 my $maxdays     = 30;                                               # -e: the End of the time period
@@ -224,6 +226,7 @@ my $admin_adress = C4::Context->preference('KohaAdminEmailAddress');
 
 my @letters;
 UPCOMINGITEM: foreach my $upcoming ( @$upcoming_dues ) {
+    @letters = ();
     warn 'examining ' . $upcoming->{'itemnumber'} . ' upcoming due items' if $verbose;
     # warn( Data::Dumper->Dump( [ $upcoming ], [ 'overdue' ] ) );
 
@@ -336,8 +339,8 @@ SELECT biblio.*, items.*, issues.*
     AND issues.borrowernumber = ?
     AND (TO_DAYS(date_due)-TO_DAYS(NOW()) = ?)
 END_SQL
-@letters = ();
 PATRON: while ( my ( $borrowernumber, $digest ) = each %$upcoming_digest ) {
+    @letters = ();
     my $count = $digest->{count};
     my $from_address = $digest->{email};
 
@@ -396,8 +399,8 @@ PATRON: while ( my ( $borrowernumber, $digest ) = each %$upcoming_digest ) {
 }
 
 # Now, run through all the people that want digests and send them
-@letters = ();
 PATRON: while ( my ( $borrowernumber, $digest ) = each %$due_digest ) {
+    @letters = ();
     my $count = $digest->{count};
     my $from_address = $digest->{email};
 
