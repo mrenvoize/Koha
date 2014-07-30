@@ -83,13 +83,13 @@ sub get_login_shib {
 sub checkpw_shib {
     $debug and warn "checkpw_shib";
 
-    my ( $dbh, $userid ) = @_;
+    my ( $dbh, $match ) = @_;
     my $retnumber;
-    $debug and warn "User Shibboleth-authenticated as: $userid";
+    $debug and warn "User Shibboleth-authenticated as: $match";
 
-    # Does the given shibboleth attribute value ($userid) match a valid koha user ?
+    # Does the given shibboleth attribute value ($match) match a valid koha user ?
     my $sth = $dbh->prepare("select cardnumber, userid from borrowers where $shibbolethMatchField=?");
-    $sth->execute($userid);
+    $sth->execute($match);
     if ( $sth->rows ) {
         my @retvals = $sth->fetchrow;
         $retnumber = $retvals[1];
@@ -98,7 +98,7 @@ sub checkpw_shib {
     }
 
     if ( $shib->{'autocreate'} ) {
-        return _autocreate( $dbh, $shib, $userid );
+        return _autocreate( $dbh, $shib, $match );
     } else {
         # If we reach this point, the user is not a valid koha user
         $debug and warn "User $userid is not a valid Koha user";
@@ -107,9 +107,9 @@ sub checkpw_shib {
 }
 
 sub _autocreate {
-    my ( $dbh, $shib, $userid ) = @_;
+    my ( $dbh, $shib, $match ) = @_;
 
-    my %borrower = ( userid => $userid );
+    my %borrower = ( $shibbolethMatchField => $match );
 
     while ( my ( $key, $entry ) = each %{$shib->{'mapping'}} ) {
         $borrower{$key} = ( $entry->{'is'} && $ENV{ $entry->{'is'} } ) || $entry->{'content'} || '';
@@ -237,6 +237,14 @@ Returns the shibboleth login attribute should it be found present in the http se
 Given a database handle and a shib_login attribute, this routine checks for a matching local user and if found returns true, their cardnumber and their userid.  If a match is not found, then this returns false.
 
   my ( $retval, $retcard, $retuserid ) = C4::Auth_with_shibboleth::checkpw_shib( $dbh, $shib_login );
+
+=head2 _autocreate
+
+  my ( $retval, $retcard, $retuserid ) = _autocreate( $dbh, $shib, $userid );
+
+Given a database handle, a shibboleth attribute reference and a userid this internal routine will add the given user to koha and return their user credentials
+
+This routine is NOT exported
 
 =head1 SEE ALSO
 
