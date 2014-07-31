@@ -118,9 +118,17 @@ sub checkpw_shib {
 sub _get_uri {
 
     my $protocol = "https://";
+    my $interface = C4::Context->interface;
+    $debug and warn "shibboleth interface: " . $interface;
 
-    my $return = $protocol . C4::Context->preference('OPACBaseURL');
-    return $return;
+    my $return;
+    if ( $interface eq 'intranet' ) {
+        $return = $protocol . C4::Context->preference('staffClientBaseURL');
+        return $return;
+    } else {
+        $return = $protocol . C4::Context->preference('OPACBaseURL');
+        return $return;
+    }
 }
 
 sub _get_shib_config {
