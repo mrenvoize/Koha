@@ -1,3 +1,5 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 </title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="Koha [% Version %]" /> <!-- leave this for stats -->
@@ -41,11 +43,11 @@
 [% IF ( OPACUserCSS ) %]<style type="text/css">[% OPACUserCSS %]</style>[% END %]
 <link rel="unapi-server" type="application/xml" title="unAPI" href="[% OPACBaseURL %]/cgi-bin/koha/unapi" />
 [% PROCESS cssinclude %]
-<!-- Respond.js brings responsive layout behavior to IE < v.9 -->
+<!-- Respond_[% KOHA_VERSION %].js brings responsive layout behavior to IE < v.9 -->
 <!--[if lt IE 9]>
-    <script src="[% interface %]/[% theme %]/lib/respond.min.js"></script>
+    <script src="[% interface %]/[% theme %]/lib/respond.min_[% KOHA_VERSION %].js"></script>
 <![endif]-->
 <script type="text/javascript">
     function _(s) { return s } // dummy function for gettext
 </script>
-<script type="text/javascript" src="[% interface %]/[% theme %]/lib/modernizr.min.js"></script>
+<script type="text/javascript" src="[% interface %]/[% theme %]/lib/modernizr.min_[% KOHA_VERSION %].js"></script>

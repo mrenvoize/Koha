@@ -1,5 +1,7 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 <!-- AJAX file upload stuff -->
-<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/ajaxfileupload.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/ajaxfileupload_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
     //<![CDATA[
     var fileUploadProgressTimer = 0;

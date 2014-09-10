@@ -1,3 +1,5 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Online help</title>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -8,11 +10,11 @@
 [% IF ( bidi ) %]
    <link rel="stylesheet" type="text/css" href="[% themelang %]/css/right-to-left.css" />
 [% END %]
-<script type="text/javascript" src="[% interface %]/lib/jquery/jquery.js"></script>
-<script type="text/javascript" src="[% interface %]/lib/jquery/jquery-ui.js"></script>
-<script type="text/javascript" src="[% interface %]/lib/shortcut/shortcut.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/jquery_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/jquery-ui_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% interface %]/lib/shortcut/shortcut_[% KOHA_VERSION %].js"></script>
 <!-- koha core js -->
-<script type="text/javascript" src="[% themelang %]/js/staff-global.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/staff-global_[% KOHA_VERSION %].js"></script>
 
 <link rel="stylesheet" type="text/css" href="[% themelang %]/css/help.css" />
 </head>
