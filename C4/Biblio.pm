@@ -1689,26 +1689,15 @@ sub GetMarcISBN {
     } else {    # assume marc21 if not unimarc
         $scope = '020';
     }
+
     my @marcisbns;
-    my $isbn = "";
-    my $tag  = "";
-    my $marcisbn;
     foreach my $field ( $record->field($scope) ) {
-        my $value = $field->as_string();
+        my $isbn = $field->as_string();
         if ( $isbn ne "" ) {
-            $marcisbn = { marcisbn => $isbn, };
-            push @marcisbns, $marcisbn;
-            $isbn = $value;
-        }
-        if ( $isbn ne $value ) {
-            $isbn = $isbn . " " . $value;
+            push @marcisbns, $isbn;
         }
     }
 
-    if ($isbn) {
-        $marcisbn = { marcisbn => $isbn };
-        push @marcisbns, $marcisbn;    #load last tag into array
-    }
     return \@marcisbns;
 }    # end GetMarcISBN
 

@@ -242,7 +242,7 @@ usage_error('You must at least specify input and string list filenames.')
     if !$in_dir || !defined $str_file;
 
 # Type match defaults to *.tt plus *.inc if not specified
-$type = "tt|inc|xsl|xml" if !defined($type);
+$type = "tt|inc|xsl|xml|def" if !defined($type);
 
 # Check the inputs for being directories
 usage_error("$in_dir: Input must be a directory.\n"
@@ -353,8 +353,8 @@ if ($action eq 'create')  {
     error_normal "Text extraction failed: $xgettext: $!\n", undef;
     error_additional "Will not run msgmerge\n", undef;
     }
-#   unlink $tmpfile1 || warn_normal "$tmpfile1: unlink failed: $!\n", undef;
-#   unlink $tmpfile2 || warn_normal "$tmpfile2: unlink failed: $!\n", undef;
+    unlink $tmpfile1 || warn_normal "$tmpfile1: unlink failed: $!\n", undef;
+    unlink $tmpfile2 || warn_normal "$tmpfile2: unlink failed: $!\n", undef;
 
 } elsif ($action eq 'update') {
     my($tmph1, $tmpfile1) = tmpnam();
@@ -386,8 +386,8 @@ if ($action eq 'create')  {
         error_normal "Text extraction failed: $xgettext: $!\n", undef;
         error_additional "Will not run msgmerge\n", undef;
     }
-#   unlink $tmpfile1 || warn_normal "$tmpfile1: unlink failed: $!\n", undef;
-#   unlink $tmpfile2 || warn_normal "$tmpfile2: unlink failed: $!\n", undef;
+    unlink $tmpfile1 || warn_normal "$tmpfile1: unlink failed: $!\n", undef;
+    unlink $tmpfile2 || warn_normal "$tmpfile2: unlink failed: $!\n", undef;
 
 } elsif ($action eq 'install') {
     if(!defined($out_dir)) {

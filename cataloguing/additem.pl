@@ -698,7 +698,7 @@ foreach my $field (@fields) {
         if (($field->tag eq $branchtagfield) && ($subfieldcode eq $branchtagsubfield) && C4::Context->preference("IndependentBranches")) {
             #verifying rights
             my $userenv = C4::Context->userenv();
-            unless (($userenv->{'flags'} == 1) or (($userenv->{'branch'} eq $subfieldvalue))){
+            unless (C4::Context->IsSuperLibrarian() or (($userenv->{'branch'} eq $subfieldvalue))){
                 $this_row{'nomod'} = 1;
             }
         }
@@ -756,10 +756,11 @@ my $i=0;
 
 my $pref_itemcallnumber = C4::Context->preference('itemcallnumber');
 
-my $onlymine = C4::Context->preference('IndependentBranches') &&
-               C4::Context->userenv                           && 
-               C4::Context->userenv->{flags}!=1               && 
-               C4::Context->userenv->{branch};
+my $onlymine =
+     C4::Context->preference('IndependentBranches')
+  && C4::Context->userenv
+  && !C4::Context->IsSuperLibrarian()
+  && C4::Context->userenv->{branch};
 my $branch = $input->param('branch') || C4::Context->userenv->{branch};
 my $branches = GetBranchesLoop($branch,$onlymine);  # build once ahead of time, instead of multiple times later.
 

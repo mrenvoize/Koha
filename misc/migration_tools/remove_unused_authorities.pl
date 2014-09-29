@@ -46,16 +46,13 @@ if ($test) {
 }
 
 my $dbh=C4::Context->dbh;
-@authtypes or @authtypes = qw( NC );
 my $thresholdmin=0;
 my $thresholdmax=0;
 my @results;
 # prepare the request to retrieve all authorities of the requested types
-my $rqselect = $dbh->prepare(
-    qq{SELECT * from auth_header where authtypecode IN (}
-    . join(",",map{$dbh->quote($_)}@authtypes)
-    . ")"
-);
+my $rqsql = "SELECT * from auth_header where 1";
+$rqsql .= " AND authtypecode IN (".join(",",map{$dbh->quote($_)}@authtypes).")" if @authtypes;
+my $rqselect = $dbh->prepare($rqsql);
 $|=1;
 
 $rqselect->execute;
@@ -87,10 +84,19 @@ print "$counter authorities parsed, $totdeleted deleted and $totundeleted unchan
 
 sub print_usage {
     print <<_USAGE_;
-$0: Removes unused authorities.
+$0: Remove unused authority records
 
-This script will parse all authoritiestypes given as parameter, and remove authorities without any biblio attached.
-warning : there is no individual confirmation !
+This script removes authority records that do not have any biblio
+records attached to them.
+
+If the --aut option is supplied, only authority records of that
+particular type will be checked for usage.  --aut can be repeated.
+
+If --aut is not supplied, all authority records will be checked.
+
+Use --test to perform a test run.  This script does not ask the
+operator to confirm the deletion of each authority record.
+
 parameters
     --aut|authtypecode TYPE       the list of authtypes to check
     --test or -t                  test mode, don't delete really, just count

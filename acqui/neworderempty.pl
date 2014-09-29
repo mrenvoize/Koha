@@ -182,6 +182,7 @@ if ( $ordernumber eq '' ) {    # create order
 # otherwise, retrieve suggestion information.
     if ($suggestionid) {
         $data = ($biblionumber) ? GetBiblioData($biblionumber) : GetSuggestion($suggestionid);
+        $budget_id ||= $data->{'budgetid'} // 0;
     }
 }
 else {    #modify order
@@ -229,10 +230,11 @@ for my $curr ( @rates ) {
 }
 
 # build branches list
-my $onlymine=C4::Context->preference('IndependentBranches') &&
-            C4::Context->userenv && 
-            C4::Context->userenv->{flags}!=1 && 
-            C4::Context->userenv->{branch};
+my $onlymine =
+     C4::Context->preference('IndependentBranches')
+  && C4::Context->userenv
+  && !C4::Context->IsSuperLibrarian()
+  && C4::Context->userenv->{branch};
 my $branches = GetBranches($onlymine);
 my @branchloop;
 foreach my $thisbranch ( sort {$branches->{$a}->{'branchname'} cmp $branches->{$b}->{'branchname'}} keys %$branches ) {
@@ -354,7 +356,7 @@ $template->param(
 
 # get option values for gist syspref
 my @gst_values = map {
-    option => $_
+    option => $_ + 0.0
 }, split( '\|', C4::Context->preference("gist") );
 
 $template->param(

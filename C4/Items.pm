@@ -1276,7 +1276,7 @@ sub GetItemsInfo {
             $datedue                = $idata->{'date_due'};
         if (C4::Context->preference("IndependentBranches")){
         my $userenv = C4::Context->userenv;
-        if ( ($userenv) && ( $userenv->{flags} % 2 != 1 ) ) { 
+        unless ( C4::Context->IsSuperLibrarian() ) {
             $data->{'NOTSAMEBRANCH'} = 1 if ($idata->{'bcode'} ne $userenv->{branch});
         }
         }
@@ -2238,7 +2238,7 @@ sub DelItemCheck {
     if ($onloan){
         $error = "book_on_loan" 
     }
-    elsif ( !( C4::Context->userenv->{flags} & 1 )
+    elsif ( !C4::Context->IsSuperLibrarian()
         and C4::Context->preference("IndependentBranches")
         and ( C4::Context->userenv->{branch} ne $item->{'homebranch'} ) )
     {
@@ -2661,7 +2661,8 @@ sub PrepareItemrecordDisplay {
                 $subfield_data{mandatory}  = $tagslib->{$tag}->{$subfield}->{mandatory};
                 $subfield_data{repeatable} = $tagslib->{$tag}->{$subfield}->{repeatable};
                 $subfield_data{hidden}     = "display:none"
-                  if $tagslib->{$tag}->{$subfield}->{hidden};
+                  if ( ( $tagslib->{$tag}->{$subfield}->{hidden} > 4 )
+                    || ( $tagslib->{$tag}->{$subfield}->{hidden} < -4 ) );
                 my ( $x, $defaultvalue );
                 if ($itemrecord) {
                     ( $x, $defaultvalue ) = _find_value( $tag, $subfield, $itemrecord );
@@ -2720,7 +2721,7 @@ sub PrepareItemrecordDisplay {
                     #---- branch
                     if ( $tagslib->{$tag}->{$subfield}->{'authorised_value'} eq "branches" ) {
                         if (   ( C4::Context->preference("IndependentBranches") )
-                            && ( C4::Context->userenv && C4::Context->userenv->{flags} % 2 != 1 ) ) {
+                            && !C4::Context->IsSuperLibrarian() ) {
                             my $sth = $dbh->prepare( "SELECT branchcode,branchname FROM branches WHERE branchcode = ? ORDER BY branchname" );
                             $sth->execute( C4::Context->userenv->{branch} );
                             push @authorised_values, ""

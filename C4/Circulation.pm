@@ -896,7 +896,7 @@ sub CanBookBeIssued {
     }
     if ( C4::Context->preference("IndependentBranches") ) {
         my $userenv = C4::Context->userenv;
-        if ( ($userenv) && ( $userenv->{flags} % 2 != 1 ) ) {
+        unless ( C4::Context->IsSuperLibrarian() ) {
             if ( $item->{C4::Context->preference("HomeOrHoldingBranch")} ne $userenv->{branch} ){
                 $issuingimpossible{ITEMNOTSAMEBRANCH} = 1;
                 $issuingimpossible{'itemhomebranch'} = $item->{C4::Context->preference("HomeOrHoldingBranch")};
@@ -2479,7 +2479,7 @@ sub CanBookBeRenewed {
     my $itemissue = GetItemIssue($itemnumber) or return ( 0, 'no_checkout' );
 
     $borrowernumber ||= $itemissue->{borrowernumber};
-    my $borrower = C4::Members::GetMemberDetails($borrowernumber)
+    my $borrower = C4::Members::GetMember( borrowernumber => $borrowernumber )
       or return;
 
     my $branchcode  = _GetCircControlBranch($item, $borrower);

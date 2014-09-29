@@ -632,9 +632,12 @@ sub GetBasketsInfosByBookseller {
     return unless $supplierid;
 
     my $dbh = C4::Context->dbh;
-    my $query = qq{
+    my $query = q{
         SELECT aqbasket.*,
           SUM(aqorders.quantity) AS total_items,
+          SUM(
+            IF ( aqorders.orderstatus = 'cancelled', aqorders.quantity, 0 )
+          ) AS total_items_cancelled,
           COUNT(DISTINCT aqorders.biblionumber) AS total_biblios,
           SUM(
             IF(aqorders.datereceived IS NULL
@@ -645,14 +648,30 @@ sub GetBasketsInfosByBookseller {
         FROM aqbasket
           LEFT JOIN aqorders ON aqorders.basketno = aqbasket.basketno
         WHERE booksellerid = ?};
-    if(!$allbaskets) {
+
+    unless ( $allbaskets ) {
         $query.=" AND (closedate IS NULL OR (aqorders.quantity > aqorders.quantityreceived AND datecancellationprinted IS NULL))";
     }
     $query.=" GROUP BY aqbasket.basketno";
 
     my $sth = $dbh->prepare($query);
     $sth->execute($supplierid);
-    return $sth->fetchall_arrayref({});
+    my $baskets = $sth->fetchall_arrayref({});
+
+    # Retrieve the number of biblios cancelled
+    my $cancelled_biblios = $dbh->selectall_hashref( q|
+        SELECT COUNT(DISTINCT(biblionumber)) AS total_biblios_cancelled, aqbasket.basketno
+        FROM aqbasket
+        LEFT JOIN aqorders ON aqorders.basketno = aqbasket.basketno
+        WHERE booksellerid = ?
+        AND aqorders.orderstatus = 'cancelled'
+        GROUP BY aqbasket.basketno
+    |, 'basketno', {}, $supplierid );
+    map {
+        $_->{total_biblios_cancelled} = $cancelled_biblios->{$_->{basketno}}{total_biblios_cancelled} || 0
+    } @$baskets;
+
+    return $baskets;
 }
 
 =head3 GetBasketUsers
@@ -1419,8 +1438,20 @@ sub GetCancelledOrders {
 
 =head3 ModReceiveOrder
 
-  &ModReceiveOrder($biblionumber, $ordernumber, $quantityreceived, $user,
-    $cost, $ecost, $invoiceid, rrp, budget_id, datereceived, \@received_itemnumbers);
+  &ModReceiveOrder({
+    biblionumber => $biblionumber,
+    ordernumber => $ordernumber,
+    quantityreceived => $quantityreceived,
+    user => $user,
+    cost => $cost,
+    ecost => $ecost,
+    invoiceid => $invoiceid,
+    rrp => $rrp,
+    budget_id => $budget_id,
+    datereceived => $datereceived,
+    received_itemnumbers => \@received_itemnumbers,
+    notes => $notes,
+   });
 
 Updates an order, to reflect the fact that it was received, at least
 in part. All arguments not mentioned below update the fields with the
@@ -1435,11 +1466,19 @@ C<$ordernumber>.
 
 
 sub ModReceiveOrder {
-    my (
-        $biblionumber,    $ordernumber,  $quantrec, $user, $cost, $ecost,
-        $invoiceid, $rrp, $budget_id, $datereceived, $received_items
-    )
-    = @_;
+    my ( $params ) = @_;
+    my $biblionumber = $params->{biblionumber};
+    my $ordernumber = $params->{ordernumber};
+    my $quantrec = $params->{quantityreceived};
+    my $user = $params->{user};
+    my $cost = $params->{cost};
+    my $ecost = $params->{ecost};
+    my $invoiceid = $params->{invoiceid};
+    my $rrp = $params->{rrp};
+    my $budget_id = $params->{budget_id};
+    my $datereceived = $params->{datereceived};
+    my $received_items = $params->{received_items};
+    my $notes = $params->{notes};
 
     my $dbh = C4::Context->dbh;
     $datereceived = C4::Dates->output('iso') unless $datereceived;
@@ -1465,14 +1504,15 @@ q{SELECT * FROM aqorders WHERE biblionumber=? AND aqorders.ordernumber=?},
         # without received items (the quantity is decreased),
         # the second part is a new order line with quantity=quantityrec
         # (entirely received)
-        my $sth=$dbh->prepare("
+        my $query = q|
             UPDATE aqorders
             SET quantity = ?,
-                orderstatus = 'partial'
-            WHERE ordernumber = ?
-        ");
+                orderstatus = 'partial'|;
+        $query .= q|, notes = ?| if defined $notes;
+        $query .= q| WHERE ordernumber = ?|;
+        my $sth = $dbh->prepare($query);
 
-        $sth->execute($order->{quantity} - $quantrec, $ordernumber);
+        $sth->execute($order->{quantity} - $quantrec, ( defined $notes ? $notes : () ), $ordernumber);
 
         delete $order->{'ordernumber'};
         $order->{'budget_id'} = ( $budget_id || $order->{'budget_id'} );
@@ -1493,11 +1533,14 @@ q{SELECT * FROM aqorders WHERE biblionumber=? AND aqorders.ordernumber=?},
             }
         }
     } else {
-        my $sth=$dbh->prepare("update aqorders
-                            set quantityreceived=?,datereceived=?,invoiceid=?,
-                                unitprice=?,rrp=?,ecost=?,budget_id=?,orderstatus='complete'
-                            where biblionumber=? and ordernumber=?");
-        $sth->execute($quantrec,$datereceived,$invoiceid,$cost,$rrp,$ecost,$budget_id,$biblionumber,$ordernumber);
+        my $query = q|
+            update aqorders
+            set quantityreceived=?,datereceived=?,invoiceid=?,
+                unitprice=?,rrp=?,ecost=?,budget_id=?,orderstatus='complete'|;
+        $query .= q|, notes = ?| if defined $notes;
+        $query .= q| where biblionumber=? and ordernumber=?|;
+        my $sth = $dbh->prepare( $query );
+        $sth->execute($quantrec,$datereceived,$invoiceid,$cost,$rrp,$ecost,$budget_id,( defined $notes ? $notes : () ),$biblionumber,$ordernumber);
     }
     return ($datereceived, $new_ordernumber);
 }
@@ -1679,6 +1722,14 @@ sub SearchOrders {
             LEFT JOIN borrowers ON aqbasket.authorisedby=borrowers.borrowernumber
             LEFT JOIN biblio ON aqorders.biblionumber=biblio.biblionumber
             LEFT JOIN biblioitems ON biblioitems.biblionumber=biblio.biblionumber
+    };
+
+    # If we search on ordernumber, we retrieve the transfered order if a transfer has been done.
+    $query .= q{
+            LEFT JOIN aqorders_transfers ON aqorders_transfers.ordernumber_to = aqorders.ordernumber
+    } if $ordernumber;
+
+    $query .= q{
         WHERE (datecancellationprinted is NULL)
     };
 
@@ -1688,7 +1739,7 @@ sub SearchOrders {
 
     my $userenv = C4::Context->userenv;
     if ( C4::Context->preference("IndependentBranches") ) {
-        if ( ( $userenv ) and ( $userenv->{flags} != 1 ) ) {
+        unless ( C4::Context->IsSuperLibrarian() ) {
             $query .= q{
                 AND (
                     borrowers.branchcode = ?
@@ -1700,8 +1751,8 @@ sub SearchOrders {
     }
 
     if ( $ordernumber ) {
-        $query .= ' AND (aqorders.ordernumber=?)';
-        push @args, $ordernumber;
+        $query .= ' AND ( aqorders.ordernumber = ? OR aqorders_transfers.ordernumber_from = ? ) ';
+        push @args, ( $ordernumber, $ordernumber );
     }
     if( $search ) {
         $query .= ' AND (biblio.title LIKE ? OR biblio.author LIKE ? OR biblioitems.isbn LIKE ?)';
@@ -1884,11 +1935,10 @@ sub GetParcel {
 
     my @query_params = ( $supplierid, $code, $datereceived );
     if ( C4::Context->preference("IndependentBranches") ) {
-        my $userenv = C4::Context->userenv;
-        if ( ($userenv) && ( $userenv->{flags} != 1 ) ) {
+        unless ( C4::Context->IsSuperLibrarian() ) {
             $strsth .= " and (borrowers.branchcode = ?
                         or borrowers.branchcode  = '')";
-            push @query_params, $userenv->{branch};
+            push @query_params, C4::Context->userenv->{branch};
         }
     }
     $strsth .= " ORDER BY aqbasket.basketno";
@@ -2098,8 +2148,7 @@ sub GetLateOrders {
         $from .= ' AND ADDDATE(aqbasket.closedate, INTERVAL aqbooksellers.deliverytime DAY) <= CAST(now() AS date)';
     }
     if (C4::Context->preference("IndependentBranches")
-            && C4::Context->userenv
-            && C4::Context->userenv->{flags} != 1 ) {
+            && !C4::Context->IsSuperLibrarian() ) {
         $from .= ' AND borrowers.branchcode LIKE ? ';
         push @query_params, C4::Context->userenv->{branch};
     }
@@ -2295,10 +2344,9 @@ sub GetHistory {
     }
 
     if ( C4::Context->preference("IndependentBranches") ) {
-        my $userenv = C4::Context->userenv;
-        if ( $userenv && ($userenv->{flags} || 0) != 1 ) {
+        unless ( C4::Context->IsSuperLibrarian() ) {
             $query .= " AND (borrowers.branchcode = ? OR borrowers.branchcode ='' ) ";
-            push @query_params, $userenv->{branch};
+            push @query_params, C4::Context->userenv->{branch};
         }
     }
     $query .= " ORDER BY id";

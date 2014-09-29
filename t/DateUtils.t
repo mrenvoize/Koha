@@ -5,7 +5,7 @@ use DateTime;
 use DateTime::TimeZone;
 
 use C4::Context;
-use Test::More tests => 31;
+use Test::More tests => 34;
 use Test::MockModule;
 
 BEGIN { use_ok('Koha::DateUtils'); }
@@ -69,13 +69,7 @@ cmp_ok $date_string, 'eq', '16/06/2011', 'metric output (date only)';
 
 $date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '24hr' });
 cmp_ok $date_string, 'eq', '16/06/2011 12:00',
-  'output_pref_due preserves non midnight HH:SS';
-
-$dt->set_hour(23);
-$dt->set_minute(59);
-$date_string = output_pref_due({ dt => $dt, dateformat => 'metric', timeformat => '24hr' });
-cmp_ok $date_string, 'eq', '16/06/2011',
-  'output_pref_due truncates HH:SS at midnight';
+  'output_pref preserves non midnight HH:SS';
 
 my $dear_dirty_dublin = DateTime::TimeZone->new( name => 'Europe/Dublin' );
 my $new_dt = dt_from_string( '16/06/2011', 'metric', $dear_dirty_dublin );
@@ -119,13 +113,35 @@ $formatted = format_sqldatetime( undef, 'metric' );
 cmp_ok( $formatted, 'eq', q{},
     'format_sqldatetime formats undef as empty string' );
 
-$formatted = format_sqlduedatetime( '2011-06-16 12:00:07', 'metric', '24hr' );
-cmp_ok(
-    $formatted, 'eq',
-    '16/06/2011 12:00',
-    'format_sqlduedatetime conversion for hourly loans'
+# Test the as_due_date parameter
+$dt = DateTime->new(
+    year       => 2013,
+    month      => 12,
+    day        => 11,
+    hour       => 23,
+    minute     => 59,
 );
+$date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '24hr', as_due_date => 1 });
+cmp_ok $date_string, 'eq', '11/12/2013', 'as_due_date with hours and timeformat 24hr';
 
-$formatted = format_sqlduedatetime( '2011-06-16 23:59:07', 'metric', '24hr' );
-cmp_ok( $formatted, 'eq', '16/06/2011',
-    'format_sqlduedatetime conversion for daily loans' );
+$date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '24hr', dateonly => 1, as_due_date => 1});
+cmp_ok $date_string, 'eq', '11/12/2013', 'as_due_date without hours and timeformat 24hr';
+
+$date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '12hr', as_due_date => 1 });
+cmp_ok $date_string, 'eq', '11/12/2013', 'as_due_date with hours and timeformat 12hr';
+
+$date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '12hr', dateonly => 1, as_due_date => 1});
+cmp_ok $date_string, 'eq', '11/12/2013', 'as_due_date without hours and timeformat 12hr';
+
+# Test as_due_date for hourly loans
+$dt = DateTime->new(
+    year       => 2013,
+    month      => 12,
+    day        => 11,
+    hour       => 18,
+    minute     => 35,
+);
+$date_string = output_pref({ dt => $dt, dateformat => 'metric', timeformat => '24hr', as_due_date => 1 });
+cmp_ok $date_string, 'eq', '11/12/2013 18:35', 'as_due_date with hours and timeformat 24hr (non-midnight time)';
+$date_string = output_pref({ dt => $dt, dateformat => 'us', timeformat => '12hr', as_due_date => 1 });
+cmp_ok $date_string, 'eq', '12/11/2013 06:35 PM', 'as_due_date with hours and timeformat 12hr (non-midnight time)';

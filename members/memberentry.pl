@@ -312,7 +312,7 @@ if ($op eq 'save' || $op eq 'insert'){
     }
 
   if (C4::Context->preference("IndependentBranches")) {
-    if ($userenv && $userenv->{flags} % 2 != 1){
+    unless ( C4::Context->IsSuperLibrarian() ){
       $debug and print STDERR "  $newdata{'branchcode'} : ".$userenv->{flags}.":".$userenv->{branch};
       unless (!$newdata{'branchcode'} || $userenv->{branch} eq $newdata{'branchcode'}){
         push @errors, "ERROR_branch";
@@ -449,7 +449,7 @@ if ($nok or !$nodouble){
 } 
 if (C4::Context->preference("IndependentBranches")) {
     my $userenv = C4::Context->userenv;
-    if ($userenv->{flags} % 2 != 1 && $data{'branchcode'}){
+    if ( !C4::Context->IsSuperLibrarian() && $data{'branchcode'} ) {
         unless ($userenv->{branch} eq $data{'branchcode'}){
             print $input->redirect("/cgi-bin/koha/members/members-home.pl");
             exit;
@@ -797,7 +797,7 @@ sub patron_attributes_form {
         };
         if (exists $attr_hash{$attr_type->code()}) {
             foreach my $attr (@{ $attr_hash{$attr_type->code()} }) {
-                my $newentry = { map { $_ => $entry->{$_} } %$entry };
+                my $newentry = { %$entry };
                 $newentry->{value} = $attr->{value};
                 $newentry->{password} = $attr->{password};
                 $newentry->{use_dropdown} = 0;
@@ -811,7 +811,7 @@ sub patron_attributes_form {
             }
         } else {
             $i++;
-            my $newentry = { map { $_ => $entry->{$_} } %$entry };
+            my $newentry = { %$entry };
             if ($attr_type->authorised_value_category()) {
                 $newentry->{use_dropdown} = 1;
                 $newentry->{auth_val_loop} = GetAuthorisedValues($attr_type->authorised_value_category());

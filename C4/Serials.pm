@@ -419,9 +419,9 @@ sub PrepareSerialsData {
 
     foreach my $subs (@{$lines}) {
         for my $datefield ( qw(publisheddate planneddate) ) {
-            # handle both undef and undef returned as 0000-00-00
-            if (!defined $subs->{$datefield} or $subs->{$datefield}=~m/^00/) {
-                $subs->{$datefield} = 'XXX';
+            # handle 0000-00-00 dates
+            if (defined $subs->{$datefield} and $subs->{$datefield} =~ m/^00/) {
+                $subs->{$datefield} = undef;
             }
         }
         $subs->{ "status" . $subs->{'status'} } = 1;
@@ -736,10 +736,7 @@ sub SearchSubscriptions {
 
     for my $subscription ( @$results ) {
         $subscription->{cannotedit} = not can_edit_subscription( $subscription );
-        $subscription->{cannotdisplay} =
-            ( C4::Context->preference("IndependentBranches") &&
-              C4::Context->userenv &&
-              $subscription->{branchcode} ne C4::Context->userenv->{'branch'} ) ? 1 : 0;
+        $subscription->{cannotdisplay} = not can_show_subscription( $subscription );
     }
 
     return @$results;
@@ -1233,10 +1230,6 @@ sub ModSerialStatus {
         DelIssue( { 'serialid' => $serialid, 'subscriptionid' => $subscriptionid, 'serialseq' => $serialseq } );
     } else {
 
-        unless ($frequency->{'unit'}) {
-            if ( not $planneddate or $planneddate eq '0000-00-00' ) { $planneddate = C4::Dates->new()->output('iso') };
-            if ( not $publisheddate or $publisheddate eq '0000-00-00' ) { $publisheddate = C4::Dates->new()->output('iso') };
-        }
         my $query = 'UPDATE serial SET serialseq=?,publisheddate=?,planneddate=?,status=?,notes=? WHERE  serialid = ?';
         $sth = $dbh->prepare($query);
         $sth->execute( $serialseq, $publisheddate, $planneddate, $status, $notes, $serialid );
@@ -1527,14 +1520,14 @@ sub NewSubscription {
     my $pattern = C4::Serials::Numberpattern::GetSubscriptionNumberpattern($subscription->{numberpattern});
 
     # calculate issue number
-    my $serialseq = GetSeq($subscription, $pattern);
+    my $serialseq = GetSeq($subscription, $pattern) || q{};
     $query = qq|
         INSERT INTO serial
             (serialseq,subscriptionid,biblionumber,status, planneddate, publisheddate)
         VALUES (?,?,?,?,?,?)
     |;
     $sth = $dbh->prepare($query);
-    $sth->execute( "$serialseq", $subscriptionid, $biblionumber, 1, $firstacquidate, $firstacquidate );
+    $sth->execute( $serialseq, $subscriptionid, $biblionumber, 1, $firstacquidate, $firstacquidate );
 
     logaction( "SERIAL", "ADD", $subscriptionid, "" ) if C4::Context->preference("SubscriptionLog");
 
@@ -2526,12 +2519,14 @@ skipped then the returned date will be 2007-05-10
 return :
 $resultdate - then next date in the sequence (ISO date)
 
-Return $publisheddate if subscription is irregular
+Return undef if subscription is irregular
 
 =cut
 
 sub GetNextDate {
     my ( $subscription, $publisheddate, $updatecount ) = @_;
+
+    return unless $subscription and $publisheddate;
 
     my $freqdata = GetSubscriptionFrequency($subscription->{'periodicity'});
 
@@ -2669,9 +2664,6 @@ sub GetNextDate {
             $sth->execute($subscription->{'countissuesperunit'}, $subscription->{'subscriptionid'});
         }
         return sprintf("%04d-%02d-%02d", $year, $month, $day);
-    }
-    else {
-        return $publisheddate;
     }
 }
 
@@ -2826,27 +2818,59 @@ sub subscriptionCurrentlyOnOrder {
 
     $can = can_edit_subscription( $subscriptionid[, $userid] );
 
-Return 1 if the subscription is editable by the current logged user (or a given $userid), else 0.
+Return 1 if the subscription can be edited by the current logged user (or a given $userid), else 0.
 
 =cut
 
 sub can_edit_subscription {
     my ( $subscription, $userid ) = @_;
+    return _can_do_on_subscription( $subscription, $userid, 'edit_subscription' );
+}
+
+=head2 can_show_subscription
+
+    $can = can_show_subscription( $subscriptionid[, $userid] );
+
+Return 1 if the subscription can be shown by the current logged user (or a given $userid), else 0.
+
+=cut
+
+sub can_show_subscription {
+    my ( $subscription, $userid ) = @_;
+    return _can_do_on_subscription( $subscription, $userid, '*' );
+}
+
+sub _can_do_on_subscription {
+    my ( $subscription, $userid, $permission ) = @_;
     return 0 unless C4::Context->userenv;
     my $flags = C4::Context->userenv->{flags};
     $userid ||= C4::Context->userenv->{'id'};
-    my $independent_branches = C4::Context->preference('IndependentBranches');
-    return 1 unless $independent_branches;
-    if( $flags % 2 == 1 # superlibrarian
-        or C4::Auth::haspermission( $userid, {serials => 'superserials'}),
-        or C4::Auth::haspermission( $userid, {serials => 'edit_subscription'}),
-        or not defined $subscription->{branchcode}
-        or $subscription->{branchcode} eq ''
-        or $subscription->{branchcode} eq C4::Context->userenv->{'branch'}
-    ) {
-        return 1;
+
+    if ( C4::Context->preference('IndependentBranches') ) {
+        return 1
+          if C4::Context->IsSuperLibrarian()
+              or
+              C4::Auth::haspermission( $userid, { serials => 'superserials' } )
+              or (
+                  C4::Auth::haspermission( $userid,
+                      { serials => $permission } )
+                  and (  not defined $subscription->{branchcode}
+                      or $subscription->{branchcode} eq ''
+                      or $subscription->{branchcode} eq
+                      C4::Context->userenv->{'branch'} )
+              );
     }
-     return 0;
+    else {
+        return 1
+          if C4::Context->IsSuperLibrarian()
+              or
+              C4::Auth::haspermission( $userid, { serials => 'superserials' } )
+              or C4::Auth::haspermission(
+                  $userid, { serials => $permission }
+              ),
+        ;
+    }
+    return 0;
 }
 
 1;

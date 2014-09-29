@@ -105,6 +105,7 @@ use C4::Debug;
 use POSIX ();
 use DateTime::TimeZone;
 use Module::Load::Conditional qw(can_load);
+use Carp;
 
 =head1 NAME
 
@@ -1241,6 +1242,25 @@ sub tz {
 }
 
 
+=head2 IsSuperLibrarian
+
+    C4::Context->IsSuperlibrarian();
+
+=cut
+
+sub IsSuperLibrarian {
+    my $userenv = C4::Context->userenv;
+
+    unless ( $userenv and exists $userenv->{flags} ) {
+        # If we reach this without a user environment,
+        # assume that we're running from a command-line script,
+        # and act as a superlibrarian.
+        carp("C4::Context->userenv not defined!");
+        return 1;
+    }
+
+    return ($userenv->{flags}//0) % 2;
+}
 
 1;
 __END__

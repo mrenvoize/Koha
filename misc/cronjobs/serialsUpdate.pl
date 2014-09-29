@@ -99,8 +99,10 @@ my $sth = $dbh->prepare(
      FROM serial 
      LEFT JOIN subscription 
        ON (subscription.subscriptionid=serial.subscriptionid) 
+     LEFT JOIN subscription_frequencies
+       ON (subscription.periodicity = subscription_frequencies.id)
      WHERE serial.status = 1 
-       AND periodicity <> 32
+       AND subscription_frequencies.unit IS NOT NULL
        AND DATE_ADD(planneddate, INTERVAL CAST(graceperiod AS SIGNED) DAY) < NOW()
        AND subscription.closed = 0
     }
@@ -110,10 +112,10 @@ $sth->execute();
 while ( my $issue = $sth->fetchrow_hashref ) {
 
     my $subscription = &GetSubscription( $issue->{subscriptionid} );
-    my $planneddate  = $issue->{planneddate};
+    my $publisheddate  = $issue->{publisheddate};
 
-    if ( $subscription && $planneddate && $planneddate ne "0000-00-00" ) {
-        my $nextpublisheddate = GetNextDate( $planneddate, $subscription );
+    if ( $subscription && $publisheddate && $publisheddate ne "0000-00-00" ) {
+        my $nextpublisheddate = GetNextDate( $subscription, $publisheddate );
         my $today = format_date_in_iso( C4::Dates->new()->output() );
 
         if ( $nextpublisheddate && $today ) {
