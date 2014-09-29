@@ -42,10 +42,10 @@ $.tablesorter.addParser({
             }
             return valid;
         });
-        $("#renewselected_link").live('click',function(){
+        $("body").on("click","#renewselected_link",function(){
             $("#renewselected").submit();
         });
-        $("#renewall_link").live('click',function(){
+        $("body").on("click","#renewall_link",function(){
             $("#renewall").submit();
         });
         $("#checkoutst caption").append("<div id=\"renewcontrols\"><a id=\"renewselected_link\" href=\"#\">"+_("Renew selected")+"</a> <a id=\"renewall_link\" href=\"#\">"+_("Renew all")+"</a></div>");[% END %]
@@ -206,7 +206,7 @@ $.tablesorter.addParser({
         [% END %]</tbody>
         </table>
        [% IF ( canrenew && !userdebarred && OpacRenewalAllowed ) %]
-        <input type="submit" value="Renew Selected" />
+        <input type="submit" value="Renew selected" />
         [% END %]
         </form>
         [% IF ( canrenew && !userdebarred && OpacRenewalAllowed ) %]
@@ -216,7 +216,7 @@ $.tablesorter.addParser({
             [% FOREACH ISSUE IN ISSUES %]
             <input type="hidden" name="item" value="[% ISSUE.itemnumber %]" />
             [% END %]
-            <input type="submit" value="Renew All" />
+            <input type="submit" value="Renew all" />
         </form>
         [% END %]
     [% ELSE %]

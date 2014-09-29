@@ -6987,9 +6987,24 @@ if ( CheckVersion($DBversion) ) {
     SetVersion ($DBversion);
 }
 
-$DBversion = "3.12.112.000";
+$DBversion = "3.12.12.000";
 if ( CheckVersion($DBversion) ) {
     print "Upgrade to $DBversion done (3.12.12 release)\n";
+    SetVersion ($DBversion);
+}
+
+$DBversion = "3.12.12.001";
+if ( CheckVersion($DBversion) ) {
+    $dbh->do(q{
+        UPDATE language_descriptions SET description = 'Հայերեն' WHERE subtag = 'hy' AND lang = 'hy';
+    });
+    print "Upgrade to $DBversion done (Bug 11973 - Fix Armenian language description)\n";
+    SetVersion($DBversion);
+}
+
+$DBversion = "3.12.14.000";
+if ( CheckVersion($DBversion) ) {
+    print "Upgrade to $DBversion done (3.12.14 release)\n";
     SetVersion ($DBversion);
 }
 
