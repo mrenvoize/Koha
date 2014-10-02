@@ -481,3 +481,7 @@ function CheckMandatorySubfields(p){
     });
     return total;
 }
+
+ $(document).ready(function() {
+    $(".input_marceditor, .indicator").addClass('noEnterSubmit');
+});

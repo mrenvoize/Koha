@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
-"PO-Revision-Date: 2014-08-18 15:39+0000\n"
+"PO-Revision-Date: 2014-09-02 13:45+0000\n"
 "Last-Translator: Héctor <hector.hecaxmmx@gmail.com>\n"
 "Language-Team: Koha Translate List <koha-translate@lists.koha-community.org>\n"
 "Language: es\n"
@@ -10,7 +10,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Pootle 2.5.0\n"
-"X-POOTLE-MTIME: 1408376351.0\n"
+"X-POOTLE-MTIME: 1409665516.0\n"
 
 # Acquisitions
 msgid "acquisitions.pref"
@@ -434,7 +434,7 @@ msgstr "No enlace"
 
 # Authorities > Linker
 msgid "authorities.pref#CatalogModuleRelink# automatically relink headings that have previously been linked when saving records in the cataloging module."
-msgstr "automáticamente a las cabeceras enlazadas previamente cuando guarde registros en el módulo de catalogación."
+msgstr "automáticamente a los encabezamientos enlazados previamente cuando guarde registros en el módulo de catalogación."
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerKeepStale# Do"
@@ -446,7 +446,7 @@ msgstr "No dejar"
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerKeepStale# keep existing links to authority records for headings where the linker is unable to find a match."
-msgstr "enlaces existentes a registros de autoridad para cabeceras donde el enlazador no encuentra coincidencias."
+msgstr "enlaces existentes a registros de autoridad para encabezados donde el enlazador no encuentra coincidencias."
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerModule# Default"
@@ -466,7 +466,7 @@ msgstr "Use el módulo de enlazado"
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerModule# linker module for matching headings to authority records."
-msgstr "para encontrar coincidencias de cabecera en registros de autoridad."
+msgstr "para encontrar coincidencias de encabezamientos en registros de autoridad."
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerOptions# (separate options with |)"
@@ -486,7 +486,7 @@ msgstr "No re-enlace"
 
 # Authorities > Linker
 msgid "authorities.pref#LinkerRelink# relink headings that have previously been linked to authority records."
-msgstr "cabeceras que fueron enlazadas a registros de autoridad."
+msgstr "encabezamientos que fueron enlazados a registros de autoridad."
 
 # Authorities > General
 msgid "authorities.pref#MARCAuthorityControlField008# Use the following text for the contents of MARC21 authority control field 008 position 06-39 (fixed length data elements). Do NOT include the date (position 00-05)."
@@ -2082,7 +2082,7 @@ msgstr " "
 
 # Creators > Patron Cards
 msgid "creators.pref Patron Cards"
-msgstr "Carnés de socios"
+msgstr "Carnés de usuarios"
 
 # Creators > Patron Cards
 msgid "creators.pref#ImageLimit# Limit the number of creator images stored in the database to"
@@ -3218,9 +3218,7 @@ msgstr "Incluir una columna \"Enlaces\" en las pestañas \"mi resúmen\" y \"mi 
 
 # OPAC > Appearance
 msgid "opac.pref#OPACMySummaryNote# Note to display on the patron summary page. This note only appears if the patron is logged in:"
-msgstr ""
-"Nota que se mostrará en la página de resumen del usuario. Esta nota sólo "
-"aparece si el usuario ha iniciado sesión:"
+msgstr "Nota que se mostrará en la página de resumen del usuario. Esta nota sólo aparece si el usuario ha iniciado sesión:"
 
 # OPAC > Appearance
 msgid "opac.pref#OPACNoResultsFound# <br />Note: You can insert placeholders {QUERY_KW} that will be replaced with the keywords of the query."
@@ -4416,7 +4414,7 @@ msgstr "caracteres, en OPAC/Interfaz Administrativa."
 
 # Searching > Features
 msgid "searching.pref#IncludeSeeFromInSearches# <i>see from</i> (non-preferred form) headings in bibliographic searches. Please note: you will need to reindex your bibliographic database when changing this preference."
-msgstr "<i>ver de</i> (forma no preferida) cabeceras en búsquedas bibliográficas. Por favor notar: necesitará reindexar su base bibliográfica cuando cambie esta preferencia"
+msgstr "<i>usado por</i> (forma no preferida) encabezamientos en búsquedas bibliográficas. Por favor notar: necesitará reindexar su base bibliográfica cuando cambie esta preferencia."
 
 # Searching > Features
 msgid "searching.pref#IncludeSeeFromInSearches# Don't include"
@@ -5193,3 +5191,4 @@ msgstr "Solo devolver"
 # Web services > Reporting
 msgid "web_services.pref#SvcMaxReportRows# rows of a report requested via the reports web service."
 msgstr "filas del reporte solicitado a través del web service de reportes."
+
