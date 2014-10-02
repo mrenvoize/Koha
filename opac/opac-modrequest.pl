@@ -45,7 +45,7 @@ my ( $template, $borrowernumber, $cookie ) = get_template_and_user(
 my $reserve_id = $query->param('reserve_id');
 
 if ($reserve_id && $borrowernumber) {
-  CancelReserve({ reserve_id => $reserve_id });
+    CancelReserve({ reserve_id => $reserve_id }) if CanReserveBeCanceledFromOpac($reserve_id, $borrowernumber);
 }
 
 print $query->redirect("/cgi-bin/koha/opac-user.pl#opac-user-holds");

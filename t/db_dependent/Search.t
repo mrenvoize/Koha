@@ -1,10 +1,22 @@
 #!/usr/bin/perl
-#
-# This Koha test module is a stub!
-# Add more tests here!!!
 
-use strict;
-use warnings;
+# This file is part of Koha.
+#
+# Koha is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# Koha is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Koha; if not, see <http://www.gnu.org/licenses>.
+
+use Modern::Perl;
+
 use utf8;
 
 use YAML;
@@ -117,6 +129,8 @@ $contextmodule->mock('preference', sub {
         return '--';
     } elsif ($pref eq 'DisplayLibraryFacets') {
         return 'holding';
+    } elsif ($pref eq 'UNIMARCAuthorsFacetsSeparator') {
+        return '--';
     } else {
         warn "The syspref $pref was requested but I don't know what to say; this indicates that the test requires updating"
             unless $pref =~ m/(XSLT|item|branch|holding|image)/i;
@@ -675,7 +689,7 @@ if ( $indexing_mode eq 'dom' ) {
     # make one of the test items appear to be in transit
     my $circ_module = new Test::MockModule('C4::Circulation');
     $circ_module->mock('GetTransfers', sub {
-        my $itemnumber = shift;
+        my $itemnumber = shift // -1;
         if ($itemnumber == 11) {
             return ('2013-07-19', 'MPL', 'CPL');
         } else {
@@ -833,12 +847,66 @@ if ( $indexing_mode eq 'dom' ) {
     is($newresults[0]->{biblionumber}, '300', 'Over-large bib record has the correct biblionumber (bug 11096)');
     like($newresults[0]->{notes}, qr/This is large note #550/, 'Able to render the notes field for over-large bib record (bug 11096)');
 
+    # notforloancount should be returned as part of searchResults output
+    ok( defined $newresults[0]->{notforloancount},
+        '\'notforloancount\' defined in searchResults output (Bug 12419)');
+    is( $newresults[0]->{notforloancount}, 2,
+        '\'notforloancount\' == 2 (Bug 12419)');
+
     # verify that we don't attempt to sort if no results were returned
     # because of a query error
     warning_like {( undef, $results_hashref, $facets_loop ) =
         getRecords('ccl=( AND )', '', ['title_az'], [ 'biblioserver' ], '20', 0, undef, \%branches, \%itemtypes, 'ccl', undef)
     } qr/WARNING: query problem with/, 'got warning instead of crash when attempting to run invalid query (bug 9578)';
     
+    # Test facet calculation
+    my $facets_counter = {};
+    my $facets         = C4::Koha::getFacets();
+    # Create a record with a 100$z field
+    my $marc_record    = MARC::Record->new;
+    $marc_record->add_fields(
+        [ '001', '1234' ],
+        [ '100', ' ', ' ', a => 'Cohen Arazi, Tomas' ],
+        [ '100', 'z', ' ', a => 'Tomasito' ],
+        [ '245', ' ', ' ', a => 'First try' ]
+    );
+    C4::Search::_get_facets_data_from_record( $marc_record, $facets, $facets_counter );
+    is_deeply( { au => { 'Cohen Arazi, Tomas' => 1 } },  $facets_counter,
+        "_get_facets_data_from_record doesn't count 100\$z (Bug 12788)");
+    $marc_record    = MARC::Record->new;
+    $marc_record->add_fields(
+        [ '001', '1234' ],
+        [ '100', ' ', ' ', a => 'Cohen Arazi, Tomas' ],
+        [ '100', 'z', ' ', a => 'Tomasito' ],
+        [ '245', ' ', ' ', a => 'Second try' ]
+    );
+    C4::Search::_get_facets_data_from_record( $marc_record, $facets, $facets_counter );
+    is_deeply( { au => { 'Cohen Arazi, Tomas' => 2 } },  $facets_counter,
+        "_get_facets_data_from_record correctly counts author facet twice");
+
+    # Test _get_facets_info
+    my $facets_info = C4::Search::_get_facets_info( $facets );
+    my $expected_facets_info_marc21 = {
+                   'au' => { 'expanded'    => undef,
+                             'label_value' => "Authors" },
+        'holdingbranch' => { 'expanded'    => undef,
+                             'label_value' => "HoldingLibrary" },
+                'itype' => { 'expanded'    => undef,
+                             'label_value' => "ItemTypes" },
+             'location' => { 'expanded'    => undef,
+                             'label_value' => "Location" },
+                   'se' => { 'expanded'    => undef,
+                             'label_value' => "Series" },
+               'su-geo' => { 'expanded'    => undef,
+                             'label_value' => "Places" },
+                'su-to' => { 'expanded'    => undef,
+                             'label_value' => "Topics" },
+                'su-ut' => { 'expanded'    => undef,
+                             'label_value' => "Titles" }
+    };
+    is_deeply( $facets_info, $expected_facets_info_marc21,
+        "_get_facets_info returns the correct data");
+
     cleanup();
 }
 
@@ -910,26 +978,48 @@ sub run_unimarc_search_tests {
     );
     is($count, 24, 'UNIMARC authorities: hits on any starts with "jean"');
 
+    # Test _get_facets_info
+    my $facets      = C4::Koha::getFacets();
+    my $facets_info = C4::Search::_get_facets_info( $facets );
+    my $expected_facets_info_unimarc = {
+                   'au' => { 'expanded'    => undef,
+                             'label_value' => "Authors" },
+        'holdingbranch' => { 'expanded'    => undef,
+                             'label_value' => "HoldingLibrary" },
+             'location' => { 'expanded'    => undef,
+                             'label_value' => "Location" },
+                   'se' => { 'expanded'    => undef,
+                             'label_value' => "Series" },
+               'su-geo' => { 'expanded'    => undef,
+                             'label_value' => "Places" },
+                'su-to' => { 'expanded'    => undef,
+                             'label_value' => "Topics" },
+                'su-ut' => { 'expanded'    => undef,
+                             'label_value' => "Titles" }
+    };
+    is_deeply( $facets_info, $expected_facets_info_unimarc,
+        "_get_facets_info returns the correct data");
+
     cleanup();
 }
 
 subtest 'MARC21 + GRS-1' => sub {
-    plan tests => 104;
+    plan tests => 109;
     run_marc21_search_tests('grs1');
 };
 
 subtest 'MARC21 + DOM' => sub {
-    plan tests => 104;
+    plan tests => 109;
     run_marc21_search_tests('dom');
 };
 
 subtest 'UNIMARC + GRS-1' => sub {
-    plan tests => 13;
+    plan tests => 14;
     run_unimarc_search_tests('grs1');
 };
 
 subtest 'UNIMARC + DOM' => sub {
-    plan tests => 13;
+    plan tests => 14;
     run_unimarc_search_tests('dom');
 };
 

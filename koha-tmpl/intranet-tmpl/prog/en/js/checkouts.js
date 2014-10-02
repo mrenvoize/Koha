@@ -138,6 +138,15 @@ $(document).ready(function() {
             {
                 "mDataProp": function( oObj ) {
                     if ( oObj.issued_today ) {
+                        return "0";
+                    } else {
+                        return "100";
+                    }
+                }
+            },
+            {
+                "mDataProp": function( oObj ) {
+                    if ( oObj.issued_today ) {
                         return "<strong>" + TODAYS_CHECKOUTS + "</strong>";
                     } else {
                         return "<strong>" + PREVIOUS_CHECKOUTS + "</strong>";
@@ -151,9 +160,7 @@ $(document).ready(function() {
             {
                 "iDataSort": 1, // Sort on hidden unformatted date due column
                 "mDataProp": function( oObj ) {
-                    var today = new Date();
-                    var due = new Date( oObj.date_due );
-                    if ( today > due ) {
+                    if ( oObj.date_due_overdue ) {
                         return "<span class='overdue'>" + oObj.date_due_formatted + "</span>";
                     } else {
                         return oObj.date_due_formatted;
@@ -329,8 +336,9 @@ $(document).ready(function() {
         },
     }).rowGrouping(
         {
+            iGroupingColumnIndex: 1,
             iGroupingOrderByColumnIndex: 0,
-            sGroupingColumnSortDirection: "desc"
+            sGroupingColumnSortDirection: "asc"
         }
     );
 

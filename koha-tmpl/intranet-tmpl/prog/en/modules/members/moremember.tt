@@ -26,7 +26,7 @@ var theme = "[% theme %]";
 var borrowernumber = "[% borrowernumber %]";
 var branchcode = "[% branch %]";
 var exports_enabled = "[% exports_enabled %]";
-var AllowRenewalLimitOverride = [% CAN_user_circulate_override_renewals && AllowRenewalLimitOverride %];
+var AllowRenewalLimitOverride = [% (CAN_user_circulate_override_renewals && AllowRenewalLimitOverride)? 1: 0 %];
 var relatives_borrowernumbers = new Array();
 [% FOREACH b IN relatives_borrowernumbers %]
     relatives_borrowernumbers.push("[% b %]");
@@ -412,6 +412,7 @@ function validate1(date) {
                 <table id="issues-table" style="width: 100% !Important;">
                     <thead>
                         <tr>
+                            <th scope="col">&nbsp;</th>
                             <th scope="col">&nbsp;</th>
                             <th scope="col">Due date</th>
                             <th scope="col">Due date</th>

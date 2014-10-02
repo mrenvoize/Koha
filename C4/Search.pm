@@ -340,8 +340,8 @@ sub getRecords {
     my $results_hashref = ();
 
     # Initialize variables for the faceted results objects
-    my $facets_counter = ();
-    my $facets_info    = ();
+    my $facets_counter = {};
+    my $facets_info    = {};
     my $facets         = getFacets();
     my $facets_maxrecs = C4::Context->preference('maxRecordsForFacets')||20;
 
@@ -499,51 +499,30 @@ sub getRecords {
                 }
                 $results_hashref->{ $servers[ $i - 1 ] } = $results_hash;
 
-# Fill the facets while we're looping, but only for the biblioserver and not for a scan
+                # Fill the facets while we're looping, but only for the
+                # biblioserver and not for a scan
                 if ( !$scan && $servers[ $i - 1 ] =~ /biblioserver/ ) {
 
-                    my $jmax =
-                      $size > $facets_maxrecs ? $facets_maxrecs : $size;
-                    for my $facet (@$facets) {
-                        for ( my $j = 0 ; $j < $jmax ; $j++ ) {
+                    my $jmax = $size > $facets_maxrecs
+                                ? $facets_maxrecs
+                                : $size;
 
-                            my $marc_record = new_record_from_zebra (
-                                    'biblioserver',
-                                    $results[ $i - 1 ]->record($j)->raw()
-                            );
+                    for ( my $j = 0 ; $j < $jmax ; $j++ ) {
 
-                            if ( ! defined $marc_record ) {
-                                warn "ERROR DECODING RECORD - $@: " .
-                                    $results[ $i - 1 ]->record($j)->raw();
-                                next;
-                            }
+                        my $marc_record = new_record_from_zebra (
+                                'biblioserver',
+                                $results[ $i - 1 ]->record($j)->raw()
+                        );
 
-                            my @used_datas = ();
+                        if ( ! defined $marc_record ) {
+                            warn "ERROR DECODING RECORD - $@: " .
+                                $results[ $i - 1 ]->record($j)->raw();
+                            next;
+                        }
 
-                            foreach my $tag ( @{ $facet->{tags} } ) {
-
-                                # avoid first line
-                                my $tag_num = substr( $tag, 0, 3 );
-                                my $subfield_letters = substr( $tag, 3 );
-                                # Removed when as_string fixed
-                                my @subfields = $subfield_letters =~ /./sg;
-
-                                my @fields = $marc_record->field($tag_num);
-                                foreach my $field (@fields) {
-                                    my $data = $field->as_string( $subfield_letters, $facet->{sep} );
-
-                                    unless ( $data ~~ @used_datas ) {
-                                        push @used_datas, $data;
-                                        $facets_counter->{ $facet->{idx} }->{$data}++;
-                                    }
-                                } # fields
-                            }    # field codes
-                        }    # records
-                        $facets_info->{ $facet->{idx} }->{label_value} =
-                          $facet->{label};
-                        $facets_info->{ $facet->{idx} }->{expanded} =
-                          $facet->{expanded};
-                    }    # facets
+                        _get_facets_data_from_record( $marc_record, $facets, $facets_counter );
+                        $facets_info = _get_facets_info( $facets );
+                    }
                 }
 
                 # warn "connection ", $i-1, ": $size hits";
@@ -671,6 +650,73 @@ sub getRecords {
             }
         );
     return ( undef, $results_hashref, \@facets_loop );
+}
+
+=head2 _get_facets_data_from_record
+
+    C4::Search::_get_facets_data_from_record( $marc_record, $facets, $facets_counter );
+
+Internal function that extracts facets information from a MARC::Record object
+and populates $facets_counter for using in getRecords.
+
+$facets is expected to be filled with C4::Koha::getFacets output (i.e. the configured
+facets for Zebra).
+
+=cut
+
+sub _get_facets_data_from_record {
+
+    my ( $marc_record, $facets, $facets_counter ) = @_;
+
+    for my $facet (@$facets) {
+
+        my @used_datas = ();
+
+        foreach my $tag ( @{ $facet->{ tags } } ) {
+
+            # tag number is the first three digits
+            my $tag_num          = substr( $tag, 0, 3 );
+            # subfields are the remainder
+            my $subfield_letters = substr( $tag, 3 );
+
+            my @fields = $marc_record->field( $tag_num );
+            foreach my $field (@fields) {
+                # If $field->indicator(1) eq 'z', it means it is a 'see from'
+                # field introduced because of IncludeSeeFromInSearches, so skip it
+                next if $field->indicator(1) eq 'z';
+
+                my $data = $field->as_string( $subfield_letters, $facet->{ sep } );
+
+                unless ( grep { /^\Q$data\E$/ } @used_datas ) {
+                    push @used_datas, $data;
+                    $facets_counter->{ $facet->{ idx } }->{ $data }++;
+                }
+            }
+        }
+    }
+}
+
+=head2 _get_facets_info
+
+    my $facets_info = C4::Search::_get_facets_info( $facets )
+
+Internal function that extracts facets information and properly builds
+the data structure needed to render facet labels.
+
+=cut
+
+sub _get_facets_info {
+
+    my $facets = shift;
+
+    my $facets_info = {};
+
+    for my $facet ( @$facets ) {
+        $facets_info->{ $facet->{ idx } }->{ label_value } = $facet->{ label };
+        $facets_info->{ $facet->{ idx } }->{ expanded }    = $facet->{ expanded };
+    }
+
+    return $facets_info;
 }
 
 sub pazGetRecords {
@@ -1856,6 +1902,7 @@ sub searchResults {
         my $item_in_transit_count = 0;
         my $can_place_holds       = 0;
         my $item_onhold_count     = 0;
+        my $notforloan_count      = 0;
         my $items_count           = scalar(@fields);
         my $maxitems_pref = C4::Context->preference('maxItemsinSearchResults');
         my $maxitems = $maxitems_pref ? $maxitems_pref - 1 : 1;
@@ -1926,6 +1973,8 @@ sub searchResults {
                 # item is on order
                 if ( $item->{notforloan} < 0 ) {
                     $ordered_count++;
+                } elsif ( $item->{notforloan} > 0 ) {
+                    $notforloan_count++;
                 }
 
                 # is item in transit?
@@ -2032,13 +2081,12 @@ sub searchResults {
         }
 
         # XSLT processing of some stuff
-	use C4::Charset;
-	SetUTF8Flag($marcrecord);
+        SetUTF8Flag($marcrecord);
         warn $marcrecord->as_formatted if $DEBUG;
-	my $interface = $search_context eq 'opac' ? 'OPAC' : '';
-	if (!$scan && C4::Context->preference($interface . "XSLTResultsDisplay")) {
+        my $interface = $search_context eq 'opac' ? 'OPAC' : '';
+        if (!$scan && C4::Context->preference($interface . "XSLTResultsDisplay")) {
             $oldbiblio->{XSLTResultsRecord} = XSLTParse4Display($oldbiblio->{biblionumber}, $marcrecord, $interface."XSLTResultsDisplay", 1, \@hiddenitems);
-	    # the last parameter tells Koha to clean up the problematic ampersand entities that Zebra outputs
+        # the last parameter tells Koha to clean up the problematic ampersand entities that Zebra outputs
         }
 
         # if biblio level itypes are used and itemtype is notforloan, it can't be reserved either
@@ -2065,6 +2113,7 @@ sub searchResults {
         $oldbiblio->{intransitcount}       = $item_in_transit_count;
         $oldbiblio->{onholdcount}          = $item_onhold_count;
         $oldbiblio->{orderedcount}         = $ordered_count;
+        $oldbiblio->{notforloancount}      = $notforloan_count;
 
         if (C4::Context->preference("AlternateHoldingsField") && $items_count == 0) {
             my $fieldspec = C4::Context->preference("AlternateHoldingsField");
