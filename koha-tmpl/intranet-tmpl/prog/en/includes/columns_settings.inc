@@ -2,7 +2,7 @@
 [% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE ColumnsSettings %]
 
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.colvis.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.colvis_[% KOHA_VERSION %].css" />
 <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.colvis_[% KOHA_VERSION %].js"></script>
 
 <script type="text/javascript">

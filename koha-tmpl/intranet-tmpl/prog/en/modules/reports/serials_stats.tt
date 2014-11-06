@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE KohaDates %]
 [% USE Branches %]
 [% INCLUDE 'doc-head-open.inc' %]
@@ -6,7 +7,7 @@
 <style type="text/css">
 	.sql {display: none;}
 </style>
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
 <script type="text/javascript">
 	//<![CDATA[

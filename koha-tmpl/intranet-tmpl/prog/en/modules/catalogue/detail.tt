@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% USE KohaDates %]
 [% USE AuthorisedValues %]
@@ -182,7 +183,7 @@ function verify_images() {
      });[% END %]
 //]]>
 </script>
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
 <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.columnFilter.js"></script>
 [% INCLUDE 'browser-strings.inc' %]

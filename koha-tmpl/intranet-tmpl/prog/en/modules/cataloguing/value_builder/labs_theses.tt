@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Labs thesis selection plugin</title>
 [% INCLUDE 'doc-head-close.inc' %]
@@ -13,7 +14,7 @@ function Help() {
 //]]>
 </script>
 
-<link rel="stylesheet" type="text/css" href="/intranet-tmpl/default/en/includes/common-style.css" />
+<link rel="stylesheet" type="text/css" href="/intranet-tmpl/default/en/includes/common-style_[% KOHA_VERSION %].css" />
 <style type="text/css">
 .catalogue {
 	background-color:#ad11ad;

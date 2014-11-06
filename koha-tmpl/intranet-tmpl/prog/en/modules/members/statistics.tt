@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Patrons &rsaquo;
 [% IF ( unknowuser ) %]
@@ -7,7 +8,7 @@
 [% END %]
 </title>
 [% INCLUDE 'doc-head-close.inc' %]
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
 [% INCLUDE 'calendar.inc' %]
 <script type="text/javascript">

@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% USE KohaDates %]
 [% USE Branches %]
@@ -26,10 +27,10 @@
 [% INCLUDE 'doc-head-open.inc' %][% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha online[% END %] catalog &rsaquo; Details for: [% title |html %][% FOREACH subtitl IN subtitle %], [% subtitl.subfield |html %][% END %]
 [% INCLUDE 'doc-head-close.inc' %]
 [% IF ( bidi ) %]
-  [% BLOCK cssinclude %]<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/right-to-left.css" />[% END %]
+  [% BLOCK cssinclude %]<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/right-to-left_[% KOHA_VERSION %].css" />[% END %]
 [% END %]
 [% IF ( OpacStarRatings != 'disable' ) %]
-    [% BLOCK cssinclude %]<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating.css" />[% END %]
+    [% BLOCK cssinclude %]<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating_[% KOHA_VERSION %].css" />[% END %]
 [% END %]
 </head>
 [% INCLUDE 'bodytag.inc' bodyid='opac-detail' bodyclass='scrollto' %]

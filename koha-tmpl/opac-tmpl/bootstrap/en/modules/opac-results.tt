@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% SET TagsShowEnabled = ( ( Koha.Preference( 'TagsEnabled' ) == 1 ) && TagsShowOnList ) %]
 [% SET TagsInputEnabled = ( ( Koha.Preference( 'opacuserlogin' ) == 1 ) && ( Koha.Preference( 'TagsEnabled' ) == 1 ) && TagsInputOnList ) %]
@@ -12,7 +13,7 @@
 [% INCLUDE 'doc-head-close.inc' %]
 [% IF ( OpacStarRatings == 'all' || Koha.Preference('Babeltheque') ) %]
     [% BLOCK cssinclude %]
-        <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating.css" />
+        <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating_[% KOHA_VERSION %].css" />
     [% END %]
 [% END %]
 

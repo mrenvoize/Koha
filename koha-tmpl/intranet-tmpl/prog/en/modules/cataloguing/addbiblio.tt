@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Cataloging &rsaquo; [% IF ( biblionumber ) %]Editing [% title |html %] (Record number [% biblionumber %])[% ELSE %]Add MARC record[% END %]</title>
@@ -364,9 +365,9 @@ function Changefwk(FwkList) {
 
 //]]>
 </script>
-<link type="text/css" rel="stylesheet" href="[% themelang %]/css/addbiblio.css" />
+<link type="text/css" rel="stylesheet" href="[% themelang %]/css/addbiblio_[% KOHA_VERSION %].css" />
 [% IF ( bidi ) %]
-   <link rel="stylesheet" type="text/css" href="[% themelang %]/css/right-to-left.css" />
+   <link rel="stylesheet" type="text/css" href="[% themelang %]/css/right-to-left_[% KOHA_VERSION %].css" />
 [% END %]
 </head>
 <body id="cat_addbiblio" class="cat">

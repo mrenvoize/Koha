@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% SET KOHA_VERSION = Koha.Preference('Version') %]
 </title>
@@ -6,15 +7,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="shortcut icon" href="[% IF ( OpacFavicon ) %][% OpacFavicon %][% ELSE %][% interface %]/[% theme %]/images/favicon.ico[% END %]" type="image/x-icon" />
 [% IF ( bidi ) %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/bootstrap/css/bootstrap-rtl.min.css" />
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/bootstrap/css/bootstrap-rtl.min_[% KOHA_VERSION %].css" />
 [% ELSE %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/bootstrap/css/bootstrap.min_[% KOHA_VERSION %].css" />
 [% END %]
 
 [% IF ( bidi ) %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/jquery/jquery-ui-rtl.css" />
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/jquery/jquery-ui-rtl_[% KOHA_VERSION %].css" />
 [% ELSE %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/jquery/jquery-ui.css" />
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/lib/jquery/jquery-ui_[% KOHA_VERSION %].css" />
 [% END %]
 
 [% SET opaclayoutstylesheet='opac.css' UNLESS opaclayoutstylesheet %]
@@ -33,12 +34,12 @@
 [% IF ( opac_css_override ) %]
     <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/[% opac_css_override %]" />
 [% END %]
-<link rel="stylesheet" type="text/css" media="print" href="[% interface %]/[% theme %]/css/print.css" />
+<link rel="stylesheet" type="text/css" media="print" href="[% interface %]/[% theme %]/css/print_[% KOHA_VERSION %].css" />
 [% IF persona %]
- <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/persona-buttons.css" />
+ <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/persona-buttons_[% KOHA_VERSION %].css" />
 [% END %]
 [% IF ( bidi ) %]
-    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/right-to-left.css" />
+    <link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/right-to-left_[% KOHA_VERSION %].css" />
 [% END %]
 [% IF ( OPACUserCSS ) %]<style type="text/css">[% OPACUserCSS %]</style>[% END %]
 <link rel="unapi-server" type="application/xml" title="unAPI" href="[% OPACBaseURL %]/cgi-bin/koha/unapi" />

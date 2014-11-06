@@ -1,9 +1,10 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% INCLUDE 'doc-head-open.inc' %]
 [% IF ( LibraryNameTitle ) %][% LibraryNameTitle %][% ELSE %]Koha online[% END %] catalog &rsaquo; OverDrive search for '[% q | html %]'
 [% INCLUDE 'doc-head-close.inc' %]
 [% BLOCK cssinclude %]
-<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating.css" />
+<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/jquery.rating_[% KOHA_VERSION %].css" />
 <style>
 .actions a.addtocart {
     display: inline;

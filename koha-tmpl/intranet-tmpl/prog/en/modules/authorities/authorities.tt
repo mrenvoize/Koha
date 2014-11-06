@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Authorities &rsaquo; [% IF ( authid ) %]Modify authority #[% authid %] ([% authtypetext %])[% ELSE %]Adding authority ([% authtypetext %])[% END %]</title>
 [% INCLUDE 'doc-head-close.inc' %]
@@ -124,9 +125,9 @@ function confirmnotdup(redirect){
 }
 //]]>
 </script>
-<link type="text/css" rel="stylesheet" href="[% themelang %]/css/addbiblio.css" />
+<link type="text/css" rel="stylesheet" href="[% themelang %]/css/addbiblio_[% KOHA_VERSION %].css" />
 [% IF ( bidi ) %]
-   <link rel="stylesheet" type="text/css" href="[% themelang %]/css/right-to-left.css" />
+   <link rel="stylesheet" type="text/css" href="[% themelang %]/css/right-to-left_[% KOHA_VERSION %].css" />
 [% END %]
 </head>
 <body id="auth_authorities" class="auth">

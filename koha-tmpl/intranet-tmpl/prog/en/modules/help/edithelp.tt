@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Online help</title>
 <script type="text/javascript" src="[% interface %]/lib/tiny_mce/tiny_mce.js"></script>
@@ -5,7 +6,7 @@
 tinyMCE.init({
 	mode : "textareas",
         theme : "advanced",
-    content_css : "[% themelang %]/css/tinymce.css",
+    content_css : "[% themelang %]/css/tinymce_[% KOHA_VERSION %].css",
     plugins : "table,save,advhr,advlink,searchreplace,print,contextmenu",
         theme_advanced_disable : "underline,strikethrough,styleselect,image",
 	theme_advanced_buttons1_add_before : "save,|",
@@ -22,7 +23,7 @@ tinyMCE.init({
 //]]>
 </script>
 [% INCLUDE intranetstylesheet.inc %]
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/help.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/help_[% KOHA_VERSION %].css" />
 </head>
 <body id="help">
 	<h1>Online Help</h1>

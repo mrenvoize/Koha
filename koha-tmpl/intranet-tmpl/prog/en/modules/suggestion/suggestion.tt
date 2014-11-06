@@ -1,3 +1,4 @@
+[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Branches %]
 [% USE AuthorisedValues %]
 [% INCLUDE 'doc-head-open.inc' %]
@@ -28,7 +29,7 @@
 </script>
 [% END %]
 [% IF ( op_else ) %]
-<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables.css" />
+<link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
 <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.checkboxes.min.js"></script>
 <script type="text/javascript">

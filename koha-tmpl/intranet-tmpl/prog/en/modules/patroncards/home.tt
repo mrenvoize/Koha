@@ -1,7 +1,7 @@
     [% INCLUDE 'doc-head-open.inc' %]
     <title>Koha &rsaquo; Tools &rsaquo; Patron card creator</title>
     [% INCLUDE 'doc-head-close.inc' %]
-    <link rel="stylesheet" type="text/css" href="[% themelang %]/css/card.css" />
+    <link rel="stylesheet" type="text/css" href="[% themelang %]/css/card_[% KOHA_VERSION %].css" />
 </head>
 <body id="pcard_home" class="tools pcard">
     [% INCLUDE 'header.inc' %]
