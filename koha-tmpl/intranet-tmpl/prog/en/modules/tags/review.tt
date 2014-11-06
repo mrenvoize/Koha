@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Home &rsaquo; Tools &rsaquo; Tags &rsaquo; [% IF ( do_it ) %]Review &rsaquo; [% ELSE %]Review tags[% END %]</title>

@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Z39.50/SRU search results</title>
 [% INCLUDE 'greybox.inc' %]

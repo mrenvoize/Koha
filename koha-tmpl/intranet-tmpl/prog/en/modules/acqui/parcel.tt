@@ -1,6 +1,5 @@
 [% USE Koha %]
 [% SET KOHA_VERSION = Koha.Preference('Version') %]
-[% USE Koha %]
 [% USE currency = format('%.2f') -%]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Acquisitions &rsaquo; [% IF ( date ) %]

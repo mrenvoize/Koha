@@ -12,7 +12,7 @@ var MSG_PARENT_BENEATH_BUDGET = "- " + _("New budget-parent is beneath budget") 
 //]]>
 </script>
 
-<script type="text/javascript" src="[% themelang %]/js/acq.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/acq_[% KOHA_VERSION %].js"></script>
 [% IF op == 'add_form' %]
 <script type="text/javascript">
 //<![CDATA[
@@ -149,7 +149,7 @@ var MSG_PARENT_BENEATH_BUDGET = "- " + _("New budget-parent is beneath budget") 
     <link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
     [% INCLUDE 'datatables.inc' %]
     <link href="[% interface %]/lib/jquery/plugins/treetable/stylesheets/jquery.treetable_[% KOHA_VERSION %].css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/treetable/jquery.treetable.js"></script>
+    <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/treetable/jquery.treetable_[% KOHA_VERSION %].js"></script>
 
 <script type="text/javascript">
 //<![CDATA[

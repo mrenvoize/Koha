@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 <!DOCTYPE html>
 [% IF ( bidi ) %]<html lang="[% lang %]" dir="[% bidi %]">[% ELSE %]<html lang="[% lang %]">[% END %]
 <head>

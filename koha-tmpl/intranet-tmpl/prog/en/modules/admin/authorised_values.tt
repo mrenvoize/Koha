@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Administration &rsaquo; Authorized values [% IF ( add_form ) %] &rsaquo; [% IF ( action_modify ) %]Modify authorized value[% END %]
 	   [% IF ( action_add_value ) %] &rsaquo;  New authorized value[% END %]

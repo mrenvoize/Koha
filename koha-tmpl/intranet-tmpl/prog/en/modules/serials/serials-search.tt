@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE Branches %]
 [% INCLUDE 'doc-head-open.inc' %]
 [% USE KohaDates %]

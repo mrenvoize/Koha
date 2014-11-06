@@ -1,8 +1,10 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Tools &rsaquo; Upload images</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% INCLUDE 'file-upload.inc' %]
-<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar_[% KOHA_VERSION %].js"></script>
 <style type="text/css">
 	#uploadpanel,#fileuploadstatus,#fileuploadfailed,#jobpanel,#jobstatus,#jobfailed { display : none; }
 	#fileuploadstatus,#jobstatus { margin:.4em; }

@@ -1,5 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% SET TagsShowEnabled = ( ( Koha.Preference( 'TagsEnabled' ) == 1 ) && TagsShowOnList ) %]
 [% SET TagsInputEnabled = ( ( Koha.Preference( 'opacuserlogin' ) == 1 ) && ( Koha.Preference( 'TagsEnabled' ) == 1 ) && TagsInputOnList ) %]
 
@@ -553,10 +553,10 @@
         <script src="http://ltfl.librarything.com/forlibraries/widget.js?id=[% LibraryThingForLibrariesID %]&amp;systype=koha" type="text/javascript"></script>
     [% END %]
 [% END %]
-[% IF ( OpacStarRatings == 'all' || Koha.Preference('Babeltheque') ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.rating.js"></script>[% END %]
-[% IF ( OverDriveEnabled ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/js/overdrive.js"></script>[% END %]
-<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.checkboxes.min.js"></script>
-[% IF ( OpacHighlightedWords ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.highlight-3.js"></script>
+[% IF ( OpacStarRatings == 'all' || Koha.Preference('Babeltheque') ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.rating_[% KOHA_VERSION %].js"></script>[% END %]
+[% IF ( OverDriveEnabled ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/js/overdrive_[% KOHA_VERSION %].js"></script>[% END %]
+<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.checkboxes.min_[% KOHA_VERSION %].js"></script>
+[% IF ( OpacHighlightedWords ) %]<script type="text/javascript" src="[% interface %]/[% theme %]/lib/jquery/plugins/jquery.highlight-3_[% KOHA_VERSION %].js"></script>
 [% END %]<script type="text/javascript">
 //<![CDATA[
 [% IF ( Koha.Preference( 'opacuserlogin' ) == 1 ) && ( Koha.Preference( 'RequestOnOpac' ) == 1 ) %]

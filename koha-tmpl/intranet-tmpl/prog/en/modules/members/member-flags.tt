@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Patrons &rsaquo; Set permissions for [% surname %], [% firstname %]</title>
 <link rel="stylesheet" type="text/css" href="[% themelang %]/css/treeview/jquery.treeview_[% KOHA_VERSION %].css"/>

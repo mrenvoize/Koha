@@ -36,9 +36,9 @@
 [% INCLUDE 'datatables.inc' %]
 [% IF close_form %]
     <link href="[% interface %]/lib/jquery/plugins/treetable/stylesheets/jquery.treetable_[% KOHA_VERSION %].css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/treetable/jquery.treetable.js"></script>
+    <script type="text/javascript" src="[% interface %]/lib/jquery/plugins/treetable/jquery.treetable_[% KOHA_VERSION %].js"></script>
 [% END %]
-<script type="text/javascript" src="[% themelang %]/js/acq.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/acq_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 // #################################################################################
 // Javascript

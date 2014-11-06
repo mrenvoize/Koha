@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% BLOCK final_match_link %]
     [% IF ( record.record_type == 'biblio' ) %]
         <a target="_blank" href="/cgi-bin/koha/catalogue/detail.pl?biblionumber=[% record.final_match_id %]">[% record.final_match_id %]</a>
@@ -33,7 +34,7 @@
 [% END %]
 </title>
 [% INCLUDE 'doc-head-close.inc' %]
-<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar_[% KOHA_VERSION %].js"></script>
 <link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
 <script type="text/javascript">

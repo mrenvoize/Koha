@@ -1,5 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE Branches %]
 [% USE KohaDates %]
 [% IF Koha.Preference('ExportRemoveFields') OR Koha.Preference('ExportWithCsvProfile') %]
@@ -19,13 +19,13 @@
 <link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'strings.inc' %]
 [% INCLUDE 'datatables.inc' %]
-<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.checkboxes.min.js"></script>
-<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery-ui-timepicker-addon.min.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.checkboxes.min_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery-ui-timepicker-addon.min_[% KOHA_VERSION %].js"></script>
 [% INCLUDE 'timepicker.inc' %]
-<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.rowGrouping.js"></script>
-<script type="text/javascript" src="[% themelang %]/js/pages/circulation.js"></script>
-<script type="text/javascript" src="[% themelang %]/js/checkouts.js"></script>
-<script type="text/javascript" src="[% themelang %]/js/holds.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.rowGrouping_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% themelang %]/js/pages/circulation_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% themelang %]/js/checkouts_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% themelang %]/js/holds_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
 /* Set some variable needed in circulation.js */

@@ -1,5 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE KohaDates %]
 [% USE AuthorisedValues %]
 
@@ -185,12 +185,12 @@ function verify_images() {
 </script>
 <link rel="stylesheet" type="text/css" href="[% themelang %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
-<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.columnFilter.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/jquery/plugins/jquery.dataTables.columnFilter_[% KOHA_VERSION %].js"></script>
 [% INCLUDE 'browser-strings.inc' %]
 <!--[if lt IE 9]>
-<script type="text/javascript" src="[% interface %]/lib/shims/json2.min.js"></script>
+<script type="text/javascript" src="[% interface %]/lib/shims/json2.min_[% KOHA_VERSION %].js"></script>
 <![endif]-->
-<script type="text/javascript" src="[% interface %]/js/browser.js"></script>
+<script type="text/javascript" src="[% interface %]/js/browser_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
     var browser = KOHA.browser('[% searchid %]', parseInt('[% biblionumber %]', 10));

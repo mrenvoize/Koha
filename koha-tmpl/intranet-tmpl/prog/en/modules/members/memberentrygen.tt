@@ -1,3 +1,5 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% IF ( opduplicate ) %][% SET focusAction = "clearDupe" %][% END %]
 [% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %]
@@ -114,7 +116,7 @@
         var MSG_PASSWORD_MISMATCH = _("The passwords entered do not match");
 //]]>
 </script>
-<script type="text/javascript" src="[% themelang %]/js/members.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/members_[% KOHA_VERSION %].js"></script>
 </head>
 <body id="pat_memberentrygen" class="pat">
 [% INCLUDE 'header.inc' %]

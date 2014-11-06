@@ -1,10 +1,12 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Acquisitions &rsaquo; Receipt summary for : [% name %] [% IF ( invoice ) %]invoice, [% invoice %][% END %]</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% INCLUDE 'additem.js.inc' %]
-<script type="text/javascript" src="[% themelang %]/js/additem.js"></script>
-<script type="text/javascript" src="[% themelang %]/js/cataloging.js"></script>
-<script type="text/javascript" src="[% themelang %]/js/prevent_submit.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/additem_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% themelang %]/js/cataloging_[% KOHA_VERSION %].js"></script>
+<script type="text/javascript" src="[% themelang %]/js/prevent_submit_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
     function Check(form) {

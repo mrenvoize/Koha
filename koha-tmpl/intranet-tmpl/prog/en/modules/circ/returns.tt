@@ -1,6 +1,7 @@
 [% USE KohaDates %]
 [% USE Branches %]
 [% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE Borrowers %]
 [% USE AuthorisedValues %]
 

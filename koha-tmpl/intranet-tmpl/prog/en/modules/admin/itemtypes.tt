@@ -1,4 +1,5 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% USE EncodeUTF8 %]
 [% USE AuthorisedValues %]
 [% INCLUDE 'doc-head-open.inc' %]

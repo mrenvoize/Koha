@@ -1,6 +1,6 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
-[% USE KohaDates %]
 [% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
+[% USE KohaDates %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Circulation History for [% INCLUDE 'patron-title.inc' %]</title>
 [% INCLUDE 'doc-head-close.inc' %]

@@ -1,4 +1,3 @@
-[% USE Koha %]\[% SET KOHA_VERSION = Koha.Preference(Version) %]
 [% USE Koha %]
 [% SET KOHA_VERSION = Koha.Preference('Version') %]
 </title>

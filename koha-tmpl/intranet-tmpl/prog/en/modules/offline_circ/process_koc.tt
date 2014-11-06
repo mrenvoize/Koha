@@ -1,8 +1,10 @@
+[% USE Koha %]
+[% SET KOHA_VERSION = Koha.Preference('Version') %]
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Circulation &rsaquo; Offline circulation file upload</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% INCLUDE 'file-upload.inc' %]
-<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar.js"></script>
+<script type="text/javascript" src="[% themelang %]/js/background-job-progressbar_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
 $(document).ready(function(){
