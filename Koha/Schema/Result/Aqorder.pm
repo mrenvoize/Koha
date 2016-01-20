@@ -227,6 +227,29 @@ __PACKAGE__->table("aqorders");
   is_nullable: 1
   size: 16
 
+=head2 line_item_id
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 35
+
+=head2 suppliers_reference_number
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 35
+
+=head2 suppliers_reference_qualifier
+
+  data_type: 'varchar'
+  is_nullable: 1
+  size: 3
+
+=head2 suppliers_report
+
+  data_type: 'text'
+  is_nullable: 1
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -310,6 +333,14 @@ __PACKAGE__->add_columns(
     is_nullable => 1,
     size => 16,
   },
+  "line_item_id",
+  { data_type => "varchar", is_nullable => 1, size => 35 },
+  "suppliers_reference_number",
+  { data_type => "varchar", is_nullable => 1, size => 35 },
+  "suppliers_reference_qualifier",
+  { data_type => "varchar", is_nullable => 1, size => 3 },
+  "suppliers_report",
+  { data_type => "text", is_nullable => 1 },
 );
 
 =head1 PRIMARY KEY
@@ -492,9 +523,9 @@ Composing rels: L</aqorder_users> -> borrowernumber
 __PACKAGE__->many_to_many("borrowernumbers", "aqorder_users", "borrowernumber");
 
 
-# Created by DBIx::Class::Schema::Loader v0.07039 @ 2015-05-14 11:27:15
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:BCa/SxerJ+zEh8Pg9Jdkaw
+# Created by DBIx::Class::Schema::Loader v0.07043 @ 2016-01-19 11:57:26
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:iw+b4tqItFOXERzWvhYxlQ
 
 
-# You can replace this text with custom content, and it will be preserved on regeneration
+# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
