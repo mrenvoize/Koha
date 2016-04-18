@@ -17,7 +17,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 89;
+use Test::More tests => 90;
 
 BEGIN {
     require_ok('C4::Circulation');
