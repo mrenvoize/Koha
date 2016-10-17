@@ -578,6 +578,21 @@ __PACKAGE__->has_many(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 stockrotationstages
+
+Type: has_many
+
+Related object: L<Koha::Schema::Result::Stockrotationstage>
+
+=cut
+
+__PACKAGE__->has_many(
+  "stockrotationstages",
+  "Koha::Schema::Result::Stockrotationstage",
+  { "foreign.branchcode_id" => "self.branchcode" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
 =head2 transport_cost_frombranches
 
 Type: has_many
