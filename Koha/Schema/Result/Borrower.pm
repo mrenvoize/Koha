@@ -1,4 +1,5 @@
 use utf8;
+
 package Koha::Schema::Result::Borrower;
 
 # Created by DBIx::Class::Schema::Loader
@@ -430,192 +431,192 @@ __PACKAGE__->table("borrowers");
 =cut
 
 __PACKAGE__->add_columns(
-  "borrowernumber",
-  { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
-  "cardnumber",
-  { data_type => "varchar", is_nullable => 1, size => 16 },
-  "surname",
-  { data_type => "mediumtext", is_nullable => 0 },
-  "firstname",
-  { data_type => "text", is_nullable => 1 },
-  "title",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "othernames",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "initials",
-  { data_type => "text", is_nullable => 1 },
-  "streetnumber",
-  { data_type => "varchar", is_nullable => 1, size => 10 },
-  "streettype",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
-  "address",
-  { data_type => "mediumtext", is_nullable => 0 },
-  "address2",
-  { data_type => "text", is_nullable => 1 },
-  "city",
-  { data_type => "mediumtext", is_nullable => 0 },
-  "state",
-  { data_type => "text", is_nullable => 1 },
-  "zipcode",
-  { data_type => "varchar", is_nullable => 1, size => 25 },
-  "country",
-  { data_type => "text", is_nullable => 1 },
-  "email",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "phone",
-  { data_type => "text", is_nullable => 1 },
-  "mobile",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
-  "fax",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "emailpro",
-  { data_type => "text", is_nullable => 1 },
-  "phonepro",
-  { data_type => "text", is_nullable => 1 },
-  "B_streetnumber",
-  {
-    accessor => "b_streetnumber",
-    data_type => "varchar",
-    is_nullable => 1,
-    size => 10,
-  },
-  "B_streettype",
-  {
-    accessor => "b_streettype",
-    data_type => "varchar",
-    is_nullable => 1,
-    size => 50,
-  },
-  "B_address",
-  {
-    accessor => "b_address",
-    data_type => "varchar",
-    is_nullable => 1,
-    size => 100,
-  },
-  "B_address2",
-  { accessor => "b_address2", data_type => "text", is_nullable => 1 },
-  "B_city",
-  { accessor => "b_city", data_type => "mediumtext", is_nullable => 1 },
-  "B_state",
-  { accessor => "b_state", data_type => "text", is_nullable => 1 },
-  "B_zipcode",
-  {
-    accessor => "b_zipcode",
-    data_type => "varchar",
-    is_nullable => 1,
-    size => 25,
-  },
-  "B_country",
-  { accessor => "b_country", data_type => "text", is_nullable => 1 },
-  "B_email",
-  { accessor => "b_email", data_type => "text", is_nullable => 1 },
-  "B_phone",
-  { accessor => "b_phone", data_type => "mediumtext", is_nullable => 1 },
-  "dateofbirth",
-  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
-  "branchcode",
-  {
-    data_type => "varchar",
-    default_value => "",
-    is_foreign_key => 1,
-    is_nullable => 0,
-    size => 10,
-  },
-  "categorycode",
-  {
-    data_type => "varchar",
-    default_value => "",
-    is_foreign_key => 1,
-    is_nullable => 0,
-    size => 10,
-  },
-  "dateenrolled",
-  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
-  "dateexpiry",
-  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
-  "gonenoaddress",
-  { data_type => "tinyint", is_nullable => 1 },
-  "lost",
-  { data_type => "tinyint", is_nullable => 1 },
-  "debarred",
-  { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
-  "debarredcomment",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "contactname",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "contactfirstname",
-  { data_type => "text", is_nullable => 1 },
-  "contacttitle",
-  { data_type => "text", is_nullable => 1 },
-  "guarantorid",
-  { data_type => "integer", is_nullable => 1 },
-  "borrowernotes",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "relationship",
-  { data_type => "varchar", is_nullable => 1, size => 100 },
-  "sex",
-  { data_type => "varchar", is_nullable => 1, size => 1 },
-  "password",
-  { data_type => "varchar", is_nullable => 1, size => 60 },
-  "flags",
-  { data_type => "integer", is_nullable => 1 },
-  "userid",
-  { data_type => "varchar", is_nullable => 1, size => 75 },
-  "opacnote",
-  { data_type => "mediumtext", is_nullable => 1 },
-  "contactnote",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "sort1",
-  { data_type => "varchar", is_nullable => 1, size => 80 },
-  "sort2",
-  { data_type => "varchar", is_nullable => 1, size => 80 },
-  "altcontactfirstname",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "altcontactsurname",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "altcontactaddress1",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "altcontactaddress2",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "altcontactaddress3",
-  { data_type => "varchar", is_nullable => 1, size => 255 },
-  "altcontactstate",
-  { data_type => "text", is_nullable => 1 },
-  "altcontactzipcode",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
-  "altcontactcountry",
-  { data_type => "text", is_nullable => 1 },
-  "altcontactphone",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
-  "smsalertnumber",
-  { data_type => "varchar", is_nullable => 1, size => 50 },
-  "sms_provider_id",
-  { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
-  "privacy",
-  { data_type => "integer", default_value => 1, is_nullable => 0 },
-  "privacy_guarantor_checkouts",
-  { data_type => "tinyint", default_value => 0, is_nullable => 0 },
-  "checkprevcheckout",
-  {
-    data_type => "varchar",
-    default_value => "inherit",
-    is_nullable => 0,
-    size => 7,
-  },
-  "updated_on",
-  {
-    data_type => "timestamp",
-    datetime_undef_if_invalid => 1,
-    default_value => \"current_timestamp",
-    is_nullable => 0,
-  },
-  "lastseen",
-  {
-    data_type => "datetime",
-    datetime_undef_if_invalid => 1,
-    is_nullable => 1,
-  },
+    "borrowernumber",
+    { data_type => "integer", is_auto_increment => 1, is_nullable => 0 },
+    "cardnumber",
+    { data_type => "varchar", is_nullable => 1, size => 16 },
+    "surname",
+    { data_type => "mediumtext", is_nullable => 0 },
+    "firstname",
+    { data_type => "text", is_nullable => 1 },
+    "title",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "othernames",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "initials",
+    { data_type => "text", is_nullable => 1 },
+    "streetnumber",
+    { data_type => "varchar", is_nullable => 1, size => 10 },
+    "streettype",
+    { data_type => "varchar", is_nullable => 1, size => 50 },
+    "address",
+    { data_type => "mediumtext", is_nullable => 0 },
+    "address2",
+    { data_type => "text", is_nullable => 1 },
+    "city",
+    { data_type => "mediumtext", is_nullable => 0 },
+    "state",
+    { data_type => "text", is_nullable => 1 },
+    "zipcode",
+    { data_type => "varchar", is_nullable => 1, size => 25 },
+    "country",
+    { data_type => "text", is_nullable => 1 },
+    "email",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "phone",
+    { data_type => "text", is_nullable => 1 },
+    "mobile",
+    { data_type => "varchar", is_nullable => 1, size => 50 },
+    "fax",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "emailpro",
+    { data_type => "text", is_nullable => 1 },
+    "phonepro",
+    { data_type => "text", is_nullable => 1 },
+    "B_streetnumber",
+    {
+        accessor    => "b_streetnumber",
+        data_type   => "varchar",
+        is_nullable => 1,
+        size        => 10,
+    },
+    "B_streettype",
+    {
+        accessor    => "b_streettype",
+        data_type   => "varchar",
+        is_nullable => 1,
+        size        => 50,
+    },
+    "B_address",
+    {
+        accessor    => "b_address",
+        data_type   => "varchar",
+        is_nullable => 1,
+        size        => 100,
+    },
+    "B_address2",
+    { accessor => "b_address2", data_type => "text", is_nullable => 1 },
+    "B_city",
+    { accessor => "b_city", data_type => "mediumtext", is_nullable => 1 },
+    "B_state",
+    { accessor => "b_state", data_type => "text", is_nullable => 1 },
+    "B_zipcode",
+    {
+        accessor    => "b_zipcode",
+        data_type   => "varchar",
+        is_nullable => 1,
+        size        => 25,
+    },
+    "B_country",
+    { accessor => "b_country", data_type => "text", is_nullable => 1 },
+    "B_email",
+    { accessor => "b_email", data_type => "text", is_nullable => 1 },
+    "B_phone",
+    { accessor => "b_phone", data_type => "mediumtext", is_nullable => 1 },
+    "dateofbirth",
+    { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
+    "branchcode",
+    {
+        data_type      => "varchar",
+        default_value  => "",
+        is_foreign_key => 1,
+        is_nullable    => 0,
+        size           => 10,
+    },
+    "categorycode",
+    {
+        data_type      => "varchar",
+        default_value  => "",
+        is_foreign_key => 1,
+        is_nullable    => 0,
+        size           => 10,
+    },
+    "dateenrolled",
+    { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
+    "dateexpiry",
+    { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
+    "gonenoaddress",
+    { data_type => "tinyint", is_nullable => 1 },
+    "lost",
+    { data_type => "tinyint", is_nullable => 1 },
+    "debarred",
+    { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
+    "debarredcomment",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "contactname",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "contactfirstname",
+    { data_type => "text", is_nullable => 1 },
+    "contacttitle",
+    { data_type => "text", is_nullable => 1 },
+    "guarantorid",
+    { data_type => "integer", is_nullable => 1 },
+    "borrowernotes",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "relationship",
+    { data_type => "varchar", is_nullable => 1, size => 100 },
+    "sex",
+    { data_type => "varchar", is_nullable => 1, size => 1 },
+    "password",
+    { data_type => "varchar", is_nullable => 1, size => 60 },
+    "flags",
+    { data_type => "integer", is_nullable => 1 },
+    "userid",
+    { data_type => "varchar", is_nullable => 1, size => 75 },
+    "opacnote",
+    { data_type => "mediumtext", is_nullable => 1 },
+    "contactnote",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "sort1",
+    { data_type => "varchar", is_nullable => 1, size => 80 },
+    "sort2",
+    { data_type => "varchar", is_nullable => 1, size => 80 },
+    "altcontactfirstname",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "altcontactsurname",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "altcontactaddress1",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "altcontactaddress2",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "altcontactaddress3",
+    { data_type => "varchar", is_nullable => 1, size => 255 },
+    "altcontactstate",
+    { data_type => "text", is_nullable => 1 },
+    "altcontactzipcode",
+    { data_type => "varchar", is_nullable => 1, size => 50 },
+    "altcontactcountry",
+    { data_type => "text", is_nullable => 1 },
+    "altcontactphone",
+    { data_type => "varchar", is_nullable => 1, size => 50 },
+    "smsalertnumber",
+    { data_type => "varchar", is_nullable => 1, size => 50 },
+    "sms_provider_id",
+    { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
+    "privacy",
+    { data_type => "integer", default_value => 1, is_nullable => 0 },
+    "privacy_guarantor_checkouts",
+    { data_type => "tinyint", default_value => 0, is_nullable => 0 },
+    "checkprevcheckout",
+    {
+        data_type     => "varchar",
+        default_value => "inherit",
+        is_nullable   => 0,
+        size          => 7,
+    },
+    "updated_on",
+    {
+        data_type                 => "timestamp",
+        datetime_undef_if_invalid => 1,
+        default_value             => \"current_timestamp",
+        is_nullable               => 0,
+    },
+    "lastseen",
+    {
+        data_type                 => "datetime",
+        datetime_undef_if_invalid => 1,
+        is_nullable               => 1,
+    },
 );
 
 =head1 PRIMARY KEY
@@ -642,7 +643,7 @@ __PACKAGE__->set_primary_key("borrowernumber");
 
 =cut
 
-__PACKAGE__->add_unique_constraint("cardnumber", ["cardnumber"]);
+__PACKAGE__->add_unique_constraint( "cardnumber", ["cardnumber"] );
 
 =head2 C<userid>
 
@@ -654,7 +655,7 @@ __PACKAGE__->add_unique_constraint("cardnumber", ["cardnumber"]);
 
 =cut
 
-__PACKAGE__->add_unique_constraint("userid", ["userid"]);
+__PACKAGE__->add_unique_constraint( "userid", ["userid"] );
 
 =head1 RELATIONS
 
@@ -667,10 +668,10 @@ Related object: L<Koha::Schema::Result::Accountline>
 =cut
 
 __PACKAGE__->has_many(
-  "accountlines",
-  "Koha::Schema::Result::Accountline",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "accountlines",
+    "Koha::Schema::Result::Accountline",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 accountoffsets
@@ -682,10 +683,10 @@ Related object: L<Koha::Schema::Result::Accountoffset>
 =cut
 
 __PACKAGE__->has_many(
-  "accountoffsets",
-  "Koha::Schema::Result::Accountoffset",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "accountoffsets",
+    "Koha::Schema::Result::Accountoffset",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 aqbasketusers
@@ -697,10 +698,10 @@ Related object: L<Koha::Schema::Result::Aqbasketuser>
 =cut
 
 __PACKAGE__->has_many(
-  "aqbasketusers",
-  "Koha::Schema::Result::Aqbasketuser",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "aqbasketusers",
+    "Koha::Schema::Result::Aqbasketuser",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 aqbudgetborrowers
@@ -712,10 +713,10 @@ Related object: L<Koha::Schema::Result::Aqbudgetborrower>
 =cut
 
 __PACKAGE__->has_many(
-  "aqbudgetborrowers",
-  "Koha::Schema::Result::Aqbudgetborrower",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "aqbudgetborrowers",
+    "Koha::Schema::Result::Aqbudgetborrower",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 aqorder_users
@@ -727,10 +728,10 @@ Related object: L<Koha::Schema::Result::AqorderUser>
 =cut
 
 __PACKAGE__->has_many(
-  "aqorder_users",
-  "Koha::Schema::Result::AqorderUser",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "aqorder_users",
+    "Koha::Schema::Result::AqorderUser",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 article_requests
@@ -742,10 +743,10 @@ Related object: L<Koha::Schema::Result::ArticleRequest>
 =cut
 
 __PACKAGE__->has_many(
-  "article_requests",
-  "Koha::Schema::Result::ArticleRequest",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "article_requests",
+    "Koha::Schema::Result::ArticleRequest",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 borrower_attributes
@@ -757,10 +758,10 @@ Related object: L<Koha::Schema::Result::BorrowerAttribute>
 =cut
 
 __PACKAGE__->has_many(
-  "borrower_attributes",
-  "Koha::Schema::Result::BorrowerAttribute",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "borrower_attributes",
+    "Koha::Schema::Result::BorrowerAttribute",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 borrower_debarments
@@ -772,10 +773,10 @@ Related object: L<Koha::Schema::Result::BorrowerDebarment>
 =cut
 
 __PACKAGE__->has_many(
-  "borrower_debarments",
-  "Koha::Schema::Result::BorrowerDebarment",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "borrower_debarments",
+    "Koha::Schema::Result::BorrowerDebarment",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 borrower_files
@@ -787,10 +788,10 @@ Related object: L<Koha::Schema::Result::BorrowerFile>
 =cut
 
 __PACKAGE__->has_many(
-  "borrower_files",
-  "Koha::Schema::Result::BorrowerFile",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "borrower_files",
+    "Koha::Schema::Result::BorrowerFile",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 borrower_message_preferences
@@ -802,10 +803,10 @@ Related object: L<Koha::Schema::Result::BorrowerMessagePreference>
 =cut
 
 __PACKAGE__->has_many(
-  "borrower_message_preferences",
-  "Koha::Schema::Result::BorrowerMessagePreference",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "borrower_message_preferences",
+    "Koha::Schema::Result::BorrowerMessagePreference",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 borrower_syncs
@@ -817,10 +818,10 @@ Related object: L<Koha::Schema::Result::BorrowerSync>
 =cut
 
 __PACKAGE__->has_many(
-  "borrower_syncs",
-  "Koha::Schema::Result::BorrowerSync",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "borrower_syncs",
+    "Koha::Schema::Result::BorrowerSync",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 branchcode
@@ -832,10 +833,10 @@ Related object: L<Koha::Schema::Result::Branch>
 =cut
 
 __PACKAGE__->belongs_to(
-  "branchcode",
-  "Koha::Schema::Result::Branch",
-  { branchcode => "branchcode" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+    "branchcode",
+    "Koha::Schema::Result::Branch",
+    { branchcode    => "branchcode" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
 );
 
 =head2 categorycode
@@ -847,10 +848,10 @@ Related object: L<Koha::Schema::Result::Category>
 =cut
 
 __PACKAGE__->belongs_to(
-  "categorycode",
-  "Koha::Schema::Result::Category",
-  { categorycode => "categorycode" },
-  { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
+    "categorycode",
+    "Koha::Schema::Result::Category",
+    { categorycode  => "categorycode" },
+    { is_deferrable => 1, on_delete => "RESTRICT", on_update => "RESTRICT" },
 );
 
 =head2 course_instructors
@@ -862,10 +863,10 @@ Related object: L<Koha::Schema::Result::CourseInstructor>
 =cut
 
 __PACKAGE__->has_many(
-  "course_instructors",
-  "Koha::Schema::Result::CourseInstructor",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "course_instructors",
+    "Koha::Schema::Result::CourseInstructor",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 creator_batches
@@ -877,10 +878,10 @@ Related object: L<Koha::Schema::Result::CreatorBatch>
 =cut
 
 __PACKAGE__->has_many(
-  "creator_batches",
-  "Koha::Schema::Result::CreatorBatch",
-  { "foreign.borrower_number" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "creator_batches",
+    "Koha::Schema::Result::CreatorBatch",
+    { "foreign.borrower_number" => "self.borrowernumber" },
+    { cascade_copy              => 0, cascade_delete => 0 },
 );
 
 =head2 discharges
@@ -892,10 +893,10 @@ Related object: L<Koha::Schema::Result::Discharge>
 =cut
 
 __PACKAGE__->has_many(
-  "discharges",
-  "Koha::Schema::Result::Discharge",
-  { "foreign.borrower" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "discharges",
+    "Koha::Schema::Result::Discharge",
+    { "foreign.borrower" => "self.borrowernumber" },
+    { cascade_copy       => 0, cascade_delete => 0 },
 );
 
 =head2 hold_fill_targets
@@ -907,10 +908,10 @@ Related object: L<Koha::Schema::Result::HoldFillTarget>
 =cut
 
 __PACKAGE__->has_many(
-  "hold_fill_targets",
-  "Koha::Schema::Result::HoldFillTarget",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "hold_fill_targets",
+    "Koha::Schema::Result::HoldFillTarget",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 housebound_profile
@@ -922,10 +923,10 @@ Related object: L<Koha::Schema::Result::HouseboundProfile>
 =cut
 
 __PACKAGE__->might_have(
-  "housebound_profile",
-  "Koha::Schema::Result::HouseboundProfile",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "housebound_profile",
+    "Koha::Schema::Result::HouseboundProfile",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 housebound_role
@@ -937,10 +938,10 @@ Related object: L<Koha::Schema::Result::HouseboundRole>
 =cut
 
 __PACKAGE__->might_have(
-  "housebound_role",
-  "Koha::Schema::Result::HouseboundRole",
-  { "foreign.borrowernumber_id" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "housebound_role",
+    "Koha::Schema::Result::HouseboundRole",
+    { "foreign.borrowernumber_id" => "self.borrowernumber" },
+    { cascade_copy                => 0, cascade_delete => 0 },
 );
 
 =head2 housebound_visit_chooser_brwnumbers
@@ -952,10 +953,10 @@ Related object: L<Koha::Schema::Result::HouseboundVisit>
 =cut
 
 __PACKAGE__->has_many(
-  "housebound_visit_chooser_brwnumbers",
-  "Koha::Schema::Result::HouseboundVisit",
-  { "foreign.chooser_brwnumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "housebound_visit_chooser_brwnumbers",
+    "Koha::Schema::Result::HouseboundVisit",
+    { "foreign.chooser_brwnumber" => "self.borrowernumber" },
+    { cascade_copy                => 0, cascade_delete => 0 },
 );
 
 =head2 housebound_visit_deliverer_brwnumbers
@@ -967,10 +968,10 @@ Related object: L<Koha::Schema::Result::HouseboundVisit>
 =cut
 
 __PACKAGE__->has_many(
-  "housebound_visit_deliverer_brwnumbers",
-  "Koha::Schema::Result::HouseboundVisit",
-  { "foreign.deliverer_brwnumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "housebound_visit_deliverer_brwnumbers",
+    "Koha::Schema::Result::HouseboundVisit",
+    { "foreign.deliverer_brwnumber" => "self.borrowernumber" },
+    { cascade_copy                  => 0, cascade_delete => 0 },
 );
 
 =head2 issues
@@ -982,10 +983,9 @@ Related object: L<Koha::Schema::Result::Issue>
 =cut
 
 __PACKAGE__->has_many(
-  "issues",
-  "Koha::Schema::Result::Issue",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "issues", "Koha::Schema::Result::Issue",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 items_last_borrowers
@@ -997,10 +997,10 @@ Related object: L<Koha::Schema::Result::ItemsLastBorrower>
 =cut
 
 __PACKAGE__->has_many(
-  "items_last_borrowers",
-  "Koha::Schema::Result::ItemsLastBorrower",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "items_last_borrowers",
+    "Koha::Schema::Result::ItemsLastBorrower",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 message_queues
@@ -1012,10 +1012,10 @@ Related object: L<Koha::Schema::Result::MessageQueue>
 =cut
 
 __PACKAGE__->has_many(
-  "message_queues",
-  "Koha::Schema::Result::MessageQueue",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "message_queues",
+    "Koha::Schema::Result::MessageQueue",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 messages
@@ -1027,10 +1027,10 @@ Related object: L<Koha::Schema::Result::Message>
 =cut
 
 __PACKAGE__->has_many(
-  "messages",
-  "Koha::Schema::Result::Message",
-  { "foreign.manager_id" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "messages",
+    "Koha::Schema::Result::Message",
+    { "foreign.manager_id" => "self.borrowernumber" },
+    { cascade_copy         => 0, cascade_delete => 0 },
 );
 
 =head2 old_issues
@@ -1042,10 +1042,10 @@ Related object: L<Koha::Schema::Result::OldIssue>
 =cut
 
 __PACKAGE__->has_many(
-  "old_issues",
-  "Koha::Schema::Result::OldIssue",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "old_issues",
+    "Koha::Schema::Result::OldIssue",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 old_reserves
@@ -1057,10 +1057,10 @@ Related object: L<Koha::Schema::Result::OldReserve>
 =cut
 
 __PACKAGE__->has_many(
-  "old_reserves",
-  "Koha::Schema::Result::OldReserve",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "old_reserves",
+    "Koha::Schema::Result::OldReserve",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 opac_news
@@ -1072,10 +1072,10 @@ Related object: L<Koha::Schema::Result::OpacNews>
 =cut
 
 __PACKAGE__->has_many(
-  "opac_news",
-  "Koha::Schema::Result::OpacNews",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "opac_news",
+    "Koha::Schema::Result::OpacNews",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 patron_list_patrons
@@ -1087,10 +1087,10 @@ Related object: L<Koha::Schema::Result::PatronListPatron>
 =cut
 
 __PACKAGE__->has_many(
-  "patron_list_patrons",
-  "Koha::Schema::Result::PatronListPatron",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "patron_list_patrons",
+    "Koha::Schema::Result::PatronListPatron",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 patron_lists
@@ -1102,10 +1102,10 @@ Related object: L<Koha::Schema::Result::PatronList>
 =cut
 
 __PACKAGE__->has_many(
-  "patron_lists",
-  "Koha::Schema::Result::PatronList",
-  { "foreign.owner" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "patron_lists",
+    "Koha::Schema::Result::PatronList",
+    { "foreign.owner" => "self.borrowernumber" },
+    { cascade_copy    => 0, cascade_delete => 0 },
 );
 
 =head2 patronimage
@@ -1117,10 +1117,10 @@ Related object: L<Koha::Schema::Result::Patronimage>
 =cut
 
 __PACKAGE__->might_have(
-  "patronimage",
-  "Koha::Schema::Result::Patronimage",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "patronimage",
+    "Koha::Schema::Result::Patronimage",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 ratings
@@ -1132,10 +1132,10 @@ Related object: L<Koha::Schema::Result::Rating>
 =cut
 
 __PACKAGE__->has_many(
-  "ratings",
-  "Koha::Schema::Result::Rating",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "ratings",
+    "Koha::Schema::Result::Rating",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 reserves
@@ -1147,10 +1147,10 @@ Related object: L<Koha::Schema::Result::Reserve>
 =cut
 
 __PACKAGE__->has_many(
-  "reserves",
-  "Koha::Schema::Result::Reserve",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "reserves",
+    "Koha::Schema::Result::Reserve",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 reviews
@@ -1162,10 +1162,10 @@ Related object: L<Koha::Schema::Result::Review>
 =cut
 
 __PACKAGE__->has_many(
-  "reviews",
-  "Koha::Schema::Result::Review",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "reviews",
+    "Koha::Schema::Result::Review",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 sms_provider
@@ -1177,15 +1177,15 @@ Related object: L<Koha::Schema::Result::SmsProvider>
 =cut
 
 __PACKAGE__->belongs_to(
-  "sms_provider",
-  "Koha::Schema::Result::SmsProvider",
-  { id => "sms_provider_id" },
-  {
-    is_deferrable => 1,
-    join_type     => "LEFT",
-    on_delete     => "SET NULL",
-    on_update     => "CASCADE",
-  },
+    "sms_provider",
+    "Koha::Schema::Result::SmsProvider",
+    { id => "sms_provider_id" },
+    {
+        is_deferrable => 1,
+        join_type     => "LEFT",
+        on_delete     => "SET NULL",
+        on_update     => "CASCADE",
+    },
 );
 
 =head2 subscriptionroutinglists
@@ -1197,10 +1197,10 @@ Related object: L<Koha::Schema::Result::Subscriptionroutinglist>
 =cut
 
 __PACKAGE__->has_many(
-  "subscriptionroutinglists",
-  "Koha::Schema::Result::Subscriptionroutinglist",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "subscriptionroutinglists",
+    "Koha::Schema::Result::Subscriptionroutinglist",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 tags_all
@@ -1212,10 +1212,10 @@ Related object: L<Koha::Schema::Result::TagAll>
 =cut
 
 __PACKAGE__->has_many(
-  "tags_all",
-  "Koha::Schema::Result::TagAll",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "tags_all",
+    "Koha::Schema::Result::TagAll",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 tags_approvals
@@ -1227,10 +1227,10 @@ Related object: L<Koha::Schema::Result::TagsApproval>
 =cut
 
 __PACKAGE__->has_many(
-  "tags_approvals",
-  "Koha::Schema::Result::TagsApproval",
-  { "foreign.approved_by" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "tags_approvals",
+    "Koha::Schema::Result::TagsApproval",
+    { "foreign.approved_by" => "self.borrowernumber" },
+    { cascade_copy          => 0, cascade_delete => 0 },
 );
 
 =head2 user_permissions
@@ -1242,10 +1242,10 @@ Related object: L<Koha::Schema::Result::UserPermission>
 =cut
 
 __PACKAGE__->has_many(
-  "user_permissions",
-  "Koha::Schema::Result::UserPermission",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "user_permissions",
+    "Koha::Schema::Result::UserPermission",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 virtualshelfcontents
@@ -1257,10 +1257,10 @@ Related object: L<Koha::Schema::Result::Virtualshelfcontent>
 =cut
 
 __PACKAGE__->has_many(
-  "virtualshelfcontents",
-  "Koha::Schema::Result::Virtualshelfcontent",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "virtualshelfcontents",
+    "Koha::Schema::Result::Virtualshelfcontent",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 virtualshelfshares
@@ -1272,10 +1272,10 @@ Related object: L<Koha::Schema::Result::Virtualshelfshare>
 =cut
 
 __PACKAGE__->has_many(
-  "virtualshelfshares",
-  "Koha::Schema::Result::Virtualshelfshare",
-  { "foreign.borrowernumber" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "virtualshelfshares",
+    "Koha::Schema::Result::Virtualshelfshare",
+    { "foreign.borrowernumber" => "self.borrowernumber" },
+    { cascade_copy             => 0, cascade_delete => 0 },
 );
 
 =head2 virtualshelves
@@ -1287,10 +1287,10 @@ Related object: L<Koha::Schema::Result::Virtualshelve>
 =cut
 
 __PACKAGE__->has_many(
-  "virtualshelves",
-  "Koha::Schema::Result::Virtualshelve",
-  { "foreign.owner" => "self.borrowernumber" },
-  { cascade_copy => 0, cascade_delete => 0 },
+    "virtualshelves",
+    "Koha::Schema::Result::Virtualshelve",
+    { "foreign.owner" => "self.borrowernumber" },
+    { cascade_copy    => 0, cascade_delete => 0 },
 );
 
 =head2 basketnoes
@@ -1301,7 +1301,7 @@ Composing rels: L</aqbasketusers> -> basketno
 
 =cut
 
-__PACKAGE__->many_to_many("basketnoes", "aqbasketusers", "basketno");
+__PACKAGE__->many_to_many( "basketnoes", "aqbasketusers", "basketno" );
 
 =head2 budgets
 
@@ -1311,7 +1311,7 @@ Composing rels: L</aqbudgetborrowers> -> budget
 
 =cut
 
-__PACKAGE__->many_to_many("budgets", "aqbudgetborrowers", "budget");
+__PACKAGE__->many_to_many( "budgets", "aqbudgetborrowers", "budget" );
 
 =head2 courses
 
@@ -1321,7 +1321,7 @@ Composing rels: L</course_instructors> -> course
 
 =cut
 
-__PACKAGE__->many_to_many("courses", "course_instructors", "course");
+__PACKAGE__->many_to_many( "courses", "course_instructors", "course" );
 
 =head2 ordernumbers
 
@@ -1331,8 +1331,7 @@ Composing rels: L</aqorder_users> -> ordernumber
 
 =cut
 
-__PACKAGE__->many_to_many("ordernumbers", "aqorder_users", "ordernumber");
-
+__PACKAGE__->many_to_many( "ordernumbers", "aqorder_users", "ordernumber" );
 
 # Created by DBIx::Class::Schema::Loader v0.07042 @ 2016-10-31 10:39:35
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:Lc6GQ2E7d+tyzTk3v2sWjQ
@@ -1341,6 +1340,48 @@ __PACKAGE__->belongs_to(
     "guarantor",
     "Koha::Schema::Result::Borrower",
     { borrowernumber => "guarantorid" },
+);
+
+=head2 overdues (or issues_overdue as it's a "filter" on issues)
+
+Type: has_many
+
+Related object: L<Koha::Schema::Result::Issue>
+
+=cut
+
+use DateTime;
+
+__PACKAGE__->has_many(
+    "overdues",
+    "Koha::Schema::Result::Issue",
+    sub {
+        my $args = shift;
+        my $now =
+          $args->{self_resultsource}
+          ->storage->datetime_parser->format_datetime(
+            DateTime->now( time_zone => 'local' ) );
+        return (
+            {
+                "$args->{foreign_alias}.borrowernumber" =>
+                  { '-ident' => "$args->{self_alias}.borrowernumber" },
+                "$args->{foreign_alias}.date_due" => { '<' => $now },
+            },
+            !$args->{self_result_object}
+            ? ()
+            : {
+                "$args->{foreign_alias}.borrowernumber" =>
+                  $args->{self_result_object}->borrowernumber,
+                "$args->{foreign_alias}.date_due" => { '<' => $now },
+            },
+            !$args->{foreign_values} ? () : {
+                "$args->{self_alias}.borrowernumber" =>
+                  $args->{foreign_values}{borrowernumber},
+
+            }
+        );
+    },
+    { cascade_copy => 0, cascade_delete => 0 },
 );
 
 sub koha_objects_class {
