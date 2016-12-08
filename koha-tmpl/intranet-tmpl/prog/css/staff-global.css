@@ -3319,3 +3319,131 @@ span.name {
     margin: auto;
     margin-bottom: 2px;
 }
+
+#stockrotation h3 {
+    margin: 30px 0 10px 0;
+}
+
+#stockrotation .dialog h3 {
+    margin: 10px 0;
+}
+
+#stockrotation .dialog {
+    margin-bottom: 20px;
+}
+
+#stockrotation .highlight_stage,
+#catalog_stockrotation .highlight_stage {
+    font-weight: bold;
+}
+
+#stockrotation #rota_form textarea {
+    width: 300px;
+    height: 100px;
+}
+
+#stockrotation #rota_form #name {
+    width: 300px;
+}
+
+#stockrotation #rota_form fieldset,
+#stockrotation #stage_form fieldset,
+#stockrotation #add_rota_item_form fieldset {
+    width: auto;
+}
+
+#stockrotation .dialog.alert ul {
+    margin: 20px 0;
+}
+
+#stockrotation .dialog.alert li {
+    list-style-type: none;
+}
+
+#catalog_stockrotation .item_select_rota {
+    vertical-align: middle;
+}
+
+#catalog_stockrotation h1 {
+    margin-bottom: 20px;
+}
+
+#stockrotation td.actions,
+#catalog_stockrotation td.actions {
+    vertical-align: middle;
+}
+
+#stockrotation .stage,
+#catalog_stockrotation .stage {
+    display: inline-block;
+    padding: 5px 7px;
+    margin: 3px 0 3px 0;
+    border-radius: 5px;
+    background-color: rgba(0,0,0,0.1);
+}
+
+#stage_list_headings {
+    font-weight: bold;
+}
+
+#stage_list_headings span {
+    padding: 3px;
+}
+
+#manage_stages ul {
+    padding-left: 0;
+}
+
+#manage_stages li {
+    list-style: none;
+    margin-bottom: 5px;
+}
+
+#manage_stages li span {
+    padding: 6px 3px;
+}
+
+#manage_stages .stagename {
+    width: 15em;
+    display: inline-block;
+}
+
+#manage_stages .stageduration {
+    width: 10em;
+    display: inline-block;
+}
+
+#manage_stages .stageactions {
+    display: inline-block;
+}
+
+#manage_stages li:nth-child(odd) {
+    background-color : #F3F3F3;
+}
+
+#manage_stages .drag_handle {
+    margin-right: 6px;
+    cursor: move;
+}
+
+#manage_stages .drag_placeholder {
+    height: 2em;
+    border: 1px dotted #aaa;
+}
+
+#manage_stages h3 {
+    display: inline-block;
+}
+
+#manage_stages #ajax_status {
+    display: inline-block;
+    border: 1px solid #bcbcbc;
+    border-radius: 5px;
+    padding: 5px;
+    margin-left: 10px;
+    background: #f3f3f3;
+}
+
+#manage_stages #manage_stages_help {
+    margin: 20px 0;
+}

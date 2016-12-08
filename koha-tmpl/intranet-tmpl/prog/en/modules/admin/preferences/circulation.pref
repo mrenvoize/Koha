@@ -918,7 +918,7 @@ Circulation:
                   yes: Enable
                   no: Disable
             - "housebound module"
-    Stockrotation module:
+    Stock Rotation module:
         -
             - pref: StockRotation
               choices:

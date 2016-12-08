@@ -1,3 +1,22 @@
+[% USE Koha %]
+
+<script type="text/javascript">//<![CDATA[
+    $(document).ready(function() {
+        var path = location.pathname.substring(1);
+        if (path.indexOf("labels") >= 0 && path.indexOf("spine") < 0 ) {
+          $('#navmenulist a[href$="/cgi-bin/koha/labels/label-home.pl"]').css('font-weight','bold');
+        } else if (path.indexOf("patroncards") >= 0 ) {
+          $('#navmenulist a[href$="/cgi-bin/koha/patroncards/home.pl"]').css('font-weight','bold');
+        } else if (path.indexOf("patron_lists") >= 0 ) {
+          $('#navmenulist a[href$="/cgi-bin/koha/patron_lists/lists.pl"]').css('font-weight','bold');
+        } else if ((path+location.search).indexOf("batchMod.pl?del=1") >= 0 ) {
+          $('#navmenulist a[href$="/cgi-bin/koha/tools/batchMod.pl?del=1"]').css('font-weight','bold');
+        } else {
+          $('#navmenulist a[href$="/' + path + '"]').css('font-weight','bold');
+        }
+    });
+//]]>
+</script>
 <div id="navmenu">
 <div id="navmenulist">
 <ul>
@@ -37,6 +56,9 @@
     [% END %]
     [% IF ( CAN_user_tools_batch_upload_patron_images ) %]
 	<li><a href="/cgi-bin/koha/tools/picture-upload.pl">Upload patron images</a></li>
+    [% END %]
+    [% IF ( CAN_user_stockrotation_can_edit_rotas && Koha.Preference('StockRotation') ) %]
+    <li><a href="/cgi-bin/koha/tools/stockrotation.pl">Stock rotation</a></li>
     [% END %]
 </ul>
 <h5>Catalog</h5>
