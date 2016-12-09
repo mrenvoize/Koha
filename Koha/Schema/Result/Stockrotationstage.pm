@@ -131,4 +131,9 @@ __PACKAGE__->has_many(
 # Created by DBIx::Class::Schema::Loader v0.07042 @ 2016-11-07 11:33:00
 # DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:zxUwd0UdMRN03yuSlf3RmA
 
+# We use DBIx::Class::Ordered to handle stages manipulation.
+__PACKAGE__->load_components(qw( Ordered ));
+
+__PACKAGE__->grouping_column('rota_id'); # Our group_id
+
 1;
