@@ -443,9 +443,9 @@ elsif ( defined $text_filename ) {
 }
 
 foreach my $branchcode (@branches) {
+    my $branch_calendar = Koha::Calendar->new( branchcode => $branchcode );
     if ( C4::Context->preference('OverdueNoticeCalendar') ) {
-        my $calendar = Koha::Calendar->new( branchcode => $branchcode );
-        if ( $calendar->is_holiday($date_to_run) ) {
+        if ( $branch_calendar->is_holiday($date_to_run) ) {
             next;
         }
     }
@@ -542,10 +542,8 @@ END_SQL
                 my $days_between;
                 if ( C4::Context->preference('OverdueNoticeCalendar') )
                 {
-                    my $calendar =
-                      Koha::Calendar->new( branchcode => $branchcode );
                     $days_between =
-                      $calendar->days_between( dt_from_string($data->{date_due}),
+                      $branch_calendar->days_between( dt_from_string($data->{date_due}),
                         $date_to_run );
                 }
                 else {
@@ -626,10 +624,8 @@ END_SQL
                 my $exceededPrintNoticesMaxLines = 0;
                 while ( my $item_info = $sth2->fetchrow_hashref() ) {
                     if ( C4::Context->preference('OverdueNoticeCalendar') ) {
-                        my $calendar =
-                          Koha::Calendar->new( branchcode => $branchcode );
                         $days_between =
-                          $calendar->days_between(
+                          $branch_calendar->days_between(
                             dt_from_string( $item_info->{date_due} ), $date_to_run );
                     }
                     else {
