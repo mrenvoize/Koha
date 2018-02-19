@@ -4144,40 +4144,6 @@ CREATE TABLE illrequests (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
--- Table structure for table `stockrotationrotas`
---
-
-CREATE TABLE IF NOT EXISTS stockrotationrotas (
-    rota_id int(11) auto_increment,          -- Stockrotation rota ID
-    title varchar(100) NOT NULL,            -- Title for this rota
-    description text NOT NULL default '',   -- Description for this rota
-    cyclical tinyint(1) NOT NULL default 0, -- Should items on this rota keep cycling?
-    active tinyint(1) NOT NULL default 0,   -- Is this rota currently active?
-    PRIMARY KEY (`rota_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
--- Table structure for table `stockrotationstages`
---
-
-CREATE TABLE IF NOT EXISTS stockrotationstages (
-    stage_id int(11) auto_increment,     -- Unique stage ID
-    position int(11) NOT NULL,           -- The position of this stage within its rota
-    rota_id int(11) NOT NULL,            -- The rota this stage belongs to
-    branchcode_id varchar(10) NOT NULL,  -- Branch this stage relates to
-    duration int(11) NOT NULL default 4, -- The number of days items shoud occupy this stage
-    PRIMARY KEY (`stage_id`),
-    CONSTRAINT `stockrotationstages_rifk`
-      FOREIGN KEY (`rota_id`)
-      REFERENCES `stockrotationrotas` (`rota_id`)
-      ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT `stockrotationstages_bifk`
-      FOREIGN KEY (`branchcode_id`)
-      REFERENCES `branches` (`branchcode`)
-      ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-
---
 -- Table structure for table `illrequestattributes`
 --
 
@@ -4206,7 +4172,7 @@ CREATE TABLE library_groups (
     description MEDIUMTEXT NULL DEFAULT NULL,    -- Longer explanation of the group, if necessary
     ft_hide_patron_info tinyint(1) NOT NULL DEFAULT 0, -- Turn on the feature "Hide patron's info" for this group
     ft_search_groups_opac tinyint(1) NOT NULL DEFAULT 0, -- Use this group for staff side search groups
-    ft_search_groups_staff tinyint(1) NOT NULL DEFAULT 0, -- Use this group for opac side search groups
+     ft_search_groups_staff tinyint(1) NOT NULL DEFAULT 0, -- Use this group for opac side search groups
     created_on TIMESTAMP NULL,             -- Date and time of creation
     updated_on TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Date and time of last
     PRIMARY KEY id ( id ),
@@ -4228,6 +4194,40 @@ CREATE TABLE `oauth_access_tokens` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+-- Table structure for table `stockrotationrotas`
+--
+
+CREATE TABLE IF NOT EXISTS stockrotationrotas (
+    rota_id int(11) auto_increment,          -- Stockrotation rota ID
+    title varchar(100) NOT NULL,            -- Title for this rota
+    description text NOT NULL default '',   -- Description for this rota
+    cyclical tinyint(1) NOT NULL default 0, -- Should items on this rota keep cycling?
+    active tinyint(1) NOT NULL default 0,   -- Is this rota currently active?
+    PRIMARY KEY (`rota_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Table structure for table `stockrotationstages`
+--
+
+CREATE TABLE IF NOT EXISTS stockrotationstages (
+    stage_id int(11) auto_increment,     -- Unique stage ID
+    position int(11) NOT NULL,           -- The position of this stage within its rota
+    rota_id int(11) NOT NULL,            -- The rota this stage belongs to
+    branchcode_id varchar(10) NOT NULL,  -- Branch this stage relates to
+    duration int(11) NOT NULL default 4, -- The number of days items shoud occupy this stage
+    PRIMARY KEY (`stage_id`),
+    CONSTRAINT `stockrotationstages_rifk`
+      FOREIGN KEY (`rota_id`)
+      REFERENCES `stockrotationrotas` (`rota_id`)
+      ON UPDATE CASCADE ON DELETE CASCADE,
+    CONSTRAINT `stockrotationstages_bifk`
+      FOREIGN KEY (`branchcode_id`)
+      REFERENCES `branches` (`branchcode`)
+      ON UPDATE CASCADE ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
 -- Table structure for table `stockrotationitems`
 --
 
@@ -4245,7 +4245,7 @@ CREATE TABLE IF NOT EXISTS stockrotationitems (
       FOREIGN KEY (`stage_id`)
       REFERENCES `stockrotationstages` (`stage_id`)
       ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;

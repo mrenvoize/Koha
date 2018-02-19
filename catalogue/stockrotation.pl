@@ -57,7 +57,10 @@ my ($template, $loggedinuser, $cookie) = get_template_and_user(
         query           => $input,
         type            => 'intranet',
         authnotrequired => 0,
-        flagsrequired   => { catalogue => 1 }
+        flagsrequired   => {
+            catalogue => 1,
+            stockrotation => 'can_user_stockrotation_can_edit_rotas',
+        },
     }
 );
 

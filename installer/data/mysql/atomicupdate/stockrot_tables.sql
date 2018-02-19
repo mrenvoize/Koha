@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS stockrotationrotas (
     cyclical tinyint(1) NOT NULL default 0, -- Should items on this rota keep cycling?
     active tinyint(1) NOT NULL default 0,   -- Is this rota currently active?
     PRIMARY KEY (`rota_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Stock Rotation Stages
 
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS stockrotationstages (
       FOREIGN KEY (`branchcode_id`)
       REFERENCES `branches` (`branchcode`)
       ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Stock Rotation Items
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS stockrotationitems (
       FOREIGN KEY (`stage_id`)
       REFERENCES `stockrotationstages` (`stage_id`)
       ON UPDATE CASCADE ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- System preferences
 

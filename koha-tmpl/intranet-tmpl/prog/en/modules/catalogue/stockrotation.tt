@@ -4,10 +4,7 @@
 <title>Koha &rsaquo; Catalog &rsaquo; Stock rotation details for [% biblio.title %]</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% INCLUDE 'browser-strings.inc' %]
-<!--[if lt IE 9]>
-<script type="text/javascript" src="[% interface %]/lib/shims/json2.min.js"></script>
-<![endif]-->
-<script type="text/javascript" src="[% interface %]/js/browser.js"></script>
+<script type="text/javascript" src="[% interface %]/js/browser_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
     var browser = KOHA.browser('[% searchid %]', parseInt('[% biblionumber %]', 10));
@@ -38,7 +35,7 @@
                 <thead>
                     <tr>
                         <th>Barcode</th>
-                        <th>Shelfmark</th>
+                        <th>Callnumber</th>
                         <th>Rota</th>
                         <th>Rota status</th>
                         <th>In transit</th>
@@ -59,15 +56,22 @@
                                     [% IF !item.rota.active %]
                                         <span class="highlighted-row">
                                     [% END %]
-                                        [% item.rota.active ? 'Active' : 'Inactive' %]
-
+                                        [% IF item.rota.active %]
+                                            Active
+                                        [% ELSE %]
+                                            Inactive
+                                        [% END %]
                                     [% IF !item.rota.active %]
                                         </span>
                                     [% END %]
                                 [% END %]
                             </td>
                             <td>
-                                [% item.bib_item.get_transfer ? 'Yes' : 'No' %]
+                                [% IF item.bib_item.get_transfer %]
+                                    Yes
+                                [% ELSE %]
+                                    No
+                                [% END %]
                             </td>
                             <td>
                                 [% FOREACH this_stage IN item.stages %]
@@ -81,7 +85,13 @@
                                     &raquo;
                                 [% END %]
                                 [% IF item.stages.size > 0 %]
-                                    <span class="stage">[% item.rota.cyclical ? 'START' : 'END' %]</span>
+                                    <span class="stage">
+                                        [% IF item.rota.cyclical %]
+                                            START
+                                        [% ELSE %]
+                                            END
+                                        [% END %]
+                                    </span>
                                 [% END %]
                             </td>
                             <td class="actions">
@@ -101,7 +111,11 @@
                                         <a class="btn btn-default btn-xs" disabled>
                                     [% END %]
                                         <i class="fa fa-fire"></i>
-                                        [% item.stockrotationitem.indemand ? 'Remove &quot;In demand&quot;' : 'Add &quot;In demand&quot;' %]
+                                        [% IF item.stockrotationitem.indemand %]
+                                            Remove "In demand"
+                                        [% ELSE %]
+                                            Add "In demand"
+                                        [% END %]
                                     </a>
                                     [% IF !in_transit %]
                                         <a class="btn btn-default btn-xs" href="?op=confirm_remove_from_rota&amp;stage_id=[% item.stockrotationitem.stage.stage_id %]&amp;item_id=[% item.bib_item.id %]&amp;biblionumber=[% biblionumber %]">

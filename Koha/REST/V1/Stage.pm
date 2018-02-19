@@ -22,6 +22,18 @@ use Mojo::Base 'Mojolicious::Controller';
 use Koha::StockRotationRotas;
 use Koha::StockRotationStages;
 
+=head1 NAME
+
+Koha::REST::V1::Stage
+
+=head2 Operations
+
+=head3 move
+
+Move a stage up or down the stockrotation rota.
+
+=cut
+
 sub move {
     my $c = shift->openapi->valid_input or return;
     my $input = $c->validation->output;

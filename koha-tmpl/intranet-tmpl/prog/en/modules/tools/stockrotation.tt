@@ -4,9 +4,9 @@
 [% INCLUDE 'doc-head-open.inc' %]
 <title>Koha &rsaquo; Stock rotation</title>
 [% INCLUDE 'doc-head-close.inc' %]
-<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/datatables.css" />
+<link rel="stylesheet" type="text/css" href="[% interface %]/[% theme %]/css/datatables_[% KOHA_VERSION %].css" />
 [% INCLUDE 'datatables.inc' %]
-<script type="text/javascript" src="[% interface %]/[% theme %]/js/pages/stockrotation.js"></script>
+<script type="text/javascript" src="[% interface %]/[% theme %]/js/pages/stockrotation_[% KOHA_VERSION %].js"></script>
 <script type="text/javascript">
 //<![CDATA[
     $(document).ready(function() {
@@ -201,7 +201,7 @@
                                 Stages can be re-ordered by using the <i class="drag_handle fa fa-lg fa-bars"></i>handle to drag and drop them to their new position
                             </div>
                             <div id="stage_list_headings">
-                                <span class="stagename">Branch</span>
+                                <span class="stagename">Library</span>
                                 <span class="stageduration">Duration (days)</span>
                             </div>
                             <ul id="sortable_stages" data-rota-id="[% rota.rota_id %]">
@@ -248,7 +248,7 @@
                         <fieldset class="rows">
                             <ol>
                                 <li>
-                                    <label class="required" for="branch">Branch:</label>
+                                    <label class="required" for="branch">Library:</label>
                                     <select name="branchcode" id="branch">
                                         [% FOREACH branch IN branches %]
                                             [% IF branch.branchcode == stage.branchcode_id %]
@@ -350,7 +350,7 @@
                                 <th>Barcode</th>
                                 <th>Title</th>
                                 <th>Author</th>
-                                <th>Shelfmark</th>
+                                <th>Callnumber</th>
                                 <th class="NoSearch">In transit</th>
                                 <th class="NoSort">Stages &amp; duration in days<br>(current stage highlighted)</th>
                                 <th class="NoSort">&nbsp;</th>

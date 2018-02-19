@@ -51,6 +51,10 @@ my ( $template, $loggedinuser, $cookie ) = get_template_and_user(
         template_name   => 'tools/stockrotation.tt',
         query           => $input,
         type            => 'intranet',
+        flagsrequired   => {
+            tools => '*',
+            stockrotation => '*',
+        },
         authnotrequired => 0
     }
 );
