@@ -73,6 +73,10 @@ sub _type {
     return 'Stockrotationstage';
 }
 
+=head3 object_class
+
+=cut
+
 sub object_class {
     return 'Koha::StockRotationStage';
 }

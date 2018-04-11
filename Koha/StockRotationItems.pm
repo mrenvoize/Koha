@@ -51,6 +51,10 @@ sub _type {
     return 'Stockrotationitem';
 }
 
+=head3 object_class
+
+=cut
+
 sub object_class {
     return 'Koha::StockRotationItem';
 }
