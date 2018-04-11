@@ -19,7 +19,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 12;
+use Test::More tests => 6;
 
 use Koha::Library;
 use Koha::Libraries;
@@ -52,9 +52,6 @@ is( $retrieved_library_1->branchname, $new_library_1->branchname, 'Find a librar
 
 $retrieved_library_1->delete;
 is( Koha::Libraries->search->count, $nb_of_libraries + 1, 'Delete should have deleted the library' );
-
-$retrieved_category_2->delete;
-is( Koha::LibraryCategories->search->count, $nb_of_categories + 2, 'Delete should have deleted the library category' );
 
 # Stockrotation relationship testing
 
