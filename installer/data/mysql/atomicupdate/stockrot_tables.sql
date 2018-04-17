@@ -6,7 +6,9 @@ CREATE TABLE IF NOT EXISTS stockrotationrotas (
     description text NOT NULL default '',   -- Description for this rota
     cyclical tinyint(1) NOT NULL default 0, -- Should items on this rota keep cycling?
     active tinyint(1) NOT NULL default 0,   -- Is this rota currently active?
-    PRIMARY KEY (`rota_id`)
+    PRIMARY KEY (`rota_id`),
+    CONSTRAINT `stockrotationrotas_title`
+      UNIQUE (`title`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Stock Rotation Stages

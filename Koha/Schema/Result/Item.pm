@@ -702,8 +702,8 @@ __PACKAGE__->might_have(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2016-12-12 17:02:24
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:oo/Eubwpc1tcaGAO9Oja1A
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2018-04-17 16:37:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aOcn/Am4XilK4NblfY5zXQ
 
 __PACKAGE__->belongs_to( biblioitem => "Koha::Schema::Result::Biblioitem", "biblioitemnumber" );
 
@@ -728,5 +728,4 @@ sub effective_itemtype {
     }
 }
 
-# You can replace this text with custom code or comments, and it will be preserved on regeneration
 1;
