@@ -4,7 +4,7 @@
 <title>Koha &rsaquo; Catalog &rsaquo; Stock rotation details for [% biblio.title %]</title>
 [% INCLUDE 'doc-head-close.inc' %]
 [% INCLUDE 'browser-strings.inc' %]
-<script type="text/javascript" src="[% interface %]/js/browser_[% KOHA_VERSION %].js"></script>
+[% Asset.js("js/browser.js") %]
 <script type="text/javascript">
 //<![CDATA[
     var browser = KOHA.browser('[% searchid %]', parseInt('[% biblionumber %]', 10));
