@@ -686,9 +686,24 @@ __PACKAGE__->might_have(
   { cascade_copy => 0, cascade_delete => 0 },
 );
 
+=head2 stockrotationitem
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2018-02-18 16:41:12
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:CrNXvpDUvvcuPZK2Gfzs/Q
+Type: might_have
+
+Related object: L<Koha::Schema::Result::Stockrotationitem>
+
+=cut
+
+__PACKAGE__->might_have(
+  "stockrotationitem",
+  "Koha::Schema::Result::Stockrotationitem",
+  { "foreign.itemnumber_id" => "self.itemnumber" },
+  { cascade_copy => 0, cascade_delete => 0 },
+);
+
+
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2018-04-17 16:37:51
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:aOcn/Am4XilK4NblfY5zXQ
 
 __PACKAGE__->belongs_to( biblioitem => "Koha::Schema::Result::Biblioitem", "biblioitemnumber" );
 
