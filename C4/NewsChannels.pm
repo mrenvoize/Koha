@@ -28,7 +28,7 @@ BEGIN {
     @ISA = qw(Exporter);
     @EXPORT = qw(
         &GetNewsToDisplay
-        &add_opac_new &upd_opac_new
+        &add_opac_new
     );
 }
 
@@ -65,44 +65,6 @@ sub add_opac_new {
         my $values_string = join(',', map { '?' } @fields);
         my $dbh = C4::Context->dbh;
         my $sth = $dbh->prepare("INSERT INTO opac_news ( $field_string ) VALUES ( $values_string )");
-        $sth->execute(@values);
-        $retval = 1;
-    }
-    return $retval;
-}
-
-=head2 upd_opac_new
-
-    $retval = upd_opac_new($hashref);
-
-    $hashref should contains all the fields found in opac_news,
-    including idnew, since it is the key for the SQL UPDATE.
-
-=cut
-
-sub upd_opac_new {
-    my ($href_entry) = @_;
-    my $retval = 0;
-
-    if ($href_entry) {
-        # take the keys of hash entry and make a list, but...
-        my @fields = keys %{$href_entry};
-        my @values;
-        $#values = -1;
-        my $field_string = q{};
-        foreach my $field_name (@fields) {
-            # exclude idnew
-            if ( $field_name ne 'idnew' ) {
-                $field_string = $field_string . "$field_name = ?,";
-                push @values,$href_entry->{$field_name};
-            }
-        }
-        # put idnew at the end, so we know which record to update
-        push @values,$href_entry->{'idnew'};
-        chop $field_string; # remove that excess ,
-
-        my $dbh = C4::Context->dbh;
-        my $sth = $dbh->prepare("UPDATE opac_news SET $field_string WHERE idnew = ?;");
         $sth->execute(@values);
         $retval = 1;
     }
