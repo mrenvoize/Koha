@@ -22,6 +22,9 @@ use Modern::Perl;
 use Carp;
 
 use Koha::Database;
+use Koha::DateUtils;
+use Koha::Libraries;
+use Koha::Patrons;
 
 use base qw(Koha::Object);
 
@@ -36,6 +39,54 @@ Koha::NewsItem represents a single piece of news from the opac_news table
 =head2 Class Methods
 
 =cut
+
+=head3 is_expired
+
+my $is_expired = $news_item->is_expired;
+
+Returns 1 if the news item is expired or 0;
+
+=cut
+
+sub is_expired {
+    my ( $self ) = @_;
+
+    return 0 unless $self->expirationdate;
+    return 1 if dt_from_string( $self->expirationdate ) < dt_from_string->truncate( to => 'day' );
+    return 0;
+}
+
+=head3 library
+
+my $library = $news_item->library;
+
+Returns Koha::Library object or undef
+
+=cut
+
+sub library {
+    my ( $self ) = @_;
+
+    my $library_rs = $self->_result->branchcode;
+    return unless $library_rs;
+    return Koha::Library->_new_from_dbic( $library_rs );
+}
+
+=head3 author
+
+my $patron = $news_item->author;
+
+Returns Koha::Patron object or undef
+
+=cut
+
+sub author {
+    my ( $self ) = @_;
+
+    my $author_rs = $self->_result->borrowernumber;
+    return unless $author_rs;
+    return Koha::Patron->_new_from_dbic( $author_rs );
+}
 
 =head3 type
 
