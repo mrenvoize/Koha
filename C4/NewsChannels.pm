@@ -28,7 +28,7 @@ BEGIN {
     @ISA = qw(Exporter);
     @EXPORT = qw(
         &GetNewsToDisplay
-        &add_opac_new &upd_opac_new &del_opac_new
+        &add_opac_new &upd_opac_new
     );
 }
 
@@ -107,18 +107,6 @@ sub upd_opac_new {
         $retval = 1;
     }
     return $retval;
-}
-
-sub del_opac_new {
-    my ($ids) = @_;
-    if ($ids) {
-        my $dbh = C4::Context->dbh;
-        my $sth = $dbh->prepare("DELETE FROM opac_news WHERE idnew IN ($ids)");
-        $sth->execute();
-        return 1;
-    } else {
-        return 0;
-    }
 }
 
 =head2 GetNewsToDisplay
