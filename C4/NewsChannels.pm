@@ -28,7 +28,7 @@ BEGIN {
     @ISA = qw(Exporter);
     @EXPORT = qw(
         &GetNewsToDisplay
-        &add_opac_new &upd_opac_new &del_opac_new &get_opac_new &get_opac_news
+        &add_opac_new &upd_opac_new &del_opac_new &get_opac_news
     );
 }
 
@@ -119,24 +119,6 @@ sub del_opac_new {
     } else {
         return 0;
     }
-}
-
-sub get_opac_new {
-    my ($idnew) = @_;
-    my $dbh = C4::Context->dbh;
-    my $query = q{
-                  SELECT opac_news.*,branches.branchname
-                  FROM opac_news LEFT JOIN branches
-                      ON opac_news.branchcode=branches.branchcode
-                  WHERE opac_news.idnew = ?;
-                };
-    my $sth = $dbh->prepare($query);
-    $sth->execute($idnew);
-    my $data = $sth->fetchrow_hashref;
-    $data->{$data->{'lang'}} = 1 if defined $data->{lang};
-    $data->{expirationdate} = output_pref({ dt => dt_from_string( $data->{expirationdate} ), dateonly => 1 }) if ( $data->{expirationdate} );
-    $data->{timestamp}      = output_pref({ dt => dt_from_string( $data->{timestamp} ), dateonly => 1 }) ;
-    return $data;
 }
 
 sub get_opac_news {
