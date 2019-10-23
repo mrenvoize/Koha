@@ -1508,7 +1508,7 @@ sub AddIssue {
                 UpdateTotalIssues( $item_object->biblionumber, 1 );
             }
 
-            ## If item was lost, it has now been found, reverse any list item charges if necessary.
+            ## If item was lost, it has now been found, reverse any lost item charges if necessary.
             if ( $item_object->itemlost ) {
                 my $refund = 1;
                 my $no_refund_after_days = C4::Context->preference('NoRefundOnLostReturnedItemsAge');
@@ -1522,17 +1522,43 @@ sub AddIssue {
                     $refund = 0 unless ( $lost_age_in_days < $no_refund_after_days );
                 }
 
-                if (
-                    $refund && Koha::CirculationRules->get_lostreturn_policy(
-                        {
-                            return_branch => C4::Context->userenv->{branch},
-                            item          => $item_object
-                        }
-                    )
-                  )
-                {
+                my $lostreturn_policy =
+                  Koha::CirculationRules->get_lostreturn_policy(
+                    {
+                        return_branch => C4::Context->userenv->{branch},
+                        item          => $item_object
+                    }
+                  );
+
+                if ($refund && $lostreturn_policy) {
                     _FixAccountForLostAndFound( $item_object->itemnumber, undef,
                         $item_object->barcode );
+
+                    if ( $lostreturn_policy eq 'charge' ) {
+                        $actualissue //= Koha::Old::Checkouts->search(
+                            { itemnumber => $item_unblessed->{itemnumber} },
+                            {
+                                order_by => { '-desc' => 'returndate' },
+                                rows     => 1
+                            }
+                        )->single;
+
+                        _CalculateAndUpdateFine(
+                            {
+                                issue    => $actualissue,
+                                item     => $item_unblessed,
+                                borrower => $borrower
+                            }
+                        );
+                        _FixOverduesOnReturn( $borrower->{borrowernumber},
+                            $item_object->itemnumber, undef, 'RENEWED' );
+                    }
+                    elsif ( $lostreturn_policy eq 'restore' ) {
+                        _RestoreOverdueForLostAndFound(
+                            $borrower->{'borrowernumber'},
+                            $item_object->itemnumber
+                        );
+                    }
                 }
             }
 
@@ -2080,19 +2106,39 @@ sub AddReturn {
                 $refund = 0 unless ( $lost_age_in_days < $no_refund_after_days );
             }
 
-            if (
-                $refund &&
-                Koha::CirculationRules->get_lostreturn_policy(
-                    {
-                        return_branch => C4::Context->userenv->{branch},
-                        item          => $item,
-                    }
-                  )
-              )
-            {
+            my $lostreturn_policy =
+              Koha::CirculationRules->get_lostreturn_policy(
+                {
+                    return_branch => C4::Context->userenv->{branch},
+                    item          => $item
+                }
+              );
+
+            if ($refund && $lostreturn_policy) {
                 _FixAccountForLostAndFound( $item->itemnumber,
                     $borrowernumber, $barcode );
                 $messages->{'LostItemFeeRefunded'} = 1;
+
+                if ( $lostreturn_policy eq 'charge' ) {
+                    $issue //= Koha::Old::Checkouts->search(
+                        { itemnumber => $item->itemnumber },
+                        { order_by   => { '-desc' => 'returndate' }, rows => 1 }
+                    )->single;
+                    _CalculateAndUpdateFine(
+                        {
+                            issue       => $issue,
+                            item        => $item->unblessed,
+                            borrower    => $patron_unblessed,
+                            return_date => $return_date
+                        }
+                    );
+                    $messages->{'LostItemFeeCharged'} = 1;
+                }
+                elsif ( $lostreturn_policy eq 'restore' ) {
+                    _RestoreOverdueForLostAndFound( $borrowernumber,
+                        $item->itemnumber );
+                    $messages->{'LostItemFeeRestored'} = 1;
+                }
             }
         }
     }
@@ -2515,14 +2561,10 @@ sub _FixOverduesOnReturn {
                 if (C4::Context->preference("FinesLog")) {
                     &logaction("FINES", 'MODIFY',$borrowernumber,"Overdue forgiven: item $item");
                 }
-
-                $accountline->status('FORGIVEN');
-                $accountline->store();
-            } else {
-                $accountline->status($status);
-                $accountline->store();
-
             }
+
+            $accountline->status($status);
+            return $accountline->store();
         }
     );
 
@@ -2616,6 +2658,73 @@ sub _FixAccountForLostAndFound {
     }
 
     return ($credit) ? $credit->id : undef;
+}
+
+=head2 _RestoreOverdueForLostAndFound
+
+   &_RestoreOverdueForLostAndFound($borrowernumber, $itemnumber );
+
+C<$borrowernumber> borrowernumber
+
+C<$itemnumber> itemnumber
+
+Internal function
+
+=cut
+
+sub _RestoreOverdueForLostAndFound {
+    my ( $borrowernumber, $item ) = @_;
+
+    unless( $borrowernumber ) {
+        warn "_RestoreOverdueForLostAndFound() not supplied valid borrowernumber";
+        return;
+    }
+    unless( $item ) {
+        warn "_RestoreOverdueForLostAndFound() not supplied valid itemnumber";
+        return;
+    }
+
+    my $schema = Koha::Database->schema;
+
+    my $result = $schema->txn_do(
+        sub {
+            # check for lost overdue fine
+            my $accountlines = Koha::Account::Lines->search(
+                {
+                    borrowernumber  => $borrowernumber,
+                    itemnumber      => $item,
+                    debit_type_code => 'OVERDUE',
+                    status          => 'LOST'
+                },
+                {
+                    order_by => { '-desc' => 'date' },
+                    rows     => 1
+                }
+            );
+            return 0 unless $accountlines->count; # no warning, there's just nothing to fix
+
+            # Update status of fine
+            my $overdue = $accountlines->next;
+            $overdue->status('RETURNED')->store();
+
+            # Find related forgive credit
+            my $refunds = $overdue->credits(
+                {
+                    credit_type_code => 'FORGIVEN',
+                    itemnumber       => $item,
+                    status           => [ { '!=' => 'VOID' }, undef ]
+                },
+                { order_by => { '-desc' => 'date' }, rows => 1 }
+            );
+            return 0 unless $refunds->count; # no warning, there's just nothing to fix
+
+            # Revert the forgive credit
+            my $refund = $refunds->next;
+            return $refund->void();
+        }
+    );
+
+    return $result;
 }
 
 =head2 _GetCircControlBranch
