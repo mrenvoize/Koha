@@ -173,35 +173,38 @@ sub set_waiting {
         waitingdate => $today->ymd,
     };
 
-    my $requested_expiration;
-    if ($self->expirationdate) {
-        $requested_expiration = dt_from_string($self->expirationdate);
+    if ( C4::Context->preference('DisableReserveExpiration') ){
+        $values->{expirationdate} = undef;
+    } else {
+        my $requested_expiration;
+        if ($self->expirationdate) {
+            $requested_expiration = dt_from_string($self->expirationdate);
+        }
+
+        my $max_pickup_delay = C4::Context->preference("ReservesMaxPickUpDelay");
+        my $cancel_on_holidays = C4::Context->preference('ExpireReservesOnHolidays');
+
+        my $expirationdate = $today->clone;
+        $expirationdate->add(days => $max_pickup_delay);
+
+        if ( C4::Context->preference("ExcludeHolidaysFromMaxPickUpDelay") ) {
+            my $itemtype = $self->item ? $self->item->effective_itemtype : $self->biblio->itemtype;
+            my $daysmode = Koha::CirculationRules->get_effective_daysmode(
+                {
+                    categorycode => $self->borrower->categorycode,
+                    itemtype     => $itemtype,
+                    branchcode   => $self->branchcode,
+                }
+            );
+            my $calendar = Koha::Calendar->new( branchcode => $self->branchcode, days_mode => $daysmode );
+            $expirationdate = $calendar->days_forward( dt_from_string(), $max_pickup_delay );
+        }
+
+        # If patron's requested expiration date is prior to the
+        # calculated one, we keep the patron's one.
+        my $cmp = $requested_expiration ? DateTime->compare($requested_expiration, $expirationdate) : 0;
+        $values->{expirationdate} = $cmp == -1 ? $requested_expiration->ymd : $expirationdate->ymd;
     }
-
-    my $max_pickup_delay = C4::Context->preference("ReservesMaxPickUpDelay");
-    my $cancel_on_holidays = C4::Context->preference('ExpireReservesOnHolidays');
-
-    my $expirationdate = $today->clone;
-    $expirationdate->add(days => $max_pickup_delay);
-
-    if ( C4::Context->preference("ExcludeHolidaysFromMaxPickUpDelay") ) {
-        my $itemtype = $self->item ? $self->item->effective_itemtype : $self->biblio->itemtype;
-        my $daysmode = Koha::CirculationRules->get_effective_daysmode(
-            {
-                categorycode => $self->borrower->categorycode,
-                itemtype     => $itemtype,
-                branchcode   => $self->branchcode,
-            }
-        );
-        my $calendar = Koha::Calendar->new( branchcode => $self->branchcode, days_mode => $daysmode );
-
-        $expirationdate = $calendar->days_forward( dt_from_string(), $max_pickup_delay );
-    }
-
-    # If patron's requested expiration date is prior to the
-    # calculated one, we keep the patron's one.
-    my $cmp = $requested_expiration ? DateTime->compare($requested_expiration, $expirationdate) : 0;
-    $values->{expirationdate} = $cmp == -1 ? $requested_expiration->ymd : $expirationdate->ymd;
 
     $self->set($values)->store();
 

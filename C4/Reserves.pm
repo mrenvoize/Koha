@@ -2027,14 +2027,26 @@ sub RevertWaitingStatus {
                            ->update({ priority => \'priority + 1' }, { no_triggers => 1 });
 
     ## Fix up the currently waiting reserve
-    $hold->set(
-        {
-            priority    => 1,
-            found       => undef,
-            waitingdate => undef,
-            itemnumber  => $hold->item_level_hold ? $hold->itemnumber : undef,
-        }
-    )->store();
+    if ( C4::Context->preference('DisableReserveExpiration') ){
+        $hold->set(
+            {
+                priority    => 1,
+                found       => undef,
+                waitingdate => undef,
+                expirationdate => undef,
+                itemnumber  => $hold->item_level_hold ? $hold->itemnumber : undef,
+            }
+        )->store();
+    } else {
+        $hold->set(
+            {
+                priority    => 1,
+                found       => undef,
+                waitingdate => undef,
+                itemnumber  => $hold->item_level_hold ? $hold->itemnumber : undef,
+            }
+        )->store();
+    }
 
     _FixPriority( { biblionumber => $hold->biblionumber } );
 

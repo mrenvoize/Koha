@@ -445,12 +445,14 @@
                                 </li>
                             [% END %]
 
-                            <li>
-                                <label for="to">Hold expires on date:</label>
-                                <input name="expiration_date" id="to" size="10" class="datepickerto" type="text" />
-                                <input type="hidden" class="datepickerto_hidden" />
-                                <a href="#" id="clear-date-to" class="clear-date">Clear date</a>
-                            </li>
+                            [% IF !Koha.Preference('DisableReserveExpiration') %]
+                                <li>
+                                    <label for="to">Hold expires on date:</label>
+                                    <input name="expiration_date" id="to" size="10" class="datepickerto" type="text" />
+                                    <input type="hidden" class="datepickerto_hidden" />
+                                    <a href="#" id="clear-date-to" class="clear-date">Clear date</a>
+                                </li>
+                            [% END %]
 
                             [% UNLESS ( multi_hold ) %]
                                 <li>

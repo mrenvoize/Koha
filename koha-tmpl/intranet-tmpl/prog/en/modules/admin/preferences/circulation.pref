@@ -162,6 +162,12 @@ Circulation:
                   yes: "Use"
                   no: "Don't use"
             - circulation desks with circulation.
+        -
+            - pref: DisableReserveExpiration
+              choices:
+                  yes: Disable
+                  no: "Don't disable"
+            - the use of expiration dates in reserves.
 
     Checkout policy:
         -

@@ -17,7 +17,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 63;
+use Test::More tests => 64;
 use Test::MockModule;
 use Test::Warn;
 
@@ -1073,6 +1073,40 @@ subtest 'RevertWaitingStatus' => sub {
         [ 1, 2, 3 ],
         'priorities have been reordered'
     );
+};
+
+subtest 'DisableReserveExpiration syspref tests' => sub {
+
+    plan tests => 2;
+
+    t::lib::Mocks::mock_preference( 'DisableReserveExpiration', 0 );
+
+    my $expirationdate = dt_from_string->add( days => 1 );
+    my $hold = $builder->build_object(
+        {   class => 'Koha::Holds',
+            value => { expirationdate => $expirationdate }
+        }
+    );
+
+    # Disable expiration date for reserves
+    t::lib::Mocks::mock_preference( 'DisableReserveExpiration', 1 );
+
+    my $reverted = C4::Reserves::RevertWaitingStatus({ itemnumber => $hold->itemnumber });
+
+    is( $reverted->expirationdate, undef, "Expiration date should be removed with reserve expiration disabled" );
+
+    # Re-enable expiration date for reserves
+    t::lib::Mocks::mock_preference( 'DisableReserveExpiration', 0 );
+
+    $hold = $builder->build_object(
+        {   class => 'Koha::Holds',
+            value => { expirationdate => $expirationdate }
+        }
+    );
+
+    $reverted = C4::Reserves::RevertWaitingStatus({ itemnumber => $hold->itemnumber });
+
+    is( $reverted->expirationdate, $expirationdate->ymd, "Expiration date remains as expected" );
 };
 
 sub count_hold_print_messages {
