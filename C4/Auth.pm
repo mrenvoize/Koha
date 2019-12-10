@@ -38,6 +38,7 @@ use Koha::Checkouts;
 use Koha::DateUtils qw(dt_from_string);
 use Koha::Library::Groups;
 use Koha::Libraries;
+use Koha::Desks;
 use Koha::Patrons;
 use Koha::Patron::Consents;
 use POSIX qw/strftime/;
@@ -463,6 +464,7 @@ sub get_template_and_user {
         OpenLibraryCovers                                                  => C4::Context->preference("OpenLibraryCovers"),
         KohaAdminEmailAddress                                              => "" . C4::Context->preference("KohaAdminEmailAddress"),
         LoginBranchcode => ( C4::Context->userenv ? C4::Context->userenv->{"branch"}    : undef ),
+        LoginDeskname                                                      => ( C4::Context->userenv ? C4::Context->userenv->{"desk_name"} : undef ),
         LoginFirstname  => ( C4::Context->userenv ? C4::Context->userenv->{"firstname"} : "Bel" ),
         LoginSurname    => C4::Context->userenv ? C4::Context->userenv->{"surname"}      : "Inconnu",
         emailaddress    => C4::Context->userenv ? C4::Context->userenv->{"emailaddress"} : undef,
@@ -491,6 +493,7 @@ sub get_template_and_user {
             IntranetmainUserblock                                                      => C4::Context->preference("IntranetmainUserblock"),
             LibraryName                                                                => C4::Context->preference("LibraryName"),
             LoginBranchname                                                            => ( C4::Context->userenv ? C4::Context->userenv->{"branchname"} : undef ),
+            LoginDeskname                                                              => ( C4::Context->userenv ? C4::Context->userenv->{"desk_name"} : undef ),
             advancedMARCEditor                                                         => C4::Context->preference("advancedMARCEditor"),
             canreservefromotherbranches                                                => C4::Context->preference('canreservefromotherbranches'),
             intranetcolorstylesheet                                                    => C4::Context->preference("intranetcolorstylesheet"),
@@ -559,6 +562,7 @@ sub get_template_and_user {
             LibraryName                           => "" . C4::Context->preference("LibraryName"),
             LibraryNameTitle                      => "" . $LibraryNameTitle,
             LoginBranchname                       => C4::Context->userenv ? C4::Context->userenv->{"branchname"} : "",
+            LoginDeskname                         => C4::Context->userenv ? C4::Context->userenv->{"desk_name"} : "",
             OPACAmazonCoverImages                 => C4::Context->preference("OPACAmazonCoverImages"),
             OPACFRBRizeEditions                   => C4::Context->preference("OPACFRBRizeEditions"),
             OpacHighlightedWords                  => C4::Context->preference("OpacHighlightedWords"),
@@ -848,8 +852,8 @@ sub checkauth {
                 $session->param('cardnumber'),   $session->param('firstname'),
                 $session->param('surname'),      $session->param('branch'),
                 $session->param('branchname'),   $session->param('flags'),
-                $session->param('emailaddress'),
-                $session->param('shibboleth')
+                $session->param('emailaddress'), $session->param('shibboleth'),
+                $session->param('desk_id'),      $session->param('desk_name')
             );
             C4::Context::set_shelves_userenv( 'bar', $session->param('barshelves') );
             C4::Context::set_shelves_userenv( 'pub', $session->param('pubshelves') );
@@ -1162,7 +1166,8 @@ sub checkauth {
                     $session->param('cardnumber'),   $session->param('firstname'),
                     $session->param('surname'),      $session->param('branch'),
                     $session->param('branchname'),   $session->param('flags'),
-                    $session->param('emailaddress'), $session->param('shibboleth')
+                    $session->param('emailaddress'), $session->param('shibboleth'),
+                    $session->param('desk_id'),      $session->param('desk_name')
                 );
 
             }
@@ -1440,7 +1445,8 @@ sub check_api_auth {
                 $session->param('cardnumber'),   $session->param('firstname'),
                 $session->param('surname'),      $session->param('branch'),
                 $session->param('branchname'),   $session->param('flags'),
-                $session->param('emailaddress')
+                $session->param('emailaddress'), $session->param('desk_id'),
+                $session->param('desk_name')
             );
 
             my $ip       = $session->param('ip');
@@ -1599,8 +1605,8 @@ sub check_api_auth {
                 $session->param('number'),       $session->param('id'),
                 $session->param('cardnumber'),   $session->param('firstname'),
                 $session->param('surname'),      $session->param('branch'),
-                $session->param('branchname'),   $session->param('flags'),
-                $session->param('emailaddress')
+                $session->param('emailaddress'), $session->param('shibboleth'),
+                $session->param('desk_id'),      $session->param('desk_name')
             );
             return ( "ok", $cookie, $sessionID );
         } else {
@@ -1688,7 +1694,8 @@ sub check_cookie_auth {
             $session->param('cardnumber'),   $session->param('firstname'),
             $session->param('surname'),      $session->param('branch'),
             $session->param('branchname'),   $session->param('flags'),
-            $session->param('emailaddress')
+            $session->param('emailaddress'), $session->param('shibboleth'),
+            $session->param('desk_id'),      $session->param('desk_name')
         );
 
         my $ip       = $session->param('ip');
