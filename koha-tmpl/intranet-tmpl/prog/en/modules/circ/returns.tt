@@ -2,6 +2,7 @@
 [% USE Asset %]
 [% USE KohaDates %]
 [% USE Branches %]
+[% USE Desks %]
 [% USE Koha %]
 [% USE ItemTypes %]
 [% USE AuthorisedValues %]
@@ -501,7 +502,7 @@
                                                     <input type="hidden" name="cancel_reserve" value="0" />
                                                     <input type="hidden" name="barcode" value="[% barcode | html %]" />
 
-                                                    <button type="submit" class="btn btn-default approve" data-dismiss="modal">
+                                                       <button type="submit" class="btn btn-default approve" [% IF ( Desks.ListForLibrary ) %]data-dismiss="modal" [% END %]>
                                                         <i class="fa fa-check"></i> Confirm hold
                                                     </button>
 
