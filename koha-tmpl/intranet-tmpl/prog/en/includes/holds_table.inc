@@ -1,6 +1,7 @@
 [% USE Koha %]
 [% SET hold_cancellation = AuthorisedValues.GetAuthValueDropbox('HOLD_CANCELLATION') %]
 [% USE AuthorisedValues %]
+[% USE Desks %]
 <table>
     <tr>
         [% IF ( CAN_user_reserveforothers_modify_holds_priority ) %]
@@ -122,7 +123,7 @@
             <td>
                 [% IF ( hold.found ) %]
                     [% IF ( hold.atdestination ) %]
-                            Item waiting at <strong> [% hold.wbrname | html %]</strong> <input type="hidden" name="pickup" value="[% hold.wbrcode | html %]" /> since [% hold.waiting_date | $KohaDates %]
+                            Item waiting at <strong> [% hold.wbrname | html %]</strong>[% IF hold.desk_name %], [% hold.desk_name | html %],[% END %] <input type="hidden" name="pickup" value="[% hold.wbrcode | html %]" /> since [% hold.waiting_date | $KohaDates %]
                     [% ELSIF (hold.intransit) %]
                         Item being transferred to <strong> [% hold.wbrname | html %]</strong> <input type="hidden" name="pickup" value="[% hold.wbrcode | html %]" />
                     [% ELSIF (hold.inprocessing) %]
