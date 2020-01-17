@@ -383,7 +383,7 @@ sub transferbook {
         ModItemTransfer( $itemnumber, $fbr, $tbr, $trigger );
 
         # don't need to update MARC anymore, we do it in batch now
-        $messages->{'WasTransfered'} = 1;
+        $messages->{'WasTransfered'} = $tbr;
 
     }
     ModDateLastSeen( $itemnumber );
@@ -2025,23 +2025,34 @@ sub AddReturn {
     }
 
     # check if we have a transfer for this document
-    my ($datesent,$frombranch,$tobranch) = GetTransfers( $item->itemnumber );
+    my $transfer = $item->get_transfer;
 
     # if we have a transfer to do, we update the line of transfers with the datearrived
     my $is_in_rotating_collection = C4::RotatingCollections::isItemInAnyCollection( $item->itemnumber );
-    if ($datesent) {
-        # At this point we will either fill the transfer or it is a wrong transfer
-        # either way we should not now generate a new transfer
+    if ($transfer) {
         $validTransfer = 0;
-        if ( $tobranch eq $branch ) {
-            my $sth = C4::Context->dbh->prepare(
-                "UPDATE branchtransfers SET datearrived = now() WHERE itemnumber= ? AND datearrived IS NULL"
-            );
-            $sth->execute( $item->itemnumber );
-        } else {
-            $messages->{'WrongTransfer'}     = $tobranch;
-            $messages->{'WrongTransferItem'} = $item->itemnumber;
+        if ( $transfer->in_transit ) {
+            if ( $transfer->tobranch eq $branch ) {
+                $transfer->receipt();
+
+                # if we have a reservation with completed transfer, we can set it's status to 'W'
+                C4::Reserves::ModReserveStatus( $item->itemnumber, 'W' );
+            }
+            else {
+                $messages->{'WrongTransfer'}     = $transfer->tobranch;
+                $messages->{'WrongTransferItem'} = $item->itemnumber;
+            }
         }
+        else {
+            if ( $transfer->tobranch eq $branch ) {
+                $transfer->receipt();
+            }
+            else {
+                $messages->{'WasTransfered'}   = $transfer->tobranch;
+                $messages->{'TransferTrigger'} = $transfer->reason;
+            }
+        }
+    }
     }
 
     # fix up the overdues in accounts...
@@ -2131,7 +2142,13 @@ sub AddReturn {
     }
 
     # Transfer to returnbranch if Automatic transfer set or append message NeedsTransfer
-    if ($validTransfer && !$is_in_rotating_collection && ($doreturn or $messages->{'NotIssued'}) and !$resfound and ($branch ne $returnbranch) ){
+    if ( $validTransfer && !$is_in_rotating_collection
+        && ( $doreturn or $messages->{'NotIssued'} )
+        and !$resfound
+        and ( $branch ne $returnbranch )
+        and not $messages->{'WrongTransfer'}
+        and not $messages->{'WasTransfered'} )
+    {
         my $BranchTransferLimitsType = C4::Context->preference("BranchTransferLimitsType") eq 'itemtype' ? 'effective_itemtype' : 'ccode';
         if  (C4::Context->preference("AutomaticItemReturn"    ) or
             (C4::Context->preference("UseBranchTransferLimits") and
@@ -2140,7 +2157,8 @@ sub AddReturn {
             $debug and warn sprintf "about to call ModItemTransfer(%s, %s, %s, %s)", $item->itemnumber,$branch, $returnbranch, $transfer_trigger;
             $debug and warn "item: " . Dumper($item->unblessed);
             ModItemTransfer($item->itemnumber, $branch, $returnbranch, $transfer_trigger);
-            $messages->{'WasTransfered'} = 1;
+            $messages->{'WasTransfered'} = $returnbranch;
+            $messages->{'TransferTrigger'} = $transfer_trigger;
         } else {
             $messages->{'NeedsTransfer'} = $returnbranch;
             $messages->{'TransferTrigger'} = $transfer_trigger;
@@ -3329,7 +3347,9 @@ sub GetTransfers {
         SELECT datesent,
                frombranch,
                tobranch,
-               branchtransfer_id
+               branchtransfer_id,
+               daterequested,
+               reason
         FROM branchtransfers
         WHERE itemnumber = ?
           AND datearrived IS NULL
