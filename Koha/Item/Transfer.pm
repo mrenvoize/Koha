@@ -19,7 +19,10 @@ use Modern::Perl;
 
 use Carp;
 
+use C4::Items;
+
 use Koha::Database;
+use Koha::DateUtils;
 
 use base qw(Koha::Object);
 
@@ -32,6 +35,33 @@ Koha::Item::Transfer - Koha Item Transfer Object class
 =head2 Class Methods
 
 =cut
+
+=head3 transit
+
+Set the transfer as in transit by updateing the datesent time.
+
+Also, update date last seen and ensure item holdingbranch is correctly set.
+
+=cut
+
+sub transit {
+    my ($self) = @_;
+
+    # Throw exception if item is still checked out
+    Koha::Exceptions::Transfer::Out->throw() if ($self->item->checkout);
+
+    # Remove the 'shelving cart' location status if it is being used
+    CartToShelf($self->item->itemnumber)
+      if $self->item->location
+      && $self->item->location eq 'CART'
+      && ( !$self->item->permanent_location || $self->item->permanent_location ne 'CART' );
+
+    # Update the transit state
+    $self->set({ frombranch => $self->item->holdingbranch, datesent => dt_from_string, })->store;
+
+    ModDateLastSeen($self->item->itemnumber);
+    return $self;
+}
 
 =head3 type
 
