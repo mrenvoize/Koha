@@ -361,6 +361,7 @@ if ( $messages->{'WasTransfered'} ) {
     $template->param(
         found          => 1,
         transfer       => 1,
+        trigger        => $messages->{'TransferTrigger'},
         itemnumber     => $itemnumber,
     );
 }
@@ -500,6 +501,9 @@ foreach my $code ( keys %$messages ) {
     }
     elsif ( $code eq 'WasTransfered' ) {
         ;    # FIXME... anything to do here?
+    }
+    elsif ( $code eq 'TransferTrigger' ) {
+
     }
     elsif ( $code eq 'withdrawn' ) {
         $err{withdrawn} = 1;

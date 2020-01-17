@@ -137,6 +137,13 @@
                                 </div>
                             [% END %]
 
+                            [% IF ( needstransfer ) %]
+                                <div id="transfer-requested" class="dialog message">
+                                    <h3>Please transfer item to: [% Branches.GetName( needstransfer ) | html %]</h3>
+                                    <p>Reason: [% trigger | html %]</p>
+                                </div>
+                            [% END %]
+
                             <!-- Patron has added an issue note -->
                             [% IF ( issue.note) %]
                                 <div class="dialog message">
