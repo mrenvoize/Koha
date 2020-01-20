@@ -84,6 +84,25 @@ sub transit {
     return $self;
 }
 
+=head3 receipt
+
+Receive the transfer by setting the datearrived time.
+
+=cut
+
+sub receipt {
+    my ($self) = @_;
+
+    # Throw exception if item is checked out
+    Koha::Exceptions::Item::Transfer::Out->throw() if ($self->item->checkout);
+
+    # Update the receipt state
+    $self->set({ datearrived => dt_from_string })->store;
+
+    ModDateLastSeen( $self->item->itemnumber );
+    return $self;
+}
+
 =head3 type
 
 =cut
