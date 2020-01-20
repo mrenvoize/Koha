@@ -36,6 +36,7 @@ use C4::Log qw( logaction );
 
 use Koha::Checkouts;
 use Koha::CirculationRules;
+use Koha::Exceptions::Item::Transfer;
 use Koha::Item::Transfer::Limits;
 use Koha::Item::Transfers;
 use Koha::ItemTypes;
@@ -398,19 +399,75 @@ sub holds {
     return Koha::Holds->_new_from_dbic( $holds_rs );
 }
 
+=head3 request_transfer
+
+  my $transfer = $item->request_transfer( { to => $tobranch, reason => $reason } );
+
+Add a transfer request for this item to the given branch for the given reason.
+
+Note: At this time, only one active transfer (i.e pending arrival date) may exist
+at a time for any given item. An exception will be thrown should you attempt to
+add a request when a transfer has already been queued, whether it is in transit
+or just at the request stage.
+
+=cut
+
+sub request_transfer {
+    my ( $self, $params ) = @_;
+
+    # check for mandatory params
+    my @mandatory = ( 'to', 'reason' );
+    for my $param (@mandatory) {
+        unless ( defined( $params->{$param} ) ) {
+            Koha::Exceptions::MissingParameter->throw(
+                error => "The $param parameter is mandatory" );
+        }
+    }
+
+    Koha::Exceptions::Item::Transfer::Found->throw()
+      if ( $self->get_transfer );
+    # FIXME: Add override functionality to allow for queing transfers
+
+    my $from   = $self->holdingbranch;
+    my $to     = $params->{to};
+    my $reason = $params->{reason};
+
+    my $transfer = Koha::Item::Transfer->new(
+        {
+            itemnumber    => $self->itemnumber,
+            daterequested => dt_from_string,
+            frombranch    => $from,
+            tobranch      => $to,
+            reason        => $reason,
+            comments      => $params->{comment}
+        }
+    )->store();
+    return $transfer;
+}
+
 =head3 get_transfer
 
 my $transfer = $item->get_transfer;
 
-Return the transfer if the item is in transit or undef
+Return the active transfer request or undef
+
+Note: Transfers are retrieved in a LIFO (Last In First Out) order using this method.
+
+FIXME: Add Tests for LIFO functionality
 
 =cut
 
 sub get_transfer {
-    my ( $self ) = @_;
-    my $transfer_rs = $self->_result->branchtransfers->search({ datearrived => undef })->first;
+    my ($self) = @_;
+    my $transfer_rs = $self->_result->branchtransfers->search(
+        { datearrived => undef },
+        {
+            order_by => [ { -asc => 'datesent' }, { -asc => 'daterequested' } ],
+            rows     => 1
+        }
+    )->first;
     return unless $transfer_rs;
-    return Koha::Item::Transfer->_new_from_dbic( $transfer_rs );
+    return Koha::Item::Transfer->_new_from_dbic($transfer_rs);
 }
 
 =head3 last_returned_by
