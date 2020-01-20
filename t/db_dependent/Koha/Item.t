@@ -19,7 +19,8 @@
 
 use Modern::Perl;
 
-use Test::More tests => 6;
+use Test::More tests => 7;
+use Test::Exception;
 
 use C4::Biblio;
 use C4::Circulation;
@@ -337,6 +338,42 @@ subtest 'pickup_locations' => sub {
             }
         }
     }
+
+    $schema->storage->txn_rollback;
+};
+
+subtest 'request_transfer' => sub {
+    plan tests => 4;
+    $schema->storage->txn_begin;
+
+    my $library1 = $builder->build_object( { class => 'Koha::Libraries' } );
+    my $library2 = $builder->build_object( { class => 'Koha::Libraries' } );
+    my $item     = $builder->build_sample_item(
+        {
+            homebranch    => $library1->branchcode,
+            holdingbranch => $library2->branchcode,
+        }
+    );
+
+    # Mandatory fields tests
+    throws_ok { $item->request_transfer( { to => $library1->branchcode } ) }
+    'Koha::Exceptions::MissingParameter',
+      'Exception thrown if `reason` parameter is missing';
+
+    throws_ok { $item->request_transfer( { reason => 'Manual' } ) }
+    'Koha::Exceptions::MissingParameter',
+      'Exception thrown if `to` parameter is missing';
+
+    # Successful request
+    my $transfer = $item->request_transfer({ to => $library1->branchcode, reason => 'Manual' });
+    is( ref($transfer), 'Koha::Item::Transfer',
+        'Koha::Item->request_transfer should return a Koha::Item::Transfer object'
+    );
+
+    # Transfer already in progress
+    throws_ok { $item->request_transfer( { to => $library2->branchcode, reason => 'Manual' } ) }
+    'Koha::Exceptions::Item::Transfer::Found',
+      'Exception thrown if transfer is already in progress';
 
     $schema->storage->txn_rollback;
 };
