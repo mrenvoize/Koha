@@ -355,6 +355,44 @@ sub holds {
     return Koha::Holds->_new_from_dbic( $holds_rs );
 }
 
+=head3 request_transfer
+
+  my $transfer = $item->request_transfer( { to => $tobranch, reason => $reason } );
+
+Add a transfer request for this item to the given branch for the given reason.
+
+=cut
+
+sub request_transfer {
+    my ( $self, $params ) = @_;
+
+    # check for mandatory params
+    my @mandatory = ( 'to', 'reason' );
+    for my $param (@mandatory) {
+        unless ( defined( $params->{$param} ) ) {
+            Koha::Exceptions::MissingParameter->throw(
+                error => "The $param parameter is mandatory" );
+        }
+    }
+
+    Koha::Exceptions::Transfers::Found->throw() if ( $self->get_transfer );
+
+    my $from   = $self->holdingbranch;
+    my $to     = $params->{to};
+    my $reason = $params->{reason};
+
+    my $transfer = Koha::Item::Transfer->new(
+        {
+            itemnumber    => $self->itemnumber,
+            daterequested => dt_from_string,
+            frombranch    => $from,
+            tobranch      => $to,
+            reason        => $reason
+        }
+    )->store();
+    return $transfer;
+}
+
 =head3 get_transfer
 
 my $transfer = $item->get_transfer;
