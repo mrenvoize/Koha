@@ -71,7 +71,7 @@ subtest '->is_expired' => sub {
 
     my $today = dt_from_string;
     my $yesterday = dt_from_string->add( days => -1 );
-    my $tommorow = dt_from_string->add( days => 1 );
+    my $tomorrow = dt_from_string->add( days => 1 );
     my $new_today = $builder->build_object({
         class => 'Koha::News',
         value => {
@@ -87,7 +87,7 @@ subtest '->is_expired' => sub {
     my $new_not_expired = $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
+            expirationdate => $tomorrow,
         }
     });
 
@@ -166,7 +166,7 @@ subtest '->search_for_display' => sub {
 
     my $today = dt_from_string;
     my $yesterday = dt_from_string->add( days => -1 );
-    my $tommorow = dt_from_string->add( days => 1 );
+    my $tomorrow = dt_from_string->add( days => 1 );
     my $library1 = $builder->build_object({ class => 'Koha::Libraries' });
     my $library2 = $builder->build_object({ class => 'Koha::Libraries' });
 
@@ -183,7 +183,7 @@ subtest '->search_for_display' => sub {
     my $new_not_expired = $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
+            expirationdate => $tomorrow,
             timestamp => $today,
             lang => '',
             branchcode => undef,
@@ -193,8 +193,8 @@ subtest '->search_for_display' => sub {
     my $new_not_active = $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
-            timestamp => $tommorow,
+            expirationdate => $tomorrow,
+            timestamp => $tomorrow,
             lang => '',
             branchcode => undef,
             number => 3,
@@ -203,7 +203,7 @@ subtest '->search_for_display' => sub {
     my $new_slip= $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
+            expirationdate => $tomorrow,
             timestamp => $today,
             lang => 'slip',
             branchcode => $library1->branchcode,
@@ -213,7 +213,7 @@ subtest '->search_for_display' => sub {
     my $new_intra = $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
+            expirationdate => $tomorrow,
             timestamp => $today,
             lang => 'koha',
             branchcode => $library2->branchcode,
@@ -223,7 +223,7 @@ subtest '->search_for_display' => sub {
     my $new_intra2 = $builder->build_object({
         class => 'Koha::News',
         value => {
-            expirationdate => $tommorow,
+            expirationdate => $tomorrow,
             timestamp => $today,
             lang => 'koha',
             branchcode => undef,
