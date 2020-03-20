@@ -504,7 +504,7 @@
                                     <div id="item-transfer-modal" class="modal fade audio-alert-action block">
                                 [% ELSE %]
                                     <div id="item-transfer-modal" class="modal fade audio-alert-action noblock">
-                                [% END %]1
+                                [% END %]
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form method="post" action="returns.pl" name="mainform" id="mainform">

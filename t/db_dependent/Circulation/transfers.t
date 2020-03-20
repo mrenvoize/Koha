@@ -91,10 +91,12 @@ my $item_id2 = Koha::Item->new(
 )->store->itemnumber;
 
 #Add transfers
+my $reason = 'Manual';
 ModItemTransfer(
     $item_id1,
     $branchcode_1,
-    $branchcode_2
+    $branchcode_2,
+    $reason
 );
 
 my $item_obj = Koha::Items->find({ itemnumber => $item_id1 });
@@ -103,7 +105,8 @@ is( $item_obj->holdingbranch, $branchcode_1, "Item should be held at branch that
 ModItemTransfer(
     $item_id2,
     $branchcode_1,
-    $branchcode_2
+    $branchcode_2,
+    $reason
 );
 
 #Begin Tests
@@ -130,7 +133,7 @@ is(CreateBranchTransferLimit(undef,$branchcode_2),undef,
 my @transfers = GetTransfers($item_id1);
 cmp_deeply(
     \@transfers,
-    [ re('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'), $branchcode_1, $branchcode_2, re('[0-9]*') ],
+    [ re('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'), $branchcode_1, $branchcode_2, re('[0-9]*'), re('^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$'), $reason ],
     "Transfers of the item1"
 );    #NOTE: Only the first transfer is returned
 @transfers = GetTransfers;
@@ -201,13 +204,15 @@ $dbh->do("DELETE FROM branchtransfers");
 ModItemTransfer(
     $item_id1,
     $branchcode_1,
-    $branchcode_2
+    $branchcode_2,
+    $reason
 );
 my $transfer = Koha::Item::Transfers->search()->next();
 ModItemTransfer(
     $item_id1,
     $branchcode_1,
-    $branchcode_2
+    $branchcode_2,
+    $reason
 );
 $transfer->{_result}->discard_changes;
 ok( $transfer->datearrived, 'Date arrived is set when new transfer is initiated' );
