@@ -306,22 +306,40 @@ sub ModItemTransfer {
     my ( $itemnumber, $frombranch, $tobranch, $trigger ) = @_;
 
     my $dbh = C4::Context->dbh;
-    my $item = Koha::Items->find( $itemnumber );
-
-    # Remove the 'shelving cart' location status if it is being used.
-    CartToShelf( $itemnumber ) if $item->location && $item->location eq 'CART' && ( !$item->permanent_location || $item->permanent_location ne 'CART' );
-
-    $dbh->do("UPDATE branchtransfers SET datearrived = NOW(), comments = ? WHERE itemnumber = ? AND datearrived IS NULL", undef, "Canceled, new transfer from $frombranch to $tobranch created", $itemnumber);
-
-    #new entry in branchtransfers....
-    my $sth = $dbh->prepare(
-        "INSERT INTO branchtransfers (itemnumber, frombranch, datesent, tobranch, reason)
-        VALUES (?, ?, NOW(), ?, ?)");
-    $sth->execute($itemnumber, $frombranch, $tobranch, $trigger);
 
     # FIXME we are fetching the item twice in the 2 next statements!
     Koha::Items->find($itemnumber)->holdingbranch($frombranch)->store({ log_action => 0 });
-    ModDateLastSeen($itemnumber);
+
+    my $item = Koha::Items->find( $itemnumber );
+
+    my $requested = 0;
+    my $transfer_requests = $item->get_transfer_requests;
+    if ( $transfer_requests->count ) {
+        for my $transfer ( $transfer_requests->next ) {
+            if ( $transfer->reason eq $trigger ) {
+                $transfer->transit;
+                $requested = 1;
+                last;
+            }
+        }
+    }
+
+    if (!$requested) {
+
+        # Remove the 'shelving cart' location status if it is being used.
+        CartToShelf( $itemnumber ) if $item->location && $item->location eq 'CART' && ( !$item->permanent_location || $item->permanent_location ne 'CART' );
+
+        $dbh->do("UPDATE branchtransfers SET datearrived = NOW(), comments = ? WHERE itemnumber = ? AND datearrived IS NULL", undef, "Canceled, new transfer from $frombranch to $tobranch created", $itemnumber);
+
+        #new entry in branchtransfers....
+        my $sth = $dbh->prepare(
+            "INSERT INTO branchtransfers (itemnumber, frombranch, datesent, tobranch, reason)
+            VALUES (?, ?, NOW(), ?, ?)");
+        $sth->execute($itemnumber, $frombranch, $tobranch, $trigger);
+
+        ModDateLastSeen($itemnumber);
+    }
+
     return;
 }
 
