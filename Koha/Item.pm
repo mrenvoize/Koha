@@ -403,9 +403,27 @@ Return the transfer if the item is in transit or undef
 
 sub get_transfer {
     my ( $self ) = @_;
-    my $transfer_rs = $self->_result->branchtransfers->search({ datearrived => undef })->first;
+    my $transfer_rs = $self->_result->branchtransfers->search(
+        { datesent => { '!=' => undef }, datearrived => undef } )->first;
     return unless $transfer_rs;
     return Koha::Item::Transfer->_new_from_dbic( $transfer_rs );
+}
+
+=head3 get_transfer_requests
+
+my $transfers = $item->get_transfer_requests;
+
+Reutnr a list of requested transfers for this item
+
+=cut
+
+sub get_transfer_requests {
+    my ( $self ) = @_;
+
+    my $transfers_rs = $self->_result->branchtransfers->search(
+        { datesent => undef, datearrived => undef } );
+
+    return Koha::Item::Transfers->_new_from_dbic( $transfers_rs );
 }
 
 =head3 last_returned_by
