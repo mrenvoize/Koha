@@ -223,7 +223,8 @@ if ($return_date_override) {
 }
 
 if ($dotransfer){
-# An item has been returned to a branch other than the homebranch, and the librarian has chosen to initiate a transfer
+    # An item has been returned to a branch other than the homebranch,
+    # and the librarian has chosen to initiate a transfer
     my $transferitem = $query->param('transferitem');
     my $tobranch     = $query->param('tobranch');
     my $trigger      = $query->param('trigger');

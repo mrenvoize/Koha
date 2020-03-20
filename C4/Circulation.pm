@@ -1441,6 +1441,13 @@ sub AddIssue {
             C4::Reserves::MoveReserve( $item_object->itemnumber, $borrower->{'borrowernumber'}, $cancelreserve );
 
             # Starting process for transfer job (checking transfert and validate it if we have one)
+            # FIXME: This should actually reset the transfer in_transit state by removing datesent rather than cancelling the transfer entirely.
+            #        We could cancel depending on 'reason' ?
+            #        Could this genuinely be an avenue to receipt a transfer ?
+            my $transfer = $item_object->get_transfer();
+            if ($transfer->in_transit) {
+
+            }
             my ($datesent) = GetTransfers( $item_object->itemnumber );
             if ($datesent) {
                 # updating line of branchtranfert to finish it, and changing the to branch value, implement a comment for visibility of this case (maybe for stats ....)
