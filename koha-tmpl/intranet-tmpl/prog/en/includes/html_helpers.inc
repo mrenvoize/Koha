@@ -1,3 +1,4 @@
+[% USE ItemTypes %]
 [% BLOCK options_for_libraries %]
     [% FOREACH l IN libraries %]
         [% IF l.selected %]
@@ -40,7 +41,7 @@
         [% ELSE %]
             <option value="[% itemtype.itemtype | html %]">
         [% END %]
-            [% itemtype.translated_description | html %]
+            [% ItemTypes.t(itemtype.description) | html %]
         </option>
     [% END %]
 [% END %]

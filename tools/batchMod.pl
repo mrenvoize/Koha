@@ -41,6 +41,7 @@ use Koha::Exceptions::Exception;
 use Koha::AuthorisedValues;
 use Koha::Biblios;
 use Koha::DateUtils;
+use Koha::I18N;
 use Koha::Items;
 use Koha::ItemTypes;
 use Koha::Patrons;
@@ -494,10 +495,10 @@ foreach my $tag (sort keys %{$tagslib}) {
     }
     elsif ( $tagslib->{$tag}->{$subfield}->{authorised_value} eq "itemtypes" ) {
         push @authorised_values, "";
-        my $itemtypes = Koha::ItemTypes->search_with_localization;
+        my $itemtypes = Koha::ItemTypes->search;
         while ( my $itemtype = $itemtypes->next ) {
             push @authorised_values, $itemtype->itemtype;
-            $authorised_lib{$itemtype->itemtype} = $itemtype->translated_description;
+            $authorised_lib{$itemtype->itemtype} = db_t('itemtype', $itemtype->description);
         }
         $value = "";
 

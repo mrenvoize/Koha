@@ -76,6 +76,7 @@ use Koha::Acquisition::Booksellers;
 use Koha::Acquisition::Currencies;
 use Koha::Acquisition::Orders;
 use Koha::DateUtils qw( dt_from_string );
+use Koha::I18N;
 use Koha::ItemTypes;
 use Koha::Patrons;
 
@@ -153,7 +154,7 @@ if ($AcqCreateItem eq 'receiving') {
         my $itemtype = Koha::ItemTypes->find($i->effective_itemtype);
         if (defined $itemtype) {
             # We should not do that here, but call ->itemtype->description when needed instead
-            $item->{itemtype} = $itemtype->description; # FIXME Should not it be translated_description?
+            $item->{itemtype} = db_t('itemtype', $itemtype->description);
         }
         push @items, $item;
     }

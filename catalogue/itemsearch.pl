@@ -29,6 +29,7 @@ use C4::Koha;
 
 use Koha::AuthorisedValues;
 use Koha::Biblios;
+use Koha::I18N;
 use Koha::Item::Search::Field qw(GetItemSearchFields);
 use Koha::ItemTypes;
 use Koha::Libraries;
@@ -258,7 +259,7 @@ my @itemtypes;
 foreach my $itemtype ( Koha::ItemTypes->search ) {
     push @itemtypes, {
         value => $itemtype->itemtype,
-        label => $itemtype->translated_description,
+        label => db_t('itemtype', $itemtype->description),
     };
 }
 

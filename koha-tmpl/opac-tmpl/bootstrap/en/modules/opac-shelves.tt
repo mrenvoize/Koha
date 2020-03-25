@@ -1,5 +1,6 @@
 [% USE raw %]
 [% USE Asset %]
+[% USE ItemTypes %]
 [% USE Koha %]
 [% SET PRIVATE = 1 %]
 [% SET PUBLIC = 2 %]
@@ -357,9 +358,9 @@
                                                     [% UNLESS ( item_level_itypes ) %]
                                                         <td>
                                                             [% UNLESS ( Koha.Preference('OpacNoItemTypeImages') ) %]
-                                                                <img src="[% itemsloo.imageurl | html %]" alt="[% itemsloo.description | html %]" title="[% itemsloo.description | html %]" />
+                                                                <img src="[% itemsloo.imageurl | html %]" alt="[% ItemTypes.t(itemsloo.description) | html %]" title="[% ItemTypes.t(itemsloo.description) | html %]" />
                                                             [% END %]
-                                                            [% itemsloo.description | html %]
+                                                            [% ItemTypes.t(itemsloo.description) | html %]
                                                         </td>
                                                     [% END %]
                                                     <td>

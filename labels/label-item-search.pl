@@ -229,20 +229,7 @@ else {
             debug           => 1,
         }
     );
-    my $itemtypes = Koha::ItemTypes->search;
-    my @itemtypeloop;
-    while ( my $itemtype = $itemtypes->next ) {
-        # FIXME This must be improved:
-        # - pass the iterator to the template
-        # - display the translated_description
-        my %row = (
-            value       => $itemtype->itemtype,
-            description => $itemtype->description,
-        );
-        push @itemtypeloop, \%row;
-    }
     $template->param(
-        itemtypeloop => \@itemtypeloop,
         batch_id     => $batch_id,
         type         => $type,
     );

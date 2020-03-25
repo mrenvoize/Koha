@@ -21,9 +21,6 @@ use Modern::Perl;
 use C4::Auth;
 use C4::Output;
 
-use Koha::Localization;
-use Koha::Localizations;
-
 use CGI qw( -utf8 );
 
 my $query = new CGI;
@@ -37,27 +34,10 @@ my ( $template, $borrowernumber, $cookie ) = get_template_and_user(
     }
 );
 
-my $entity = $query->param('entity');
-my $code   = $query->param('code');
-my $rs     = Koha::Localizations->search( { entity => $entity, code => $code } );
-my @translations;
-while ( my $s = $rs->next ) {
-    push @translations,
-      { id          => $s->localization_id,
-        entity      => $s->entity,
-        code        => $s->code,
-        lang        => $s->lang,
-        translation => $s->translation,
-      };
-}
-
 my $translated_languages = C4::Languages::getTranslatedLanguages( 'intranet', C4::Context->preference('template') );
 
 $template->param(
-    translations => \@translations,
     languages    => $translated_languages,
-    entity       => $entity,
-    code         => $code,
 );
 
 output_html_with_http_headers $query, $cookie, $template->output;

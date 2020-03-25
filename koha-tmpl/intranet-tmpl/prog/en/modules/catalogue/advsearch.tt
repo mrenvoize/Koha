@@ -1,4 +1,5 @@
 [% USE raw %]
+[% USE ItemTypes %]
 [% USE Koha %]
 [% USE Asset %]
 [% USE Branches %]
@@ -146,7 +147,7 @@
         <tr>
     [% FOREACH itemtypeloo IN advsearchloo.code_loop %]
         <td><input type="checkbox" id="[% itemtypeloo.ccl FILTER remove(',') | html %]-[% itemtypeloo.number | html %]" name="limit" value="mc-[% itemtypeloo.ccl | html %]:[% itemtypeloo.code | html %]"/><label for="[% itemtypeloo.ccl FILTER remove(',') | html %]-[% itemtypeloo.number | html %]">[% UNLESS ( Koha.Preference('OpacNoItemTypeImages') ) %][% IF ( itemtypeloo.imageurl ) %]<img src="[% itemtypeloo.imageurl | html %]" alt="[% itemtypeloo.description | html %]" />[% END %]&nbsp;[% END %]
-        [% itemtypeloo.description | html %]</label></td>
+        [% ItemTypes.t(itemtypeloo.description) | html %]</label></td>
         [% IF ( loop.last ) %]</tr>[% ELSE %][% UNLESS ( loop.count % 5 ) %]</tr><tr>[% END %][% END %]
     [% END %]
     </table>

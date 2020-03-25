@@ -3810,20 +3810,27 @@ CREATE TABLE `additional_field_values` (
   CONSTRAINT `afv_fk` FOREIGN KEY (`field_id`) REFERENCES `additional_fields` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Table structure for table 'localization'
---
 
-DROP TABLE IF EXISTS localization;
-CREATE TABLE `localization` (
-      localization_id int(11) NOT NULL AUTO_INCREMENT,
-      entity varchar(16) COLLATE utf8mb4_unicode_ci NOT NULL,
-      code varchar(64) COLLATE utf8mb4_unicode_ci NOT NULL,
-      lang varchar(25) COLLATE utf8mb4_unicode_ci NOT NULL, -- could be a foreign key
-      translation MEDIUMTEXT COLLATE utf8mb4_unicode_ci,
-      PRIMARY KEY (localization_id),
-      UNIQUE KEY `entity_code_lang` (`entity`,`code`,`lang`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+DROP TABLE IF EXISTS l10n_source;
+CREATE TABLE l10n_source (
+    l10n_source_id INT(11) NOT NULL AUTO_INCREMENT,
+    context VARCHAR(100) NULL DEFAULT NULL,
+    source TEXT NOT NULL,
+    PRIMARY KEY (l10n_source_id),
+    KEY context_source (context, source(60))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+DROP TABLE IF EXISTS l10n_target;
+CREATE TABLE l10n_target (
+    l10n_target_id INT(11) NOT NULL AUTO_INCREMENT,
+    l10n_source_id INT(11) NOT NULL,
+    language VARCHAR(10) NOT NULL,
+    translation TEXT NOT NULL,
+    PRIMARY KEY (l10n_target_id),
+    UNIQUE KEY l10n_source_language (l10n_source_id, language),
+    FOREIGN KEY l10n_source (l10n_source_id) REFERENCES l10n_source (l10n_source_id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 --
 -- Table structure for table 'audio_alerts'

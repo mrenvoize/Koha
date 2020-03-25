@@ -33,6 +33,7 @@ use C4::Members;
 
 use Koha::AuthorisedValues;
 use Koha::DateUtils;
+use Koha::I18N;
 use Koha::ItemTypes;
 use Koha::Patron::Attribute::Types;
 
@@ -86,7 +87,7 @@ $sep = "\t" if ($sep eq 'tabulation');
 $template->param(do_it => $do_it,
 );
 
-our $itemtypes = Koha::ItemTypes->search_with_localization->unblessed;
+our $itemtypes = Koha::ItemTypes->search->unblessed;
 
 our @patron_categories = Koha::Patron::Categories->search_limited({}, {order_by => ['description']});
 
@@ -357,7 +358,7 @@ sub calculate {
         $cell{rowtitle_display} =
             ( $line =~ /ccode/ )    ? $ccodes->{$celvalue}
           : ( $line =~ /location/ ) ? $locations->{$celvalue}
-          : ( $line =~ /itemtype/ ) ? $itemtypes_map->{$celvalue}->{translated_description}
+          : ( $line =~ /itemtype/ ) ? db_t('itemtype', $itemtypes_map->{$celvalue}->{description})
           :                           $celvalue;                               # default fallback
         if ( $line =~ /sort1/ ) {
             foreach (@$Bsort1) {
@@ -446,7 +447,7 @@ sub calculate {
         $cell{coltitle_display} =
             ( $column =~ /ccode/ )    ? $ccodes->{$celvalue}
           : ( $column =~ /location/ ) ? $locations->{$celvalue}
-          : ( $column =~ /itemtype/ ) ? $itemtypes_map->{$celvalue}->{translated_description}
+          : ( $column =~ /itemtype/ ) ? db_t('itemtype', $itemtypes_map->{$celvalue}->{description});
           :                             $celvalue;                               # default fallback
         if ( $column =~ /sort1/ ) {
             foreach (@$Bsort1) {

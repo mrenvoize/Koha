@@ -34,6 +34,7 @@ use Date::Calc qw(
 
 use C4::Koha;
 use C4::Reserves;
+use Koha::I18N;
 use Koha::Items;
 use Koha::ItemTypes;
 use Koha::Libraries;
@@ -94,7 +95,7 @@ while ( my $library = $libraries->next ) {
             my $itemtype = Koha::ItemTypes->find( $item->effective_itemtype );
 
             $getransf{'datetransfer'} = $num->{'datesent'};
-            $getransf{'itemtype'} = $itemtype->description; # FIXME Should not it be translated_description?
+            $getransf{'itemtype'} = db_t('itemtype', $itemtype->description);
             %getransf = (
                 %getransf,
                 title          => $biblio->title,

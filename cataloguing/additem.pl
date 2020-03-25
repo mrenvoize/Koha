@@ -31,6 +31,7 @@ use C4::Circulation;
 use C4::Koha;
 use C4::ClassSource;
 use Koha::DateUtils;
+use Koha::I18N;
 use Koha::Items;
 use Koha::ItemTypes;
 use Koha::Libraries;
@@ -199,13 +200,13 @@ sub generate_subfield_form {
                   my $branch_limit = C4::Context->userenv && C4::Context->userenv->{"branch"};
                   my $itemtypes;
                   if($branch_limit) {
-                      $itemtypes = Koha::ItemTypes->search_with_localization({branchcode => $branch_limit});
+                      $itemtypes = Koha::ItemTypes->search({branchcode => $branch_limit});
                   } else {
-                      $itemtypes = Koha::ItemTypes->search_with_localization;
+                      $itemtypes = Koha::ItemTypes->search;
                   }
                   while ( my $itemtype = $itemtypes->next ) {
                       push @authorised_values, $itemtype->itemtype;
-                      $authorised_lib{$itemtype->itemtype} = $itemtype->translated_description;
+                      $authorised_lib{$itemtype->itemtype} = db_t('itemtype', $itemtype->description);
                   }
 
                   unless ( $value ) {
