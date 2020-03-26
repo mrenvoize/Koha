@@ -309,8 +309,7 @@ sub insert {
 
     my $result = $self->next::method(@_);
 
-    my @sources = $self->result_source->resultset->get_column('description')->all;
-    $self->update_l10n_source('itemtype', @sources);
+    $self->update_l10n_source('itemtype', $self->itemtype, $self->description);
 
     return $result;
 }
@@ -323,8 +322,7 @@ sub update {
     my $result = $self->next::method(@_);
 
     if ($is_description_changed) {
-        my @sources = $self->result_source->resultset->get_column('description')->all;
-        $self->update_l10n_source('itemtype', @sources);
+        $self->update_l10n_source('itemtype', $self->itemtype, $self->description);
     }
 
     return $result;
@@ -335,8 +333,7 @@ sub delete {
 
     my $result = $self->next::method(@_);
 
-    my @sources = $self->result_source->resultset->get_column('description')->all;
-    $self->update_l10n_source('itemtype', @sources);
+    $self->delete_l10n_source('itemtype', $self->itemtype);
 
     return $result;
 }
