@@ -21,17 +21,21 @@ use Modern::Perl;
 
 use Class::Inspector;
 use List::MoreUtils qw(any);
-use Module::Load::Conditional qw(can_load);
 use Module::Load qw(load);
+use Module::Load::Conditional qw(can_load);
 use Module::Pluggable search_path => ['Koha::Plugin'], except => qr/::Edifact(|::Line|::Message|::Order|::Segment|::Transport)$/;
+use YAML qw(Load Dump);
 
 use C4::Context;
 use C4::Output;
 use Koha::Plugins::Methods;
+use Koha::Plugins::Data;
+
+our @pluginsdir;
 
 BEGIN {
     my $pluginsdir = C4::Context->config("pluginsdir");
-    my @pluginsdir = ref($pluginsdir) eq 'ARRAY' ? @$pluginsdir : $pluginsdir;
+    @pluginsdir = ref($pluginsdir) eq 'ARRAY' ? @$pluginsdir : $pluginsdir;
     push( @INC, @pluginsdir );
     pop @INC if $INC[-1] eq '.';
 }
@@ -112,6 +116,82 @@ sub GetPlugins {
     return @plugins;
 }
 
+sub GetPluginsMetadata {
+    my ( $self, $params ) = @_;
+
+    my $method       = $params->{method};
+    my $req_metadata = $params->{metadata} // {};
+
+    my $filter = ( $method ) ? { plugin_method => $method } : undef;
+
+    my $plugin_classes = Koha::Plugins::Methods->search(
+        $filter,
+        {   columns  => 'plugin_class',
+            distinct => 1
+        }
+    )->_resultset->get_column('plugin_class');
+
+    my @plugins;
+    while ( my $plugin_class = $plugin_classes->next ) {
+        my $plugin_metadata = Koha::Plugins::Data->find(
+            {
+                plugin_class => $plugin_class,
+                plugin_key   => '__METADATA__',
+            }
+        );
+
+        if ( $plugin_metadata ) {
+            $plugin_metadata = YAML::Load( $plugin_metadata->plugin_value );
+        }
+        else {
+            load $plugin_class;
+            my $plugin = $plugin_class->new(
+                {
+                    enable_plugins => $self->{enable_plugins}
+                }
+            );
+            $plugin_metadata = $plugin->get_metadata;
+
+            Koha::Plugins::Datum->new(
+                {
+                    plugin_class => $plugin_class,
+                    plugin_key   => '__METADATA__',
+                    plugin_value => YAML::Dump( $plugin_metadata ),
+                }
+            )->store();
+        }
+
+        my $plugin_enabled = Koha::Plugins::Data->find(
+            {
+                plugin_class => $plugin_class,
+                plugin_key   => '__ENABLED__',
+            }
+        );
+        $plugin_metadata->{is_enabled} = $plugin_enabled->plugin_value;
+
+        my @plugin_methods = Koha::Plugins::Methods->search(
+            {
+                plugin_class => $plugin_class,
+            },
+            {
+                columns => 'plugin_method',
+            }
+        );
+
+        $plugin_metadata->{can} = { map { $_->plugin_method => 1 } @plugin_methods };
+
+        next
+            if $plugin_metadata
+            and %$req_metadata
+            and any { !$plugin_metadata->{$_} || $plugin_metadata->{$_} ne $req_metadata->{$_} } keys %$req_metadata;
+
+        push @plugins, $plugin_metadata;
+
+    }
+
+    return @plugins;
+}
+
 =head2 InstallPlugins
 
 Koha::Plugins::InstallPlugins()
@@ -136,6 +216,16 @@ sub InstallPlugins {
             next unless $plugin_class->isa('Koha::Plugins::Base');
 
             my $plugin = $plugin_class->new({ enable_plugins => $self->{'enable_plugins'} });
+
+            # Force update plugin metadata in the database
+            my $metadata = $plugin->get_metadata( { skip_database => 1 } );
+            my $params = {
+                plugin_class => $plugin_class,
+                plugin_key   => '__METADATA__',
+            };
+            my $db_metadata = Koha::Plugins::Data->find( $params ) || Koha::Plugins::Datum->new( $params );
+            $db_metadata->plugin_value( YAML::Dump($metadata) );
+            $db_metadata->store();
 
             Koha::Plugins::Methods->search({ plugin_class => $plugin_class })->delete();
 

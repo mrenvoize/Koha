@@ -19,9 +19,10 @@ package Koha::Plugins::Base;
 
 use Modern::Perl;
 
-use Module::Pluggable require => 1;
 use Cwd qw(abs_path);
 use List::Util qw(max);
+use Module::Pluggable require => 1;
+use YAML qw(Load LoadFile);
 
 use base qw{Module::Bundled::Files};
 
@@ -58,7 +59,7 @@ sub new {
             warn "Plugin $class failed during installation!";
         }
     } elsif ( $self->can('upgrade') ) {
-        if ( _version_compare( $plugin_version, $database_version ) == 1 ) {
+        if ( $self->_version_compare( $plugin_version, $database_version ) == 1 ) {
             if ( $self->upgrade() ) {
                 $self->store_data({ '__INSTALLED_VERSION__' => $plugin_version });
             } else {
@@ -177,8 +178,28 @@ sub get_template {
 sub get_metadata {
     my ( $self, $args ) = @_;
 
+    my $skip_database = $args->{skip_database};
+
+    my $metadata = $self->{metadata}; # Check for old style metadata in blessed hash
+    $metadata ||= $self::metadata; # Check for a global metadata var ( i.e. our $metadata )
+
+    unless ( $metadata && !$skip_database ) { # Check the database next, unless this is a plugin upgrade
+        $metadata = $self->retrieve_data('__METADATA__');
+        $metadata = YAML::Load( $metadata );
+    }
+
+    unless ( $metadata ) { # Check for metadata in PLUGIN.yml, if it exists
+        my $bundle_path = $self->{_bundle_path};
+        my $plugin_yml = "$bundle_path/PLUGIN.yml";
+        if ( -r $plugin_yml ) {
+            $metadata = YAML::LoadFile( $plugin_yml );
+        }
+    }
+
+    my $class = ref($self);
+    $metadata->{class} = $class;
+
     #FIXME: Why another encoding issue? For metadata containing non latin characters.
-    my $metadata = $self->{metadata};
     $metadata->{$_} && utf8::decode($metadata->{$_}) for keys %$metadata;
     return $metadata;
 }
