@@ -26,8 +26,9 @@ __PACKAGE__->table("plugin_methods");
 =head2 plugin_class
 
   data_type: 'varchar'
+  is_foreign_key: 1
   is_nullable: 0
-  size: 255
+  size: 191
 
 =head2 plugin_method
 
@@ -39,28 +40,31 @@ __PACKAGE__->table("plugin_methods");
 
 __PACKAGE__->add_columns(
   "plugin_class",
-  { data_type => "varchar", is_nullable => 0, size => 255 },
+  { data_type => "varchar", is_foreign_key => 1, is_nullable => 0, size => 191 },
   "plugin_method",
   { data_type => "varchar", is_nullable => 0, size => 255 },
 );
 
-=head1 PRIMARY KEY
+=head1 RELATIONS
 
-=over 4
+=head2 plugin_class
 
-=item * L</plugin_class>
+Type: belongs_to
 
-=item * L</plugin_method>
-
-=back
+Related object: L<Koha::Schema::Result::Plugin>
 
 =cut
 
-__PACKAGE__->set_primary_key("plugin_class", "plugin_method");
+__PACKAGE__->belongs_to(
+  "plugin_class",
+  "Koha::Schema::Result::Plugin",
+  { class => "plugin_class" },
+  { is_deferrable => 1, on_delete => "CASCADE", on_update => "CASCADE" },
+);
 
 
-# Created by DBIx::Class::Schema::Loader v0.07046 @ 2018-07-13 12:37:57
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:koGk3Dh0wkslqYPUqUcK0w
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2020-05-06 12:55:00
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:LkE7uqY3Vmtobbv+Djvfmw
 
 sub koha_objects_class {
     'Koha::Plugins::Methods';

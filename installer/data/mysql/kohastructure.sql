@@ -3514,6 +3514,25 @@ CREATE TABLE linktracker (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
+-- Table structure for table 'plugins'
+--
+
+CREATE TABLE IF NOT EXISTS plugins (
+  class varchar(191) NOT NULL,
+  name MEDIUMTEXT,
+  version varchar(10) NOT NULL,
+  enabled tinyint(1) NOT NULL DEFAULT 0, -- boolean flag to denote that this plugin is enabled or not
+  date_installed timestamp NULL DEFAULT NULL,
+  date_updated timestamp NULL DEFAULT NULL,
+  author MEDIUMTEXT,
+  date_authored timestamp NULL DEFAULT NULL,
+  min_koha varchar(16),
+  max_koha varchar(16),
+  description MEDIUMTEXT,
+  PRIMARY KEY (`class`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
 -- Table structure for table 'plugin_data'
 --
 
@@ -3545,9 +3564,9 @@ CREATE TABLE patron_consent (
 
 DROP TABLE IF EXISTS plugin_methods;
 CREATE TABLE plugin_methods (
-  plugin_class varchar(255) NOT NULL,
+  plugin_class varchar(191) NOT NULL,
   plugin_method varchar(255) NOT NULL,
-  PRIMARY KEY ( `plugin_class` (191), `plugin_method` (191) )
+  FOREIGN KEY ( `plugin_class` ) REFERENCES plugins (class) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --

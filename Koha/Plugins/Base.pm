@@ -178,15 +178,8 @@ sub get_template {
 sub get_metadata {
     my ( $self, $args ) = @_;
 
-    my $skip_database = $args->{skip_database};
-
     my $metadata = $self->{metadata}; # Check for old style metadata in blessed hash
     $metadata ||= $self::metadata; # Check for a global metadata var ( i.e. our $metadata )
-
-    unless ( $metadata && !$skip_database ) { # Check the database next, unless this is a plugin upgrade
-        $metadata = $self->retrieve_data('__METADATA__');
-        $metadata = YAML::Load( $metadata );
-    }
 
     unless ( $metadata ) { # Check for metadata in PLUGIN.yml, if it exists
         my $bundle_path = $self->{_bundle_path};

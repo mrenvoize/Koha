@@ -99,7 +99,7 @@ if ($plugins_enabled) {
                 exit;
             }
 
-            Koha::Plugins->new()->InstallPlugins();
+            Koha::Plugins::Installer->refresh;
         }
     } elsif ( ( $op eq 'Upload' ) && !$uploadfile && !$uploadlocation ) {
         warn "Problem uploading file or no file uploaded.";

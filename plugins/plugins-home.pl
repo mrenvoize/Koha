@@ -53,12 +53,14 @@ if ($plugins_enabled) {
         method       => $method,
     );
 
-    my @plugins = Koha::Plugins->new()->GetPluginsMetadata({
-        method => $method,
-        all    => 1,
-    });
+    my @plugins = Koha::Plugins->search(
+        {
+            'methods.method' => $method,
+        },
+        { join => 'plugin_methods' }
+    );
 
-    $template->param( plugins_metadata => \@plugins, );
+    $template->param( plugins => \@plugins );
 
     my @results;
     if ($plugin_search) {
