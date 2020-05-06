@@ -29,6 +29,7 @@ use Test::More tests => 51;
 
 use C4::Context;
 use Koha::Database;
+use Koha::Plugins::Installer;
 use Koha::Plugins::Methods;
 
 use t::lib::Mocks;

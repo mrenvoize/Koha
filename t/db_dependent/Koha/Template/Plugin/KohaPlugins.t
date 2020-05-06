@@ -30,10 +30,9 @@ my $schema = Koha::Database->new->schema;
 $schema->storage->txn_begin;
 
 # Enable all plugins
-my $plugins = Koha::Plugins->new;
-$plugins->InstallPlugins;
-my @plugins = $plugins->GetPlugins({ all => 1, class => 'Koha::Plugin::Test' });
-map { $_->enable; } @plugins;
+Koha::Plugins::Installer->new()->refresh();
+my $plugins = Koha::Plugins->search({ class => 'Koha::Plugin::Test' });
+map { $_->load_plugin->enable; } @plugins;
 
 my $mock_plugin = Test::MockModule->new( 'Koha::Plugin::Test' );
 $mock_plugin->mock( 'test_template', sub {

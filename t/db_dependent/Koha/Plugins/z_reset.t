@@ -15,13 +15,13 @@
 # with Koha; if not, see <http://www.gnu.org/licenses>.
 
 use Modern::Perl;
+
 use C4::Context;
-use Koha::Plugins;
-use Koha::Plugins::Methods;
+use Koha::Plugins::Installer;
 
 use Test::More tests => 1;
 
-my $plugins = Koha::Plugins->new()->InstallPlugins;
+my $plugins = Koha::Plugins::Installer->new()->refresh;
 
 ok( 1, 'Plugins reset' );
 

@@ -11,6 +11,7 @@ use t::lib::TestBuilder;
 
 use Koha::Database;
 use Koha::Plugins;
+use Koha::Plugins::Installer;
 
 BEGIN {
     # Mock pluginsdir before loading Plugins module
@@ -191,9 +192,8 @@ subtest "RecordsFromMarcPlugin" => sub {
 
     t::lib::Mocks::mock_config( 'enable_plugins', 1 );
 
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
-    my ($plugin) = $plugins->GetPlugins({ all => 1, metadata => { name => 'MarcFieldValues' } });
+    Koha::Plugins::Installer->new()->refresh();
+    my $plugin = Koha::Plugins->search({ name => 'MarcFieldValues' }, { rows => 1 })->single;
     isnt( $plugin, undef, "Plugin found" );
     my $records = C4::ImportBatch::RecordsFromMarcPlugin( $name, ref $plugin, 'UTF-8' );
     is( @$records, 2, 'Two results returned' );

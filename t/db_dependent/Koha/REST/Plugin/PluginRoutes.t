@@ -37,6 +37,7 @@ BEGIN {
 
 use Koha::Database;
 use Koha::Plugins;
+use Koha::Plugins::Installer;
 
 my $schema = Koha::Database->new->schema;
 
@@ -51,12 +52,11 @@ subtest 'Bad plugins tests' => sub {
 
     # remove any existing plugins that might interfere
     Koha::Plugins::Methods->search->delete;
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
-    my @plugins = $plugins->GetPlugins( { all => 1 } );
-    foreach my $plugin (@plugins) {
-        $plugin->enable;
+    my $plugins = Koha::Plugins->search();
+    while (my $plugin = $plugins->next) {
+        $plugin->load_plugin->enable;
     }
 
     # initialize Koha::REST::V1 after mocking
@@ -86,14 +86,14 @@ subtest 'Disabled plugins tests' => sub {
 
     my $good_plugin;
 
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
-    my @plugins = $plugins->GetPlugins( { all => 1 } );
-    foreach my $plugin (@plugins) {
-        $plugin->disable;
-        $good_plugin = $plugin
-            if $plugin->{metadata}->{description} eq 'Test plugin';
+    my $plugins = Koha::Plugins->search();
+    while ( my $plugin = $plugins->next ) {
+        my $disabled = $plugin->load_plugin;
+        $disabled->disable;
+        $good_plugin = $disabled
+            if $plugin->description eq 'Test plugin';
     }
 
     # initialize Koha::REST::V1 after mocking
@@ -129,8 +129,7 @@ subtest 'needs_install use case tests' => sub {
 
     my $good_plugin;
 
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
     # mock Version before initializing the API class
     t::lib::Mocks::mock_preference('Version', undef);
@@ -150,7 +149,7 @@ subtest 'needs_install use case tests' => sub {
     t::lib::Mocks::mock_preference('Version', '3.0.0');
 
     $schema->resultset('PluginData')->delete;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
     # re-initialize Koha::REST::V1 after mocking
     $t      = Test::Mojo->new('Koha::REST::V1');

@@ -22,6 +22,7 @@ use Test::Exception;
 use File::Basename;
 
 use C4::Items;
+use Koha::Plugins::Installer;
 
 use t::lib::Mocks;
 use t::lib::TestBuilder;
@@ -48,8 +49,7 @@ subtest 'check_password hook tests' => sub {
 
     $schema->storage->txn_begin;
 
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
     # Test Plugin enforces a 4 digit numeric pin for passwords
     my $plugin = Koha::Plugin::Test->new->enable;

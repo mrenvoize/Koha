@@ -22,6 +22,7 @@ use Test::Warn;
 use File::Basename;
 
 use C4::Items;
+use Koha::Plugins::Installer;
 
 use t::lib::Mocks;
 use t::lib::TestBuilder;
@@ -47,8 +48,7 @@ subtest 'after_biblio_action() and after_item_action() hooks tests' => sub {
 
     $schema->storage->txn_begin;
 
-    my $plugins = Koha::Plugins->new;
-    $plugins->InstallPlugins;
+    Koha::Plugins::Installer->new()->refresh();
 
     my $plugin = Koha::Plugin::Test->new->enable;
 
