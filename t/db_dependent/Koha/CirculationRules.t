@@ -392,8 +392,8 @@ subtest 'get_lostreturn_policy() tests' => sub {
                 branchcode   => undef,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund',
-                rule_value   => 1
+                rule_name    => 'lostreturn',
+                rule_value   => 'charge'
             }
         }
     );
@@ -405,21 +405,21 @@ subtest 'get_lostreturn_policy() tests' => sub {
                 branchcode   => $branchcode,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund',
+                rule_name    => 'lostreturn',
                 rule_value   => 0
             }
         }
     );
     my $branchcode2 = $builder->build( { source => 'Branch' } )->{branchcode};
-    my $specific_rule_true = $builder->build(
+    my $specific_rule_lostreturn = $builder->build(
         {
             source => 'CirculationRule',
             value  => {
                 branchcode   => $branchcode2,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund',
-                rule_value   => 1
+                rule_name    => 'lostreturn',
+                rule_value   => 'refund'
             }
         }
     );
@@ -432,7 +432,8 @@ subtest 'get_lostreturn_policy() tests' => sub {
                 branchcode   => $branchcode3,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund',
+                rule_name    => 'lostreturn',
+                rule_value   => 'restore'
             }
         }
     );
@@ -443,7 +444,8 @@ subtest 'get_lostreturn_policy() tests' => sub {
                 branchcode   => $branch_without_rule,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund'
+                rule_name    => 'lostreturn',
+                rule_value   => 'restore'
             }
           )
         ->next
@@ -451,36 +453,36 @@ subtest 'get_lostreturn_policy() tests' => sub {
 
     my $item = $builder->build_sample_item(
         {
-            homebranch    => $specific_rule_true->{branchcode},
+            homebranch    => $specific_rule_lostreturn->{branchcode},
             holdingbranch => $specific_rule_false->{branchcode}
         }
     );
     my $params = {
-        return_branch => $specific_rule_true->{ branchcode },
+        return_branch => $specific_rule_lostreturn->{ branchcode },
         item          => $item
     };
 
     # Specific rules
     t::lib::Mocks::mock_preference( 'RefundLostOnReturnControl', 'CheckinLibrary' );
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
-          1,'Specific rule for checkin branch is applied (true)');
+        'refund','Specific rule for checkin branch is applied (refund)');
 
     t::lib::Mocks::mock_preference( 'RefundLostOnReturnControl', 'ItemHomeBranch' );
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
-         1,'Specific rule for home branch is applied (true)');
+         'refund','Specific rule for home branch is applied (refund)');
 
     t::lib::Mocks::mock_preference( 'RefundLostOnReturnControl', 'ItemHoldingBranch' );
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
-         0,'Specific rule for holoding branch is applied (false)');
+         0,'Specific rule for holding branch is applied (false)');
 
     # Default rule check
     t::lib::Mocks::mock_preference( 'RefundLostOnReturnControl', 'CheckinLibrary' );
     $params->{return_branch} = $branch_without_rule;
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
-         1,'No rule for branch, global rule applied (true)');
+         'charge','No rule for branch, global rule applied (charge)');
 
     # Change the default value just to try
-    Koha::CirculationRules->search({ branchcode => undef, rule_name => 'refund' })->next->rule_value(0)->store;
+    Koha::CirculationRules->search({ branchcode => undef, rule_name => 'lostreturn' })->next->rule_value(0)->store;
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
          0,'No rule for branch, global rule applied (false)');
 
@@ -491,13 +493,13 @@ subtest 'get_lostreturn_policy() tests' => sub {
                 branchcode   => undef,
                 categorycode => undef,
                 itemtype     => undef,
-                rule_name    => 'refund'
+                rule_name    => 'lostreturn'
             }
           )
         ->next
         ->delete;
     is( Koha::CirculationRules->get_lostreturn_policy( $params ),
-         1,'No rule for branch, no default rule, fallback default (true)');
+         'refund','No rule for branch, no default rule, fallback default (refund)');
 
     $schema->storage->txn_rollback;
 };
