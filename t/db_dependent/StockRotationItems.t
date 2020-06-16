@@ -228,7 +228,7 @@ subtest "Tests for needs_advancing." => sub {
 };
 
 subtest "Tests for advance." => sub {
-    plan tests => 15;
+    plan tests => 23;
     $schema->storage->txn_begin;
 
     my $sritem = $builder->build(
@@ -286,22 +286,54 @@ subtest "Tests for advance." => sub {
     $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
     ## Test results
     is($dbitem->stage->stage_id, $dbstage2->stage_id, "Stage updated.");
+    is(
+        $dbitem->itemnumber->homebranch,
+        $dbstage2->branchcode_id,
+        "Item homebranch updated"
+    );
     my $intransfer = $dbitem->itemnumber->get_transfer;
     is($intransfer->frombranch, $dbstage->branchcode_id, "Origin correct.");
     is($intransfer->tobranch, $dbstage2->branchcode_id, "Target Correct.");
 
-    $dbstage->rota->cyclical(0)->store;         # Set Rota to non-cyclical.
+    # Arrive at new branch
+    $intransfer->datearrived(DateTime->now)->store;
+    $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
+
+    # Test a cyclical advance
+    ok($dbitem->advance, "Cyclical advancement done.");
+    ## Refetch dbitem
+    $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
+    ## Test results
+    is($dbitem->stage->stage_id, $dbstage->stage_id, "Stage updated.");
+    is(
+        $dbitem->itemnumber->homebranch,
+        $dbstage->branchcode_id,
+        "Item homebranch updated"
+    );
+    $intransfer = $dbitem->itemnumber->get_transfer;
+    is($intransfer->frombranch, $dbstage2->branchcode_id, "Origin correct.");
+    is($intransfer->tobranch, $dbstage->branchcode_id, "Target correct.");
 
     # Arrive at new branch
     $intransfer->datearrived(DateTime->now)->store;
     $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
-    $dbitem->itemnumber->homebranch($srstage->{branchcode_id})->store;
+
+    $dbstage->rota->cyclical(0)->store;         # Set Rota to non-cyclical.
+
+    # Advance again, to end of rota.
+    ok($dbitem->advance, "Non-cyclical advance to last stage.");
+
+    # Arrive at new branch
+    $intransfer->datearrived(DateTime->now)->store;
+    $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
 
     # Advance again, Remove from rota.
     ok($dbitem->advance, "Non-cyclical advance.");
     ## Refetch dbitem
     $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
     is($dbitem, undef, "StockRotationItem has been removed.");
+    my $item = Koha::Items->find($sritem->{itemnumber_id});
+    is($item->homebranch, $srstage->{branchcode_id}, "Item homebranch remains");
 
     $schema->storage->txn_rollback;
 };
