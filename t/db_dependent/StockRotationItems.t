@@ -22,6 +22,7 @@ use Modern::Perl;
 use DateTime;
 use DateTime::Duration;
 use Koha::Database;
+use Koha::DateUtils;
 use Koha::Item::Transfer;
 use t::lib::TestBuilder;
 
@@ -195,7 +196,7 @@ subtest "Tests for needs_advancing." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->stage->branchcode_id,
         'tobranch'    => $dbitem->stage->branchcode_id,
-        'datesent'    => DateTime->now,
+        'datesent'    => dt_from_string,
         'datearrived' => undef,
         'reason'      => "StockrotationAdvance",
     })->store;
@@ -208,7 +209,7 @@ subtest "Tests for needs_advancing." => sub {
     $dbitem->fresh(0)->store;
 
     # Test item will not be advanced if it has not spent enough time.
-    $dbtransfer->datearrived(DateTime->now)->store;
+    $dbtransfer->datearrived(dt_from_string)->store;
     is($dbitem->needs_advancing, 0, "Not ready to advance: Not spent enough time.");
     # Test item will be advanced if it has not spent enough time, but is fresh.
     $dbitem->fresh(1)->store;
@@ -217,10 +218,10 @@ subtest "Tests for needs_advancing." => sub {
 
     # Test item will be advanced if it has spent enough time.
     $dbtransfer->datesent(      # Item was sent 100 days ago...
-        DateTime->now - DateTime::Duration->new( days => 100 )
+        dt_from_string - DateTime::Duration->new( days => 100 )
     )->store;
     $dbtransfer->datearrived(   # And arrived 75 days ago.
-        DateTime->now - DateTime::Duration->new( days => 75 )
+        dt_from_string - DateTime::Duration->new( days => 75 )
     )->store;
     is($dbitem->needs_advancing, 1, "Ready to be advanced.");
 
@@ -228,7 +229,7 @@ subtest "Tests for needs_advancing." => sub {
 };
 
 subtest "Tests for advance." => sub {
-    plan tests => 15;
+    plan tests => 23;
     $schema->storage->txn_begin;
 
     my $sritem = $builder->build(
@@ -286,22 +287,54 @@ subtest "Tests for advance." => sub {
     $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
     ## Test results
     is($dbitem->stage->stage_id, $dbstage2->stage_id, "Stage updated.");
+    is(
+        $dbitem->itemnumber->homebranch,
+        $dbstage2->branchcode_id,
+        "Item homebranch updated"
+    );
     my $intransfer = $dbitem->itemnumber->get_transfer;
     is($intransfer->frombranch, $dbstage->branchcode_id, "Origin correct.");
     is($intransfer->tobranch, $dbstage2->branchcode_id, "Target Correct.");
 
-    $dbstage->rota->cyclical(0)->store;         # Set Rota to non-cyclical.
+    # Arrive at new branch
+    $intransfer->datearrived(dt_from_string)->store;
+    $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
+
+    # Test a cyclical advance
+    ok($dbitem->advance, "Cyclical advancement done.");
+    ## Refetch dbitem
+    $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
+    ## Test results
+    is($dbitem->stage->stage_id, $dbstage->stage_id, "Stage updated.");
+    is(
+        $dbitem->itemnumber->homebranch,
+        $dbstage->branchcode_id,
+        "Item homebranch updated"
+    );
+    $intransfer = $dbitem->itemnumber->get_transfer;
+    is($intransfer->frombranch, $dbstage2->branchcode_id, "Origin correct.");
+    is($intransfer->tobranch, $dbstage->branchcode_id, "Target correct.");
 
     # Arrive at new branch
-    $intransfer->datearrived(DateTime->now)->store;
+    $intransfer->datearrived(dt_from_string)->store;
     $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
-    $dbitem->itemnumber->homebranch($srstage->{branchcode_id})->store;
+
+    $dbstage->rota->cyclical(0)->store;         # Set Rota to non-cyclical.
+
+    # Advance again, to end of rota.
+    ok($dbitem->advance, "Non-cyclical advance to last stage.");
+
+    # Arrive at new branch
+    $intransfer->datearrived(dt_from_string)->store;
+    $dbitem->itemnumber->holdingbranch($srstage->{branchcode_id})->store;
 
     # Advance again, Remove from rota.
     ok($dbitem->advance, "Non-cyclical advance.");
     ## Refetch dbitem
     $dbitem = Koha::StockRotationItems->find($sritem->{itemnumber_id});
     is($dbitem, undef, "StockRotationItem has been removed.");
+    my $item = Koha::Items->find($sritem->{itemnumber_id});
+    is($item->homebranch, $srstage->{branchcode_id}, "Item homebranch remains");
 
     $schema->storage->txn_rollback;
 };
@@ -353,8 +386,8 @@ subtest "Tests for investigate (singular)." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->itemnumber->homebranch,
         'tobranch'    => $dbitem->itemnumber->homebranch,
-        'datesent'    => DateTime->now,
-        'datearrived' => DateTime->now,
+        'datesent'    => dt_from_string,
+        'datearrived' => dt_from_string,
         'reason'      => "StockrotationAdvance",
     })->store;
     is($dbitem->investigate->{reason}, 'repatriation', "older item repatriates.");
@@ -374,8 +407,8 @@ subtest "Tests for investigate (singular)." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->itemnumber->homebranch,
         'tobranch'    => $dbitem->stage->branchcode_id,
-        'datesent'    => DateTime->now,
-        'datearrived' => DateTime->now,
+        'datesent'    => dt_from_string,
+        'datearrived' => dt_from_string,
         'reason'      => "StockrotationAdvance",
     })->store;
     $dbitem->itemnumber->homebranch($dbitem->stage->branchcode_id)->store;
@@ -401,8 +434,8 @@ subtest "Tests for investigate (singular)." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->itemnumber->homebranch,
         'tobranch'    => $dbitem->stage->branchcode_id,
-        'datesent'    => DateTime->now - $sent_duration,
-        'datearrived' => DateTime->now - $arrived_duration,
+        'datesent'    => dt_from_string - $sent_duration,
+        'datearrived' => dt_from_string - $arrived_duration,
         'reason'      => "StockrotationAdvance",
     })->store;
     $dbitem->itemnumber->homebranch($dbitem->stage->branchcode_id)->store;
@@ -429,8 +462,8 @@ subtest "Tests for investigate (singular)." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->itemnumber->homebranch,
         'tobranch'    => $dbitem->stage->branchcode_id,
-        'datesent'    => DateTime->now - $sent_duration,
-        'datearrived' => DateTime->now - $arrived_duration,
+        'datesent'    => dt_from_string - $sent_duration,
+        'datearrived' => dt_from_string - $arrived_duration,
         'reason'      => "StockrotationAdvance",
     })->store;
     $dbitem->itemnumber->homebranch($dbitem->stage->branchcode_id)->store;
@@ -457,8 +490,8 @@ subtest "Tests for investigate (singular)." => sub {
         'itemnumber'  => $dbitem->itemnumber_id,
         'frombranch'  => $dbitem->itemnumber->homebranch,
         'tobranch'    => $dbitem->stage->branchcode_id,
-        'datesent'    => DateTime->now - $sent_duration,
-        'datearrived' => DateTime->now - $arrived_duration,
+        'datesent'    => dt_from_string - $sent_duration,
+        'datearrived' => dt_from_string - $arrived_duration,
         'reason'      => "StockrotationAdvance",
     })->store;
     is($dbitem->investigate->{reason}, 'repatriation',
