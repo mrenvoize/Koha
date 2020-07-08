@@ -1,5 +1,4 @@
 [% USE Branches %]
-[% USE Desks  %]
 [% USE ItemTypes %]
 [% USE KohaDates %]
 [% PROCESS 'i18n.inc' %]
