@@ -1,5 +1,4 @@
 [% USE ItemTypes %]
-[% USE Desks %]
 [% USE AuthorisedValues %]
 <table id="[% table_name | html %]">
     <thead>

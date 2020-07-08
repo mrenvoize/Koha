@@ -186,8 +186,6 @@ sub set_waiting {
         desk_id => $desk_id,
     };
 
-    if (defined $desk_id) { $values->{'desk_id'} = $desk_id };
-
     my $requested_expiration;
     if ($self->expirationdate) {
         $requested_expiration = dt_from_string($self->expirationdate);
@@ -375,11 +373,10 @@ Returns the related Koha::Library object for this Hold
 =cut
 
 sub desk {
-    my ($self) = @_;
-
-    $self->{_desk} ||= Koha::Desks->find( $self->desk_id() );
-
-    return $self->{_desk};
+    my $self = shift;
+    my $desk_rs = $self->_result->desk;
+    return unless $desk_rs;
+    return Koha::Desk->_new_from_dbic($desk_rs);
 }
 
 =head3 borrower

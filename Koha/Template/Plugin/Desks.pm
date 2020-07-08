@@ -36,20 +36,6 @@ got or the current one.
 
 =head2 Methods
 
-=head3 GetName
-
-[% Desk.GetName(desk_id) %]
-
-return desk name or empty string
-
-=cut
-
-sub GetName {
-    my ( $self, $desk_id ) = @_;
-    my $d = Koha::Desks->find( $desk_id );
-    return (defined $d) ? $d->unblessed->{'desk_name'} : q{};
-}
-
 =head3 GetLoggedInDeskId
 
 [% Desks.GetLoggedInDeskId %]
