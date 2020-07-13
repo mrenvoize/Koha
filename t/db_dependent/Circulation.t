@@ -22,6 +22,7 @@ use Test::More tests => 50;
 use Test::Exception;
 use Test::MockModule;
 use Test::Deep qw( cmp_deeply );
+use Test::Warn;
 
 use Data::Dumper;
 use DateTime;
@@ -2419,7 +2420,7 @@ subtest 'AddReturn | is_overdue' => sub {
     is( int($patron->account->balance()), 0, 'AddReturn: pass return_date => no overdue' );
     Koha::Account::Lines->search({ borrowernumber => $patron->borrowernumber })->delete;
 
-    subtest 'bug 22877' => sub {
+    subtest 'bug 22877 | Lost item return' => sub {
 
         plan tests => 3;
 
@@ -3060,6 +3061,80 @@ subtest '_FixAccountForLostAndFound' => sub {
     };
 };
 
+subtest '_RestoreOverdueForLostAndFound' => sub {
+
+    plan tests => 8;
+
+    my $manager = $builder->build_object( { class => "Koha::Patrons" } );
+    t::lib::Mocks::mock_userenv(
+        { patron => $manager, branchcode => $manager->branchcode } );
+
+    my $patron = $builder->build_object( { class => "Koha::Patrons" } );
+    my $item = $builder->build_sample_item();
+
+    # No fine found
+    my $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+    is($result, 0, "0 returned when no overdue found");
+
+    # Fine not forgiven
+    my $account = $patron->account;
+    my $overdue = $account->add_debit(
+        {
+            amount     => 30.00,
+            user_id    => $manager->borrowernumber,
+            library_id => $library2->{branchcode},
+            interface  => 'test',
+            item_id    => $item->itemnumber,
+            type       => 'OVERDUE',
+        }
+    )->store();
+    $overdue->status('LOST')->store();
+
+    $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+    is($result, 0, "0 returned when overdue found without forgival");
+    $overdue->discard_changes;
+    is($overdue->status, 'RETURNED', 'Overdue status updated to RETURNED');
+
+    # Reset status
+    $overdue->status('LOST')->store();
+
+    # Fine forgiven
+    my $credit = $account->add_credit(
+        {
+            amount     => 30.00,
+            user_id    => $manager->borrowernumber,
+            library_id => $library2->{branchcode},
+            interface  => 'test',
+            type       => 'FORGIVEN',
+            item_id    => $item->itemnumber
+        }
+    );
+    $credit->apply( { debits => [$overdue], offset_type => 'Forgiven' } );
+
+    $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+
+    is( ref($result), 'Koha::Account::Line', 'Return a Koha::Account::Line object on sucess');
+    $overdue->discard_changes;
+    is($overdue->status, 'RETURNED', 'Overdue status updated to RETURNED');
+    is($overdue->amountoutstanding, $overdue->amount, 'Overdue outstanding restored');
+
+    # Missing parameters
+    warning_like {
+        C4::Circulation::_RestoreOverdueForLostAndFound( undef,
+            $item->itemnumber )
+    }
+    qr/_RestoreOverdueForLostAndFound\(\) not supplied valid borrowernumber/,
+      "parameter warning received for missing borrowernumber";
+
+    warning_like {
+        C4::Circulation::_RestoreOverdueForLostAndFound(
+            $patron->borrowernumber, undef )
+    }
+    qr/_RestoreOverdueForLostAndFound\(\) not supplied valid itemnumber/,
+      "parameter warning received for missing itemnumbernumber";
+
+};
+
 subtest '_FixOverduesOnReturn' => sub {
     plan tests => 14;
 
@@ -3118,7 +3193,7 @@ subtest '_FixOverduesOnReturn' => sub {
 
     is( $accountline->amountoutstanding + 0, 0, 'Fine amountoutstanding has been reduced to 0' );
     isnt( $accountline->status, 'UNRETURNED', 'Open fine ( account type OVERDUE ) has been closed out ( status not UNRETURNED )');
-    is( $accountline->status, 'FORGIVEN', 'Open fine ( account type OVERDUE ) has been set to fine forgiven ( status FORGIVEN )');
+    is( $accountline->status, 'RETURNED', 'Open fine ( account type OVERDUE ) has been set to returned ( status RETURNED )');
     is( ref $offset, "Koha::Account::Offset", "Found matching offset for fine reduction via forgiveness" );
     is( $offset->amount + 0, -99, "Amount of offset is correct" );
     my $credit = $offset->credit;
