@@ -2668,6 +2668,37 @@ subtest 'AddReturn | is_overdue' => sub {
         Koha::Account::Lines->search(
             { borrowernumber => $patron->borrowernumber } )->delete;
     };
+
+    subtest 'enh 23091 | Lost item return policies' => sub {
+        plan tests => 1;
+
+        # Do nothing
+        #
+        # Refund fee
+        ## Without fee
+        ## With fee
+        #
+        # Refund fee and restore fine
+        ## Without fee
+        ### Without fine
+        ### With fine (forgiven)
+        ### With fine (unforgiven)
+        ## With fee
+        ### Without fine
+        ### With fine (forgiven)
+        ### With fine (unforgiven)
+        #
+        # Refund fee and charge new fine
+        ## Without fee
+        ### Without fine
+        ### With fine (forgiven)
+        ### With fine (unforgiven)
+        ## With fee
+        ### Without fine
+        ### With fine (forgiven)
+        ### With fine (unforgiven)
+        ### Backdated return
+    };
 };
 
 subtest '_FixAccountForLostAndFound' => sub {
