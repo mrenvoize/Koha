@@ -1542,7 +1542,6 @@ sub AddIssue {
                                 rows     => 1
                             }
                         )->single;
-
                         _CalculateAndUpdateFine(
                             {
                                 issue    => $actualissue,
@@ -2132,6 +2131,8 @@ sub AddReturn {
                             return_date => $return_date
                         }
                     );
+                    _FixOverduesOnReturn( $patron_unblessed->{borrowernumber},
+                        $item->itemnumber, undef, 'RETURNED' );
                     $messages->{'LostItemFeeCharged'} = 1;
                 }
                 elsif ( $lostreturn_policy eq 'restore' ) {
