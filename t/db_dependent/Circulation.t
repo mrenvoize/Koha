@@ -2703,7 +2703,7 @@ subtest 'AddReturn | is_overdue' => sub {
 
 subtest '_RestoreOverdueForLostAndFound' => sub {
 
-    plan tests => 8;
+    plan tests => 7;
 
     my $manager = $builder->build_object( { class => "Koha::Patrons" } );
     t::lib::Mocks::mock_userenv(
@@ -2713,7 +2713,7 @@ subtest '_RestoreOverdueForLostAndFound' => sub {
     my $item = $builder->build_sample_item();
 
     # No fine found
-    my $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+    my $result = C4::Circulation::_RestoreOverdueForLostAndFound( $item->itemnumber);
     is($result, 0, "0 returned when no overdue found");
 
     # Fine not forgiven
@@ -2730,7 +2730,7 @@ subtest '_RestoreOverdueForLostAndFound' => sub {
     )->store();
     $overdue->status('LOST')->store();
 
-    $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+    $result = C4::Circulation::_RestoreOverdueForLostAndFound( $item->itemnumber);
     is($result, 0, "0 returned when overdue found without forgival");
     $overdue->discard_changes;
     is($overdue->status, 'RETURNED', 'Overdue status updated to RETURNED');
@@ -2751,7 +2751,7 @@ subtest '_RestoreOverdueForLostAndFound' => sub {
     );
     $credit->apply( { debits => [$overdue], offset_type => 'Forgiven' } );
 
-    $result = C4::Circulation::_RestoreOverdueForLostAndFound($patron->borrowernumber, $item->itemnumber);
+    $result = C4::Circulation::_RestoreOverdueForLostAndFound( $item->itemnumber);
 
     is( ref($result), 'Koha::Account::Line', 'Return a Koha::Account::Line object on sucess');
     $overdue->discard_changes;
@@ -2760,19 +2760,10 @@ subtest '_RestoreOverdueForLostAndFound' => sub {
 
     # Missing parameters
     warning_like {
-        C4::Circulation::_RestoreOverdueForLostAndFound( undef,
-            $item->itemnumber )
-    }
-    qr/_RestoreOverdueForLostAndFound\(\) not supplied valid borrowernumber/,
-      "parameter warning received for missing borrowernumber";
-
-    warning_like {
-        C4::Circulation::_RestoreOverdueForLostAndFound(
-            $patron->borrowernumber, undef )
+        C4::Circulation::_RestoreOverdueForLostAndFound( undef )
     }
     qr/_RestoreOverdueForLostAndFound\(\) not supplied valid itemnumber/,
       "parameter warning received for missing itemnumbernumber";
-
 };
 
 subtest '_FixOverduesOnReturn' => sub {
