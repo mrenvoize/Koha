@@ -1531,8 +1531,7 @@ sub AddIssue {
                   );
 
                 if ($refund && $lostreturn_policy) {
-                    _FixAccountForLostAndFound( $item_object->itemnumber, undef,
-                        $item_object->barcode );
+                    _FixAccountForLostAndFound( $item_object->itemnumber );
 
                     if ( $lostreturn_policy eq 'charge' ) {
                         $actualissue //= Koha::Old::Checkouts->search(
@@ -1542,6 +1541,10 @@ sub AddIssue {
                                 rows     => 1
                             }
                         )->single;
+                        unless (exists($borrower->{branchcode})) {
+                            my $patron = $issue->patron;
+                            $borrower = $patron->unblessed;
+                        }
                         _CalculateAndUpdateFine(
                             {
                                 issue    => $actualissue,
@@ -1553,10 +1556,7 @@ sub AddIssue {
                             $item_object->itemnumber, undef, 'RENEWED' );
                     }
                     elsif ( $lostreturn_policy eq 'restore' ) {
-                        _RestoreOverdueForLostAndFound(
-                            $borrower->{'borrowernumber'},
-                            $item_object->itemnumber
-                        );
+                        _RestoreOverdueForLostAndFound( $item_object->itemnumber );
                     }
                 }
             }
@@ -2114,8 +2114,7 @@ sub AddReturn {
               );
 
             if ($refund && $lostreturn_policy) {
-                _FixAccountForLostAndFound( $item->itemnumber,
-                    $borrowernumber, $barcode );
+                _FixAccountForLostAndFound( $item->itemnumber );
                 $messages->{'LostItemFeeRefunded'} = 1;
 
                 if ( $lostreturn_policy eq 'charge' ) {
@@ -2123,6 +2122,10 @@ sub AddReturn {
                         { itemnumber => $item->itemnumber },
                         { order_by   => { '-desc' => 'returndate' }, rows => 1 }
                     )->single;
+                    unless (exists($patron_unblessed->{branchcode})) {
+                        my $patron = $issue->patron;
+                        $patron_unblessed = $patron->unblessed;
+                    }
                     _CalculateAndUpdateFine(
                         {
                             issue       => $issue,
@@ -2136,8 +2139,7 @@ sub AddReturn {
                     $messages->{'LostItemFeeCharged'} = 1;
                 }
                 elsif ( $lostreturn_policy eq 'restore' ) {
-                    _RestoreOverdueForLostAndFound( $borrowernumber,
-                        $item->itemnumber );
+                    _RestoreOverdueForLostAndFound( $item->itemnumber );
                     $messages->{'LostItemFeeRestored'} = 1;
                 }
             }
@@ -2663,9 +2665,7 @@ sub _FixAccountForLostAndFound {
 
 =head2 _RestoreOverdueForLostAndFound
 
-   &_RestoreOverdueForLostAndFound($borrowernumber, $itemnumber );
-
-C<$borrowernumber> borrowernumber
+   &_RestoreOverdueForLostAndFound( $itemnumber );
 
 C<$itemnumber> itemnumber
 
@@ -2674,12 +2674,8 @@ Internal function
 =cut
 
 sub _RestoreOverdueForLostAndFound {
-    my ( $borrowernumber, $item ) = @_;
+    my ( $item ) = @_;
 
-    unless( $borrowernumber ) {
-        warn "_RestoreOverdueForLostAndFound() not supplied valid borrowernumber";
-        return;
-    }
     unless( $item ) {
         warn "_RestoreOverdueForLostAndFound() not supplied valid itemnumber";
         return;
@@ -2692,7 +2688,6 @@ sub _RestoreOverdueForLostAndFound {
             # check for lost overdue fine
             my $accountlines = Koha::Account::Lines->search(
                 {
-                    borrowernumber  => $borrowernumber,
                     itemnumber      => $item,
                     debit_type_code => 'OVERDUE',
                     status          => 'LOST'
