@@ -25,6 +25,7 @@ use C4::Output;
 use C4::Auth qw/:DEFAULT get_session/;
 use C4::Koha;
 use Koha::BiblioFrameworks;
+use Koha::Cash::Registers;
 use Koha::Libraries;
 
 my $query = CGI->new();
@@ -41,11 +42,13 @@ my ( $template, $borrowernumber, $cookie, $flags ) = get_template_and_user({
 my $sessionID = $query->cookie("CGISESSID");
 my $session = get_session($sessionID);
 
-my $branch   = $query->param('branch' );
-my $userenv_branch  = C4::Context->userenv->{'branch'}        || '';
+my $branch              = $query->param('branch');
+my $register_id         = $query->param('register_id');
+my $userenv_branch      = C4::Context->userenv->{'branch'} || '';
+my $userenv_register_id = C4::Context->userenv->{'register_id'} || '';
 my @updated;
 
-# $session lddines here are doing the updating
+# $session lines here are doing the updating
 if ( $branch and my $library = Koha::Libraries->find($branch) ) {
     if (! $userenv_branch or $userenv_branch ne $branch ) {
         my $branchname = $library->branchname;
@@ -53,12 +56,25 @@ if ( $branch and my $library = Koha::Libraries->find($branch) ) {
         $template->param(LoginBranchcode => $branch);       # update template for new branch
         $session->param('branchname', $branchname);         # update sesssion in DB
         $session->param('branch', $branch);                 # update sesssion in DB
-        $session->flush();
         push @updated, {
             updated_branch => 1,
                 old_branch => $userenv_branch,
         };
     } # else branch the same, no update
+    if ( defined($userenv_register_id)
+        && ( $userenv_register_id ne $register_id ) )
+    {
+        my $register = Koha::Cash::Registers->find($register_id);
+        $template->param(LoginRegisterID   => $register_id);   # update template for new register
+        $template->param(LoginRegisterName   => $register ? $register->name : '');   # update template for new register
+        $session->param( 'register_id', $register_id );
+        push @updated,
+          {
+            updated_register => 1,
+            new_register     => $register ? $register->name : ''
+          };
+    }
+    $session->flush();
 } else {
     $branch = $userenv_branch;  # fallback value
 }
@@ -66,14 +82,16 @@ if ( $branch and my $library = Koha::Libraries->find($branch) ) {
 $template->param(updated => \@updated) if (scalar @updated);
 
 my @recycle_loop;
-foreach ($query->param()) {
-    $_ or next;                   # disclude blanks
-    $_ eq "branch"     and next;  # disclude branch
-    $_ eq "oldreferer" and next;  # disclude oldreferer
-    push @recycle_loop, {
+foreach ( $query->param() ) {
+    $_ or next;    # disclude blanks
+    $_ eq "branch"      and next;    # disclude branch
+    $_ eq "register_id" and next;    # disclude register
+    $_ eq "oldreferer"  and next;    # disclude oldreferer
+    push @recycle_loop,
+      {
         param => $_,
         value => scalar $query->param($_),
-    };
+      };
 }
 
 my $referer =  $query->param('oldreferer') || $ENV{HTTP_REFERER};

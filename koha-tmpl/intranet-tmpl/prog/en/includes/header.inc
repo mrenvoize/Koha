@@ -1,5 +1,6 @@
 [% USE raw %]
 [% USE Branches %]
+[% USE Registers %]
 [% USE Koha %]
 <nav class="navbar">
     <div class="navbar-header">
@@ -83,6 +84,17 @@
                             <strong>
                                 <span class="logged-in-branch-name">[% LoginBranchname | html %]</span>
                                 <span class="logged-in-branch-code content_hidden">[% Branches.GetLoggedInBranchcode | html %]</span>
+                            </strong>
+                        [% END %]
+                        [% IF Koha.Preference('UseCashRegisters') %]
+                            <span class="separator">|</span>
+                            <strong>
+                                [% IF ( Registers.session_register_name == '' ) %]
+                                    <span class="logged-in-desk-name">REGISTER NOT SET</span>
+                                [% ELSE %]
+                                    <span class="logged-in-desk-name">[% Registers.session_register_name | html %]</span>
+                                    <span class="logged-in-desk-id content_hidden">[% Registers.session_register | html %]</span>
+                                [% END %]
                             </strong>
                         [% END %]
                     </span>

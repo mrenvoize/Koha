@@ -8,6 +8,22 @@
     [% END %]
 [% END %]
 
+[% BLOCK options_for_registers %]
+    <!-- <option hidden disabled selected value> -- select an option -- </option> -->
+    <option id="noregister" value="">-- None --</option>
+    [% FOREACH r IN registers %]
+        [% IF r.branch == branch %]
+            [% IF r.selected %]
+                <option class="[% r.branch | html %] [% IF r.branch_default %]default[% END %]" value="[% r.id | html %]" selected="selected">[% r.name | html %]</option>
+            [% ELSE %]
+                <option class="[% r.branch | html %] [% IF r.branch_default %]default[% END %]" value="[% r.id | html %]">[% r.name | html %]</option>
+            [% END%]
+        [% ELSE %]
+            <option class="[% r.branch | html %] [% IF r.branch_default %]default[% END %]" value="[% r.id | html %]" disabled hidden>[% r.name | html %]</option>
+        [% END %]
+    [% END %]
+[% END %]
+
 [% BLOCK options_for_authorised_value_categories %]
     [% FOREACH avc IN authorised_value_categories %]
         [% IF avc.selected %]

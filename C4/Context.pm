@@ -807,7 +807,8 @@ sub userenv {
   C4::Context->set_userenv($usernum, $userid, $usercnum,
                            $userfirstname, $usersurname,
                            $userbranch, $branchname, $userflags,
-                           $emailaddress, $shibboleth);
+                           $emailaddress, $shibboleth,
+                           $register_id);
 
 Establish a hash of user environment variables.
 
@@ -818,8 +819,13 @@ set_userenv is called in Auth.pm
 #'
 sub set_userenv {
     shift @_;
-    my ($usernum, $userid, $usercnum, $userfirstname, $usersurname, $userbranch, $branchname, $userflags, $emailaddress, $shibboleth)=
-    map { Encode::is_utf8( $_ ) ? $_ : Encode::decode('UTF-8', $_) } # CGI::Session doesn't handle utf-8, so we decode it here
+    my (
+        $usernum,      $userid,     $usercnum,   $userfirstname,
+        $usersurname,  $userbranch, $branchname, $userflags,
+        $emailaddress, $shibboleth, $register_id
+      )
+      =
+      map { Encode::is_utf8($_) ? $_ : Encode::decode( 'UTF-8', $_ ) } # CGI::Session doesn't handle utf-8, so we decode it here
     @_;
     my $var=$context->{"activeuser"} || '';
     my $cell = {
@@ -828,12 +834,14 @@ sub set_userenv {
         "cardnumber" => $usercnum,
         "firstname"  => $userfirstname,
         "surname"    => $usersurname,
+
         #possibly a law problem
-        "branch"     => $userbranch,
-        "branchname" => $branchname,
-        "flags"      => $userflags,
-        "emailaddress"     => $emailaddress,
-        "shibboleth" => $shibboleth,
+        "branch"       => $userbranch,
+        "branchname"   => $branchname,
+        "flags"        => $userflags,
+        "emailaddress" => $emailaddress,
+        "shibboleth"   => $shibboleth,
+        "register_id"  => $register_id,
     };
     $context->{userenv}->{$var} = $cell;
     return $cell;
