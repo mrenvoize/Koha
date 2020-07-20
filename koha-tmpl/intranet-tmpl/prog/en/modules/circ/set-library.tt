@@ -73,7 +73,7 @@ Updated:<ul>
     [% END %]
     </ol>
 </fieldset>
-[% IF Desks.all %]
+ [% IF Koha.Preference('UseCirculationDesks') && Desks.all %]
 <fieldset class="rows">
     <legend>Set Desk</legend>
     <ol>
