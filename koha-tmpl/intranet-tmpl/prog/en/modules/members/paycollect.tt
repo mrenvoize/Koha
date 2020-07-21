@@ -2,11 +2,13 @@
 [% USE Asset %]
 [% USE Koha %]
 [% USE Branches %]
+[% USE Registers %]
 [% USE Price %]
 [% SET footerjs = 1 %]
 [% PROCESS 'payments.inc' %]
 [% PROCESS 'accounts.inc' %]
 [% INCLUDE 'doc-head-open.inc' %]
+[% SET registers = Registers.all( filters => { current_branch => 1 } ) %]
 <title>Koha &rsaquo; Patrons &rsaquo;
     [% IF type == 'WRITEOFF' %]
         Write off an amount for [% patron.firstname | html %] [% patron.surname | html %]
@@ -73,7 +75,7 @@
 [% END %]
 
 [% IF ( pay_individual ) %]
-    [% IF ( error_registers ) %]
+    [% IF Koha.Preference('UseCashRegisters') && ( registers.size == 0 ) %]
     <div id="error_message" class="dialog alert">
         You must have at least one cash register associated with this branch before you can record payments.
     </div>
@@ -135,15 +137,9 @@
 
     [% IF Koha.Preference('UseCashRegisters') %]
     <li>
-        <label for="cash_register">Cash register: </label>
-        <select name="cash_register" id="cash_register">
-            [% FOREACH register IN registers %]
-              [% IF register.id == registerid %]
-            <option value="[% register.id | html %]" selected="selected">[% register.name | html %]</option>
-              [% ELSE %]
-            <option value="[% register.id | html %]">[% register.name | html %]</option>
-              [% END %]
-            [% END %]
+        <label for="registerid">Cash register: </label>
+        <select name="registerid" id="registerid">
+            [% PROCESS options_for_registers register_required => 1 %]
         </select>
     </li>
     [% END %]
@@ -204,7 +200,7 @@
         </div>
     </form>
 [% ELSE %]
-    [% IF ( error_registers && type != 'writeoff' ) %]
+    [% IF Koha.Preference('UseCashRegisters') && ( registers.size == 0 ) && ( type != 'writeoff' ) %]
     <div id="error_message" class="dialog alert">
         You must have at least one cash register associated with this branch before you can record payments.
     </div>
@@ -256,15 +252,9 @@
 
     [% IF Koha.Preference('UseCashRegisters') %]
     <li>
-        <label for="cash_register">Cash register: </label>
-        <select name="cash_register" id="cash_register">
-            [% FOREACH register IN registers %]
-              [% IF register.id == registerid %]
-            <option value="[% register.id | html %]" selected="selected">[% register.name | html %]</option>
-              [% ELSE %]
-            <option value="[% register.id | html %]">[% register.name | html %]</option>
-              [% END %]
-            [% END %]
+        <label for="registerid">Cash register: </label>
+        <select name="registerid" id="registerid">
+            [% PROCESS options_for_registers register_required => 1 %]
         </select>
     </li>
     [% END %]

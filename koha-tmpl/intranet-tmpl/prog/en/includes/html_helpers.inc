@@ -12,7 +12,7 @@
     <!-- <option hidden disabled selected value> -- select an option -- </option> -->
     <option id="noregister"[% IF register_required %] disabled selected [% END %] value="">-- None --</option>
     [% FOREACH r IN registers %]
-        [% IF r.branch == branch %]
+        [% IF r.branch == Branches.GetLoggedInBranchcode %]
             [% IF r.selected %]
                 <option class="[% r.branch | html %] [% IF r.branch_default %]default[% END %]" value="[% r.id | html %]" selected="selected">[% r.name | html %]</option>
             [% ELSE %]
