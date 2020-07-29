@@ -1,0 +1,66 @@
+{
+  "type": "object",
+  "properties": {
+    "smtp_server_id": {
+      "type": "integer",
+      "description": "Internal SMTP server identifier"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the SMTP server"
+    },
+    "library_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Internal identifier for the library using it. null means global"
+    },
+    "host": {
+      "type": "string",
+      "description": "SMTP host name"
+    },
+    "port": {
+      "type": "integer",
+      "description": "TCP port number"
+    },
+    "timeout": {
+      "type": "integer",
+      "description": "Maximum time in seconds to wait for server"
+    },
+    "ssl_mode": {
+      "type": "string",
+      "enum": [
+        "disabled",
+        "ssl",
+        "starttls"
+      ],
+      "description": "If SSL/TLS will be used"
+    },
+    "user_name": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The user name to use for authentication (optional)"
+    },
+    "password": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "The password to use for authentication (optional)"
+    },
+    "debug": {
+      "type": "boolean",
+      "description": "If the SMTP connection is set to debug mode"
+    },
+    "library": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "description": "Embedded library object (x-koha-embed)"
+    }
+  }
+}
