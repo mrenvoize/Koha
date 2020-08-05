@@ -17,7 +17,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 use Test::Exception;
 use Test::Warn;
 
@@ -115,6 +115,33 @@ subtest 'store() tests' => sub {
     $default_server->discard_changes;
 
     is( $default_server->name, 'New name', 'Default server updated correctly' );
+
+    $schema->storage->txn_rollback;
+};
+
+subtest 'transport() tests' => sub {
+
+    plan tests => 4;
+
+    $schema->storage->txn_begin;
+
+    my $server = $builder->build_object(
+        {
+            class => 'Koha::SMTP::Servers',
+            value => { ssl_mode => 'disabled' }
+        }
+    );
+
+    my $transport = $server->transport;
+
+    is( ref($transport), 'Email::Sender::Transport::SMTP', 'Type is correct' );
+    is( $transport->ssl, 0, 'SSL is not set' );
+
+    $server->set({ ssl_mode => 'ssl' })->store;
+    $transport = $server->transport;
+
+    is( ref($transport), 'Email::Sender::Transport::SMTP', 'Type is correct' );
+    is( $transport->ssl, 'ssl', 'SSL is set' );
 
     $schema->storage->txn_rollback;
 };

@@ -21,6 +21,8 @@ use Koha::Database;
 use Koha::Exceptions::Object;
 use Koha::SMTP::Servers;
 
+use Email::Sender::Transport::SMTP;
+
 use base qw(Koha::Object);
 
 =head1 NAME
@@ -98,6 +100,42 @@ sub library {
     my $library_rs = $self->_result->library;
     return unless $library_rs;
     return Koha::Library->_new_from_dbic($self->_result->library);
+}
+
+=head3 transport
+
+    my $transport = $smtp_server->transport;
+    sendmail( $message, { transport => $transport } );
+
+Returns an I<Email::Sender::Transport::SMTP> object that can be used directly
+with Email::Sender.
+
+=cut
+
+sub transport {
+    my ($self) = @_;
+
+    my $params = {
+        host => $self->host,
+        port => $self->port,
+    };
+
+    $params->{ssl} = $self->ssl_mode
+        unless $self->ssl_mode eq 'disabled';
+
+    $params->{timeout} = $self->timeout
+        if $self->timeout;
+
+    $params->{sasl_username} = $self->user_name
+        if $self->user_name;
+
+    $params->{sasl_password} = $self->password
+        if $self->password;
+
+
+    my $transport = Email::Sender::Transport::SMTP->new( $params );
+
+    return $transport;
 }
 
 =head3 to_api_mapping
