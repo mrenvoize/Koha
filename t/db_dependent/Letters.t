@@ -24,13 +24,14 @@ use Test::Warn;
 
 use MARC::Record;
 
-my %mail;
-my $module = new Test::MockModule('Mail::Sendmail');
-$module->mock(
+my ( $email_object, $sendmail_params );
+
+my $email_sender_module = Test::MockModule->new('Email::Sender::Simple');
+$email_sender_module->mock(
     'sendmail',
     sub {
+        ( $email_object, $sendmail_params ) = @_;
         warn "Fake sendmail";
-        %mail = @_;
     }
 );
 
@@ -444,8 +445,8 @@ warning_is {
     "Fake sendmail",
     "SendAlerts is using the mocked sendmail routine (orderacquisition)";
 is($err, 1, "Successfully sent order.");
-is($mail{'To'}, 'testemail@mydomain.com', "mailto correct in sent order");
-is($mail{'Message'}, 'my vendor|John Smith|Ordernumber ' . $ordernumber . ' (Silence in the library) (1 ordered)', 'Order notice text constructed successfully');
+is($email_object->email->header('To'), 'testemail@mydomain.com', "mailto correct in sent order");
+is($email_object->email->body, 'my vendor|John Smith|Ordernumber ' . $ordernumber . ' (Silence in the library) (1 ordered)', 'Order notice text constructed successfully');
 
 $dbh->do(q{DELETE FROM letter WHERE code = 'TESTACQORDER';});
 warning_like {
@@ -462,8 +463,8 @@ warning_is {
     "SendAlerts is using the mocked sendmail routine";
 
 is($err, 1, "Successfully sent claim");
-is($mail{'To'}, 'testemail@mydomain.com', "mailto correct in sent claim");
-is($mail{'Message'}, 'my vendor|John Smith|Ordernumber ' . $ordernumber . ' (Silence in the library) (1 ordered)', 'Claim notice text constructed successfully');
+is($email_object->email->header('To'), 'testemail@mydomain.com', "mailto correct in sent claim");
+is($email_object->email->body, 'my vendor|John Smith|Ordernumber ' . $ordernumber . ' (Silence in the library) (1 ordered)', 'Claim notice text constructed successfully');
 }
 
 {
@@ -496,14 +497,16 @@ my $borrowernumber = $patron->borrowernumber;
 my $subscription = Koha::Subscriptions->find( $subscriptionid );
 $subscription->add_subscriber( $patron );
 
+t::lib::Mocks::mock_userenv({ branch => $library->{branchcode} });
 my $err2;
 warning_is {
 $err2 = SendAlerts( 'issue', $serial->{serialid}, 'RLIST' ) }
     "Fake sendmail",
     "SendAlerts is using the mocked sendmail routine";
+
 is($err2, 1, "Successfully sent serial notification");
-is($mail{'To'}, 'john.smith@test.de', "mailto correct in sent serial notification");
-is($mail{'Message'}, 'Silence in the library,'.$subscriptionid.',No. 0', 'Serial notification text constructed successfully');
+is($email_object->email->header('To'), 'john.smith@test.de', "mailto correct in sent serial notification");
+is($email_object->email->body, 'Silence in the library,'.$subscriptionid.',No. 0', 'Serial notification text constructed successfully');
 
 t::lib::Mocks::mock_preference( 'SendAllEmailsTo', 'robert.tables@mail.com' );
 
@@ -512,12 +515,12 @@ warning_is {
 $err3 = SendAlerts( 'issue', $serial->{serialid}, 'RLIST' ) }
     "Fake sendmail",
     "SendAlerts is using the mocked sendmail routine";
-is($mail{'To'}, 'robert.tables@mail.com', "mailto address overwritten by SendAllMailsTo preference");
+is($email_object->email->header('To'), 'robert.tables@mail.com', "mailto address overwritten by SendAllMailsTo preference");
 }
 t::lib::Mocks::mock_preference( 'SendAllEmailsTo', '' );
 
 subtest 'SendAlerts - claimissue' => sub {
-    plan tests => 8;
+    plan tests => 9;
 
     use C4::Serials;
 
@@ -585,9 +588,14 @@ subtest 'SendAlerts - claimissue' => sub {
         $err = SendAlerts( 'claimissues', \@serialids , 'TESTSERIALCLAIM' ) }
         "Fake sendmail",
         "SendAlerts is using the mocked sendmail routine (claimissues)";
-    is($err, 1, "Successfully sent claim");
-    is($mail{'To'}, 'testemail@mydomain.com', "mailto correct in sent claim");
-    is($mail{'Message'}, "$serialids[0]|2013-01-01|Silence in the library|xxxx-yyyy", 'Serial claim letter for 1 issue constructed successfully');
+    is( $err, 1, "Successfully sent claim" );
+    is( $email_object->email->header('To'),
+        'testemail@mydomain.com', "mailto correct in sent claim" );
+    is(
+        $email_object->email->body,
+        "$serialids[0]|2013-01-01|Silence in the library|xxxx-yyyy",
+        'Serial claim letter for 1 issue constructed successfully'
+    );
     }
 
     {
@@ -597,8 +605,17 @@ subtest 'SendAlerts - claimissue' => sub {
     ($serials_count, @serials) = GetSerials($subscriptionid);
     push @serialids, ($serials[1]->{serialid});
 
-    $err = SendAlerts( 'claimissues', \@serialids , 'TESTSERIALCLAIM' );
-    is($mail{'Message'}, "$serialids[0]|2013-01-01|Silence in the library|xxxx-yyyy\n$serialids[1]|2013-01-01|Silence in the library|xxxx-yyyy", "Serial claim letter for 2 issues constructed successfully");
+    warning_is { $err = SendAlerts( 'claimissues', \@serialids, 'TESTSERIALCLAIM' ); }
+        "Fake sendmail",
+        "SendAlerts is using the mocked sendmail routine (claimissues)";
+
+    is(
+        $email_object->email->body,
+        "$serialids[0]|2013-01-01|Silence in the library|xxxx-yyyy"
+          . $email_object->email->crlf
+          . "$serialids[1]|2013-01-01|Silence in the library|xxxx-yyyy",
+        "Serial claim letter for 2 issues constructed successfully"
+    );
 
     $dbh->do(q{DELETE FROM letter WHERE code = 'TESTSERIALCLAIM';});
     warning_like {
@@ -718,7 +735,7 @@ subtest 'TranslateNotices' => sub {
 
 subtest 'SendQueuedMessages' => sub {
 
-    plan tests => 6;
+    plan tests => 9;
 
     t::lib::Mocks::mock_preference( 'SMSSendDriver', 'Email' );
     t::lib::Mocks::mock_preference('EmailSMSSendDriverFromAddress', '');
@@ -735,7 +752,10 @@ subtest 'SendQueuedMessages' => sub {
     my $sms_pro = $builder->build_object({ class => 'Koha::SMS::Providers', value => { domain => 'kidclamp.rocks' } });
     $patron->set( { smsalertnumber => '5555555555', sms_provider_id => $sms_pro->id() } )->store;
     $message_id = C4::Letters::EnqueueLetter($my_message); #using datas set around line 95 and forward
-    C4::Letters::SendQueuedMessages();
+
+    warning_is { C4::Letters::SendQueuedMessages(); }
+        "Fake sendmail",
+        "SendAlerts is using the mocked sendmail routine (claimissues)";
 
     my $message = $schema->resultset('MessageQueue')->search({
         borrowernumber => $borrowernumber,
@@ -754,7 +774,9 @@ subtest 'SendQueuedMessages' => sub {
     t::lib::Mocks::mock_preference('EmailSMSSendDriverFromAddress', 'override@example.com');
 
     $message_id = C4::Letters::EnqueueLetter($my_message);
-    C4::Letters::SendQueuedMessages();
+    warning_is { C4::Letters::SendQueuedMessages(); }
+        "Fake sendmail",
+        "SendAlerts is using the mocked sendmail routine (claimissues)";
 
     $message = $schema->resultset('MessageQueue')->search({
         borrowernumber => $borrowernumber,
@@ -777,7 +799,10 @@ subtest 'SendQueuedMessages' => sub {
     });
     is ( $number_attempted, 0, 'There were no password reset messages for SendQueuedMessages to attempt.' );
 
-    C4::Letters::SendQueuedMessages();
+    warning_is { C4::Letters::SendQueuedMessages(); }
+        "Fake sendmail",
+        "SendAlerts is using the mocked sendmail routine (claimissues)";
+
     my $sms_message_address = $schema->resultset('MessageQueue')->search({
         borrowernumber => $borrowernumber,
         status => 'sent'
