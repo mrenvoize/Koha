@@ -21,8 +21,8 @@ use Modern::Perl;
 
 use Clone 'clone';
 use File::Basename qw( basename );
+use Email::Sender::Simple qw(sendmail);
 use Encode qw( encode );
-use Mail::Sendmail;
 use Try::Tiny;
 use DateTime;
 
@@ -40,6 +40,8 @@ use Koha::Biblios;
 use Koha::Items;
 use Koha::ItemTypes;
 use Koha::Libraries;
+use Koha::SMTP::Server;
+
 use C4::Circulation qw( CanBookBeIssued AddIssue  );
 
 use base qw(Koha::Object);
@@ -1284,7 +1286,7 @@ attempts to submit the email.
 
 sub generic_confirm {
     my ( $self, $params ) = @_;
-    my $branch = Koha::Libraries->find($params->{current_branchcode})
+    my $library = Koha::Libraries->find($params->{current_branchcode})
         || die "Invalid current branchcode. Are you logged in as the database user?";
     if ( !$params->{stage}|| $params->{stage} eq 'init' ) {
         my $draft->{subject} = "ILL Request";
@@ -1309,7 +1311,7 @@ Kind Regards
 
 EOF
 
-        my @address = map { $branch->$_ }
+        my @address = map { $library->$_ }
             qw/ branchname branchaddress1 branchaddress2 branchaddress3
                 branchzip branchcity branchstate branchcountry branchphone
                 branchemail /;
@@ -1346,27 +1348,29 @@ EOF
             "No target email addresses found. Either select at least one partner or check your ILL partner library records.")
           if ( !$to );
         # Create the from, replyto and sender headers
-        my $from = $branch->branchemail;
-        my $replyto = $branch->branchreplyto || $from;
+        my $from = $library->branchemail;
+        my $replyto = $library->branchreplyto || $from;
         Koha::Exceptions::Ill::NoLibraryEmail->throw(
             "Your library has no usable email address. Please set it.")
           if ( !$from );
 
         # Create the email
-        my $message = Koha::Email->new;
-        my %mail = $message->create_message_headers(
+        my $email = Koha::Email->create(
             {
                 to          => $to,
                 from        => $from,
                 replyto     => $replyto,
                 subject     => Encode::encode( "utf8", $params->{subject} ),
-                message     => Encode::encode( "utf8", $params->{body} ),
-                contenttype => 'text/plain',
+                text_body   => Encode::encode( "utf8", $params->{body} ),
             }
         );
+
         # Send it
-        my $result = sendmail(%mail);
-        if ( $result ) {
+        try {
+
+            my $smtp_server = Koha::SMTP::Servers->get_effective_server({ library => $library });
+            Email::Sender::Simple::sendmail( $email, { transport => $smtp_server->transport } );
+
             $self->status("GENREQ")->store;
             $self->_backend_capability(
                 'set_requested_partners',
@@ -1383,15 +1387,16 @@ EOF
                 stage   => 'commit',
                 next    => 'illview',
             };
-        } else {
+        }
+        catch {
             return {
                 error   => 1,
                 status  => 'email_failed',
-                message => $Mail::Sendmail::error,
+                message => "$_",
                 method  => 'generic_confirm',
                 stage   => 'draft',
             };
-        }
+        };
     } else {
         die "Unknown stage, should not have happened."
     }
