@@ -136,7 +136,7 @@ subtest 'store' => sub {
     };
 
     subtest '_lost_found_trigger' => sub {
-        plan tests => 6;
+        plan tests => 7;
 
         t::lib::Mocks::mock_preference( 'WhenLostChargeReplacementFee', 1 );
         t::lib::Mocks::mock_preference( 'WhenLostForgiveFine',          0 );
@@ -757,6 +757,52 @@ subtest 'store' => sub {
             $item->itemlost(0)->store;
             is( $item->{_refunded}, undef, 'No refund triggered' );
 
+        };
+
+        subtest 'Continue when userenv is not set' => sub {
+            plan tests => 1;
+
+            my $patron = $builder->build_object( { class => 'Koha::Patrons' } );
+            my $barcode            = 'KD123456795';
+            my $replacement_amount = 100;
+            my $processfee_amount  = 20;
+
+            my $item_type = $builder->build_object(
+                {
+                    class => 'Koha::ItemTypes',
+                    value => {
+                        notforloan         => undef,
+                        rentalcharge       => 0,
+                        defaultreplacecost => undef,
+                        processfee         => 0,
+                        rentalcharge_daily => 0,
+                    }
+                }
+            );
+            my $item = Koha::Item->new(
+                {
+                    biblionumber     => $biblio->biblionumber,
+                    homebranch       => $library->branchcode,
+                    holdingbranch    => $library->branchcode,
+                    barcode          => $barcode,
+                    replacementprice => $replacement_amount,
+                    itype            => $item_type->itemtype
+                },
+            )->store;
+
+            my $issue =
+              C4::Circulation::AddIssue( $patron->unblessed, $barcode );
+
+            # Simulate item marked as lost
+            $item->itemlost(1)->store;
+            C4::Circulation::LostItem( $item->itemnumber, 1 );
+
+            # Unset the userenv
+            C4::Context->_unset_userenv;
+
+            # Simluate item marked as found
+            $item->itemlost(0)->store;
+            is( $item->{_refunded}, 1, 'No refund triggered' );
         };
     };
 };
