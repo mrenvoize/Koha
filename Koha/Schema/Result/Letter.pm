@@ -84,6 +84,13 @@ __PACKAGE__->table("letter");
   is_nullable: 0
   size: 25
 
+=head2 updated_on
+
+  data_type: 'timestamp'
+  datetime_undef_if_invalid: 1
+  default_value: current_timestamp
+  is_nullable: 0
+
 =cut
 
 __PACKAGE__->add_columns(
@@ -115,6 +122,13 @@ __PACKAGE__->add_columns(
     default_value => "default",
     is_nullable => 0,
     size => 25,
+  },
+  "updated_on",
+  {
+    data_type => "timestamp",
+    datetime_undef_if_invalid => 1,
+    default_value => \"current_timestamp",
+    is_nullable => 0,
   },
 );
 
@@ -156,8 +170,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07042 @ 2018-02-16 17:54:54
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:fOuu1Fj8Uo3114QKS2qLkQ
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2020-08-27 10:22:10
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:XF69FM71/ZzFf7sFWLZoNw
 
 sub koha_object_class {
     'Koha::Notice::Template';
