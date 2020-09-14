@@ -52,6 +52,11 @@ __PACKAGE__->table("old_reserves");
   is_nullable: 1
   size: 10
 
+=head2 desk_id
+
+  data_type: 'integer'
+  is_nullable: 1
+
 =head2 notificationdate
 
   data_type: 'date'
@@ -169,6 +174,8 @@ __PACKAGE__->add_columns(
   { data_type => "integer", is_foreign_key => 1, is_nullable => 1 },
   "branchcode",
   { data_type => "varchar", is_nullable => 1, size => 10 },
+  "desk_id",
+  { data_type => "integer", is_nullable => 1 },
   "notificationdate",
   { data_type => "date", datetime_undef_if_invalid => 1, is_nullable => 1 },
   "reminderdate",
@@ -314,8 +321,8 @@ __PACKAGE__->belongs_to(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-08-31 14:16:48
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:DnOerXRIsIGIRKl9I0HZUQ
+# Created by DBIx::Class::Schema::Loader v0.07042 @ 2020-09-14 18:41:21
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:27y0XaLBE4Jgf2sDxKdBIA
 
 __PACKAGE__->add_columns(
     '+item_level_hold' => { is_boolean => 1 },
