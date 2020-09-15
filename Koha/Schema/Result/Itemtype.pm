@@ -287,8 +287,8 @@ __PACKAGE__->has_many(
 );
 
 
-# Created by DBIx::Class::Schema::Loader v0.07049 @ 2020-08-13 08:14:04
-# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:5RxmTmtrwJJhTZMur1N05A
+# Created by DBIx::Class::Schema::Loader v0.07046 @ 2020-09-15 12:57:34
+# DO NOT MODIFY THIS OR ANYTHING ABOVE! md5sum:O84ysCK4b2As5mavqn4oeA
 
 __PACKAGE__->add_columns(
     '+rentalcharge_hourly_calendar' => { is_boolean => 1 },
@@ -309,7 +309,7 @@ sub insert {
 
     my $result = $self->next::method(@_);
 
-    $self->update_l10n_source('itemtype', $self->itemtype, $self->description);
+    $self->update_l10n_source( 'itemtype', $self->itemtype, $self->description );
 
     return $result;
 }
@@ -319,11 +319,11 @@ sub update {
 
     my $is_description_changed = $self->is_column_changed('description');
 
-    my $result = $self->next::method(@_);
-
     if ($is_description_changed) {
-        $self->update_l10n_source('itemtype', $self->itemtype, $self->description);
+        $self->update_l10n_source( 'itemtype', $self->itemtype, $self->description );
     }
+
+    my $result = $self->next::method(@_);
 
     return $result;
 }
@@ -331,9 +331,9 @@ sub update {
 sub delete {
     my $self = shift;
 
-    my $result = $self->next::method(@_);
+    $self->delete_l10n_source( 'itemtype', $self->itemtype );
 
-    $self->delete_l10n_source('itemtype', $self->itemtype);
+    my $result = $self->next::method(@_);
 
     return $result;
 }

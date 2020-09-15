@@ -535,7 +535,7 @@ sub getRecords {
                                     && ref( $itemtypes->{$one_facet} ) eq
                                     "HASH" )
                                 {
-                                    $facet_label_value = db_t('itemtype', $itemtypes->{$one_facet}->{description});
+                                    $facet_label_value = db_t('itemtype', $itemtypes->{$one_facet}->{itemtype});
                                 }
                             }
 
@@ -1795,7 +1795,7 @@ sub searchResults {
         # add imageurl to itemtype if there is one
         $oldbiblio->{imageurl} = $itemtype ? getitemtypeimagelocation( $search_context->{'interface'}, $itemtype->{imageurl} ) : q{};
         # Build summary if there is one (the summary is defined in the itemtypes table)
-        $oldbiblio->{description} = $itemtype ? db_t('itemtype', $itemtype->{description}) : q{};
+        $oldbiblio->{description} = $itemtype ? db_t('itemtype', $itemtype->{itemtype}) : q{};
 
         # FIXME: this is only used in the deprecated non-XLST opac results
         if ( !$xslfile && $is_opac && $itemtype && $itemtype->{summary} ) {
@@ -1904,7 +1904,7 @@ sub searchResults {
             foreach my $code ( keys %subfieldstosearch ) {
                 $item->{$code} = $field->subfield( $subfieldstosearch{$code} );
             }
-            $item->{description} = db_t('itemtype', $itemtypes{ $item->{itype} }{description}) if $item->{itype};
+            $item->{description} = db_t('itemtype', $itemtypes{ $item->{itype} }{itemtype}) if $item->{itype};
 
 	        # OPAC hidden items
             if ($is_opac) {

@@ -259,7 +259,7 @@ my @itemtypes;
 foreach my $itemtype ( Koha::ItemTypes->search ) {
     push @itemtypes, {
         value => $itemtype->itemtype,
-        label => db_t('itemtype', $itemtype->description),
+        label => db_t('itemtype', $itemtype->itemtype),
     };
 }
 
