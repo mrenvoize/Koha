@@ -1,6 +1,6 @@
 
 INSERT INTO auth_tag_structure  (authtypecode, tagfield, mandatory, repeatable, liblibrarian, libopac, authorised_value) VALUES
- ('CHRON_TERM', '090', '', 1, 'LOCAL CALL NUMBER (SERIES) [OBSOLETE]; LOCALLY ASSIGNED LC-TYPE CALL NUMBER (OCLC); LOCAL CALL NUMBER (RLIN)', 'LOCAL CALL NUMBER (SERIES) [OBSOLETE]; LOCALLY ASSIGNED LC-TYPE CALL NUMBER (OCLC); LOCAL CALL NUMBER (RLIN)', NULL);
+ ('CHRON_TERM', '090', 0, 1, 'LOCAL CALL NUMBER (SERIES) [OBSOLETE]; LOCALLY ASSIGNED LC-TYPE CALL NUMBER (OCLC); LOCAL CALL NUMBER (RLIN)', 'LOCAL CALL NUMBER (SERIES) [OBSOLETE]; LOCALLY ASSIGNED LC-TYPE CALL NUMBER (OCLC); LOCAL CALL NUMBER (RLIN)', NULL);
 INSERT INTO  auth_subfield_structure (frameworkcode, authtypecode, tagfield, tagsubfield, mandatory, repeatable, liblibrarian, libopac, tab, hidden, kohafield, authorised_value, value_builder, isurl, seealso, linkid) VALUES
  ('', 'CHRON_TERM', '090', '2', 0, 0, 'Number source', 'Number source', 0, 0, '', NULL, NULL, 0, NULL, 0),
  ('', 'CHRON_TERM', '090', '5', 0, 1, 'Institution to which field applies', 'Institution to which field applies', 0, 0, '', NULL, NULL, 0, NULL, 0),
@@ -22,7 +22,7 @@ INSERT INTO  auth_subfield_structure (frameworkcode, authtypecode, tagfield, tag
  ('', 'CHRON_TERM', '090', 'z', 0, 1, 'Cancelled/invalid call number', 'Cancelled/invalid call number', 0, 0, '', NULL, NULL, 0, NULL, 0);
 
 INSERT INTO auth_tag_structure  (authtypecode, tagfield, mandatory, repeatable, liblibrarian, libopac, authorised_value) VALUES
- ('CHRON_TERM', '099', '', 1, 'LOCAL FREE-TEXT CALL NUMBER (OCLC)', 'LOCAL FREE-TEXT CALL NUMBER (OCLC)', NULL);
+ ('CHRON_TERM', '099', 0, 1, 'LOCAL FREE-TEXT CALL NUMBER (OCLC)', 'LOCAL FREE-TEXT CALL NUMBER (OCLC)', NULL);
 INSERT INTO  auth_subfield_structure (frameworkcode, authtypecode, tagfield, tagsubfield, mandatory, repeatable, liblibrarian, libopac, tab, hidden, kohafield, authorised_value, value_builder, isurl, seealso, linkid) VALUES
  ('', 'CHRON_TERM', '099', '2', 0, 0, 'Edition number', 'Edition number', 0, 0, '', NULL, NULL, 0, NULL, 0),
  ('', 'CHRON_TERM', '099', '5', 0, 1, 'Institution to which field applies', 'Institution to which field applies', 0, 0, '', NULL, NULL, 0, NULL, 0),
@@ -37,7 +37,7 @@ INSERT INTO  auth_subfield_structure (frameworkcode, authtypecode, tagfield, tag
  ('', 'CHRON_TERM', '880', '9', 0, 1, 9, 9,                             8, 0, '', NULL, NULL, 0, NULL, 0);
 
 INSERT INTO auth_tag_structure  (authtypecode, tagfield, mandatory, repeatable, liblibrarian, libopac, authorised_value) VALUES
- ('CHRON_TERM', '942', 1, '', 'KOHA INTERNAL USE', 'KOHA INTERNAL USE', NULL);
+ ('CHRON_TERM', '942', 1, 0, 'KOHA INTERNAL USE', 'KOHA INTERNAL USE', NULL);
 INSERT INTO  auth_subfield_structure (frameworkcode, authtypecode, tagfield, tagsubfield, mandatory, repeatable, liblibrarian, libopac, tab, hidden, kohafield, authorised_value, value_builder, isurl, seealso, linkid) VALUES
  ('', 'CHRON_TERM', '942', 'a', 1, 0, 'Koha auth type', 'Koha auth type', 9, 8, 'auth_header.authtypecode', NULL, NULL, 0, NULL, 0);
 
