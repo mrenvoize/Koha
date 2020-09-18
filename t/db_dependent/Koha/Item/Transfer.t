@@ -113,7 +113,7 @@ subtest 'transit tests' => sub {
     $schema->storage->txn_rollback;
 };
 
-subtest 'receipt tests' => sub {
+subtest 'receive tests' => sub {
     plan tests => 5;
 
     $schema->storage->txn_begin;
@@ -153,7 +153,7 @@ subtest 'receipt tests' => sub {
     );
     is( ref($checkout), 'Koha::Checkout', 'Mock checkout added' );
 
-    throws_ok { $transfer->receipt() }
+    throws_ok { $transfer->receive() }
     'Koha::Exceptions::Item::Transfer::Out',
       'Exception thrown if item is checked out';
 
@@ -161,7 +161,7 @@ subtest 'receipt tests' => sub {
 
     # Transit state set
     $transfer->discard_changes;
-    $transfer->receipt();
+    $transfer->receive();
     ok( $transfer->datearrived, 'Receipt set the datearrived for the transfer' );
 
     # Last seen
