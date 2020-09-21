@@ -464,10 +464,14 @@ if it exists, otherwise the oldest unsatisfied transfer will be returned.
 sub get_transfer {
     my ($self) = @_;
     my $transfer_rs = $self->_result->branchtransfers->search(
-        { datearrived => undef },
         {
-            order_by => [ { -desc => 'datesent' }, { -asc => 'daterequested' } ],
-            rows     => 1
+            datearrived   => undef,
+            datecancelled => undef
+        },
+        {
+            order_by =>
+              [ { -desc => 'datesent' }, { -asc => 'daterequested' } ],
+            rows => 1
         }
     )->first;
     return unless $transfer_rs;
