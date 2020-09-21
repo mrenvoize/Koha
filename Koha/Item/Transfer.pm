@@ -116,6 +116,24 @@ sub receive {
     return $self;
 }
 
+=head3 cancel
+
+Cancel the transfer by setting the datecancelled time.
+
+=cut
+
+sub cancel {
+    my ($self) = @_;
+
+    # Throw exception if item is in transit already
+    Koha::Exceptions::Item::Transfer::Transit->throw() if ( $self->in_transit );
+
+    # Update the cancelled date
+    $self->set( { datecancelled => dt_from_string } )->store;
+
+    return $self;
+}
+
 =head3 type
 
 =cut
