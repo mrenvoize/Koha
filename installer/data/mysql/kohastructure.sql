@@ -934,9 +934,11 @@ CREATE TABLE `branchtransfers` ( -- information for items that are in transit be
   `datesent` datetime default NULL, -- the date the transfer was initialized
   `frombranch` varchar(10) NOT NULL default '', -- the branch the transfer is coming from
   `datearrived` datetime default NULL, -- the date the transfer arrived at its destination
+  `datecancelled` datetime default NULL, -- the date the transfer was cancelled
   `tobranch` varchar(10) NOT NULL default '', -- the branch the transfer was going to
   `comments` LONGTEXT, -- any comments related to the transfer
   `reason` ENUM('Manual', 'StockrotationAdvance', 'StockrotationRepatriation', 'ReturnToHome', 'ReturnToHolding', 'RotatingCollection', 'Reserve', 'LostReserve', 'CancelReserve'), -- what triggered the transfer
+  `cancellation_reason` ENUM('Manual', 'StockrotationAdvance', 'StockrotationRepatriation', 'ReturnToHome', 'ReturnToHolding', 'RotatingCollection', 'Reserve', 'LostReserve', 'CancelReserve') default NULL, -- what triggered the transfer cancellation
   PRIMARY KEY (`branchtransfer_id`),
   KEY `frombranch` (`frombranch`),
   KEY `tobranch` (`tobranch`),
