@@ -1,7 +1,6 @@
 [% USE Koha %]
 [% SET hold_cancellation = AuthorisedValues.GetAuthValueDropbox('HOLD_CANCELLATION') %]
 [% USE AuthorisedValues %]
-[% USE Desks %]
 <table>
     <tr>
         [% IF ( CAN_user_reserveforothers_modify_holds_priority ) %]
