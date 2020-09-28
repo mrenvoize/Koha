@@ -23,6 +23,7 @@ use C4::Koha;
 use C4::Languages;
 use Koha::Database;
 use Koha::CirculationRules;
+use Koha::I18N;
 
 use base qw(Koha::Object Koha::Object::Limit::Library);
 
@@ -35,6 +36,19 @@ Koha::ItemType - Koha Item type Object class
 =head2 Class methods
 
 =cut
+
+=head3 translation_description
+
+  my $translated_description = Koha::ItemType->translated_description;
+
+Returns a localized string for the Koha::ItemType description field.
+
+=cut
+
+sub translated_description {
+    my ( $self ) = @_;
+    return dt_t('itemtype', $self->itemtype);
+}
 
 =head3 image_location
 

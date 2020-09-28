@@ -206,7 +206,7 @@ sub generate_subfield_form {
                   }
                   while ( my $itemtype = $itemtypes->next ) {
                       push @authorised_values, $itemtype->itemtype;
-                      $authorised_lib{$itemtype->itemtype} = db_t('itemtype', $itemtype->itemtype);
+                      $authorised_lib{$itemtype->itemtype} = $itemtype->translated_description;
                   }
 
                   unless ( $value ) {

@@ -498,7 +498,7 @@ foreach my $tag (sort keys %{$tagslib}) {
         my $itemtypes = Koha::ItemTypes->search;
         while ( my $itemtype = $itemtypes->next ) {
             push @authorised_values, $itemtype->itemtype;
-            $authorised_lib{$itemtype->itemtype} = db_t('itemtype', $itemtype->itemtype);
+            $authorised_lib{$itemtype->itemtype} = $itemtype->translated_description;
         }
         $value = "";
 

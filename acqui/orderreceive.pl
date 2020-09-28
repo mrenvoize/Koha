@@ -154,7 +154,7 @@ if ($AcqCreateItem eq 'receiving') {
         my $itemtype = Koha::ItemTypes->find($i->effective_itemtype);
         if (defined $itemtype) {
             # We should not do that here, but call ->itemtype->description when needed instead
-            $item->{itemtype} = db_t('itemtype', $itemtype->itemtype);
+            $item->{itemtype} = $itemtype->translated_description;
         }
         push @items, $item;
     }
