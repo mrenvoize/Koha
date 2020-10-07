@@ -3387,6 +3387,8 @@ sub GetTransfersFromTo {
         FROM   branchtransfers
         WHERE  frombranch=?
           AND  tobranch=?
+          AND datecancelled IS NULL
+          AND datesent IS NOT NULL
           AND datearrived IS NULL
     ";
     my $sth = $dbh->prepare($query);
