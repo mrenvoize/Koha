@@ -3383,6 +3383,7 @@ sub GetTransfers {
         FROM branchtransfers
         WHERE itemnumber = ?
           AND datearrived IS NULL
+          AND datecancelled IS NULL
         ';
     my $sth = $dbh->prepare($query);
     $sth->execute($itemnumber);
