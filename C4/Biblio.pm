@@ -299,7 +299,7 @@ sub AddBiblio {
         });
     } catch {
         warn $_;
-        return (undef, undef);
+        ( $biblionumber, $biblioitemnumber ) = ( undef, undef );
     };
     return ( $biblionumber, $biblioitemnumber );
 }

@@ -49,7 +49,6 @@ subtest 'AddBiblio' => sub {
     t::lib::Mocks::mock_preference( 'marcflavour', $marcflavour );
     my $record = MARC::Record->new();
 
-    warn Koha::Biblios->count;
     my ( $f, $sf ) = GetMarcFromKohaField('biblioitems.lccn');
     my $lccn_field = MARC::Field->new( $f, ' ', ' ',
         $sf => 'ThisisgoingtobetoomanycharactersfortheLCCNfield' );
@@ -63,7 +62,7 @@ subtest 'AddBiblio' => sub {
     is( $biblioitemnumber, undef,
         'AddBiblio returns undef for biblioitemnumber if something went wrong'
     );
-    is( $nb_biblios, Koha::Biblios->count,
+    is( Koha::Biblios->count, $nb_biblios,
         'No biblio should have been added if something went wrong' );
 };
 
