@@ -19,7 +19,7 @@
 
 use Modern::Perl;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 
 use Koha::Item::Transfer;
 use Koha::Item::Transfers;
