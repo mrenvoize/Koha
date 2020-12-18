@@ -1182,7 +1182,7 @@ subtest 'store' => sub {
 };
 
 subtest 'get_transfer' => sub {
-    plan tests => 6;
+    plan tests => 7;
 
     my $transfer = $new_item_1->get_transfer();
     is( $transfer, undef, 'Koha::Item->get_transfer should return undef if the item is not in transit' );
@@ -1199,6 +1199,7 @@ subtest 'get_transfer' => sub {
                 reason        => 'Manual',
                 datesent      => undef,
                 datearrived   => undef,
+                datecancelled => undef,
                 daterequested => \'NOW()'
             }
         }
@@ -1211,12 +1212,13 @@ subtest 'get_transfer' => sub {
         {
             class => 'Koha::Item::Transfers',
             value => {
-                itemnumber  => $new_item_1->itemnumber,
-                frombranch  => $new_item_1->holdingbranch,
-                tobranch    => $library_to->{branchcode},
-                reason      => 'Manual',
-                datesent    => undef,
-                datearrived => undef,
+                itemnumber    => $new_item_1->itemnumber,
+                frombranch    => $new_item_1->holdingbranch,
+                tobranch      => $library_to->{branchcode},
+                reason        => 'Manual',
+                datesent      => undef,
+                datearrived   => undef,
+                datecancelled => undef,
                 daterequested => \'NOW()'
             }
         }
@@ -1233,12 +1235,13 @@ subtest 'get_transfer' => sub {
         {
             class => 'Koha::Item::Transfers',
             value => {
-                itemnumber  => $new_item_1->itemnumber,
-                frombranch  => $new_item_1->holdingbranch,
-                tobranch    => $library_to->{branchcode},
-                reason      => 'Manual',
-                datesent    => undef,
-                datearrived => undef,
+                itemnumber    => $new_item_1->itemnumber,
+                frombranch    => $new_item_1->holdingbranch,
+                tobranch      => $library_to->{branchcode},
+                reason        => 'Manual',
+                datesent      => undef,
+                datearrived   => undef,
+                datecancelled => undef,
                 daterequested => \'NOW()'
             }
         }
@@ -1248,6 +1251,10 @@ subtest 'get_transfer' => sub {
     $transfer = $new_item_1->get_transfer();
     is( $transfer->branchtransfer_id, $transfer_1->branchtransfer_id, 'Koha::Item->get_transfer returns the next queued transfer');
     is( $transfer->itemnumber, $new_item_1->itemnumber, 'Koha::Item->get_transfer returns the right items transfer' );
+
+    $transfer_1->datecancelled(\'NOW()')->store;
+    $transfer = $new_item_1->get_transfer();
+    is( $transfer->branchtransfer_id, $transfer_3->branchtransfer_id, 'Koha::Item->get_transfer ignores cancelled transfers');
 };
 
 subtest 'holds' => sub {

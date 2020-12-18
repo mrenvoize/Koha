@@ -19,8 +19,11 @@ use Exception::Class (
     'Koha::Exceptions::Item::Transfer::Out' => {
         isa => 'Koha::Exceptions::Item::Transfer',
         description => "Transfer item is currently checked out"
+    },
+    'Koha::Exceptions::Item::Transfer::Transit' => {
+        isa => 'Koha::Exceptions::Item::Transfer',
+        description => "Transfer item is currently in transit"
     }
-
 );
 
 1;
