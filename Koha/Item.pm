@@ -37,6 +37,7 @@ use Koha::Checkouts;
 use Koha::CirculationRules;
 use Koha::CoverImages;
 use Koha::SearchEngine::Indexer;
+use Koha::Exceptions::Item::Transfer;
 use Koha::Item::Transfer::Limits;
 use Koha::Item::Transfers;
 use Koha::ItemTypes;
@@ -401,19 +402,95 @@ sub holds {
     return Koha::Holds->_new_from_dbic( $holds_rs );
 }
 
+=head3 request_transfer
+
+  my $transfer = $item->request_transfer(
+    {
+        to     => $to_library,
+        reason => $reason,
+        [ ignore_limits => 0, enqueue => 1, replace => 1 ]
+    }
+  );
+
+Add a transfer request for this item to the given branch for the given reason.
+
+An exception will be thrown if the BranchTransferLimits would prevent the requested
+transfer, unless 'ignore_limits' is passed to override the limits.
+
+An exception will be thrown if an active transfer (i.e pending arrival date) is found;
+The caller should catch such cases and retry the transfer request as appropriate passing
+an appropriate override.
+
+Overrides
+* enqueue - Used to queue up the transfer when the existing transfer is found to be in transit.
+* replace - Used to replace the existing transfer request with your own.
+
+=cut
+
+sub request_transfer {
+    my ( $self, $params ) = @_;
+
+    # check for mandatory params
+    my @mandatory = ( 'to', 'reason' );
+    for my $param (@mandatory) {
+        unless ( defined( $params->{$param} ) ) {
+            Koha::Exceptions::MissingParameter->throw(
+                error => "The $param parameter is mandatory" );
+        }
+    }
+
+    Koha::Exceptions::Item::Transfer::Limit->throw()
+      unless ( $params->{ignore_limits}
+        || $self->can_be_transferred( { to => $params->{to} } ) );
+
+    my $request = $self->get_transfer;
+    Koha::Exceptions::Item::Transfer::Found->throw( transfer => $request )
+      if ( $request && !$params->{enqueue} && !$params->{replace} );
+
+    $request->cancel( $params->{reason} )
+      if ( defined($request) && $params->{replace} );
+
+    my $transfer = Koha::Item::Transfer->new(
+        {
+            itemnumber    => $self->itemnumber,
+            daterequested => dt_from_string,
+            frombranch    => $self->holdingbranch,
+            tobranch      => $params->{to}->branchcode,
+            reason        => $params->{reason},
+            comments      => $params->{comment}
+        }
+    )->store();
+
+    return $transfer;
+}
+
 =head3 get_transfer
 
-my $transfer = $item->get_transfer;
+  my $transfer = $item->get_transfer;
 
-Return the transfer if the item is in transit or undef
+Return the active transfer request or undef
+
+Note: Transfers are retrieved in a Modified FIFO (First In First Out) order
+whereby the most recently sent, but not received, transfer will be returned
+if it exists, otherwise the oldest unsatisfied transfer will be returned.
 
 =cut
 
 sub get_transfer {
-    my ( $self ) = @_;
-    my $transfer_rs = $self->_result->branchtransfers->search({ datearrived => undef })->first;
+    my ($self) = @_;
+    my $transfer_rs = $self->_result->branchtransfers->search(
+        {
+            datearrived   => undef,
+            datecancelled => undef
+        },
+        {
+            order_by =>
+              [ { -desc => 'datesent' }, { -asc => 'daterequested' } ],
+            rows => 1
+        }
+    )->first;
     return unless $transfer_rs;
-    return Koha::Item::Transfer->_new_from_dbic( $transfer_rs );
+    return Koha::Item::Transfer->_new_from_dbic($transfer_rs);
 }
 
 =head3 last_returned_by
