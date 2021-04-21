@@ -5,7 +5,7 @@ INSERT INTO systempreferences ( `variable`, `value`, `options`, `explanation`, `
 ('AcqEnableFiles','0',NULL,'If enabled, allows librarians to upload and attach arbitrary files to invoice records.','YesNo'),
 ('AcqItemSetSubfieldsWhenReceiptIsCancelled','', '','Upon cancelling a receipt, update the items subfields if they were created when placing an order (e.g. o=5|a="bar foo")', 'Free'),
 ('AcqItemSetSubfieldsWhenReceived','','','Upon receiving items, update their subfields if they were created when placing an order (e.g. o=5|a="foo bar")','Free'),
-('AcqLog','0',NULL,'If ON, log acquisitions activity','YesNo'),
+('AcquisitionLog','0',NULL,'If ON, log acquisitions activity','YesNo'),
 ('AcquisitionDetails', '1', '', 'Hide/Show acquisition details on the biblio detail page.', 'YesNo'),
 ('AcqViewBaskets','user','user|branch|all','Define which baskets a user is allowed to view: their own only, any within their branch, or all','Choice'),
 ('AcqWarnOnDuplicateInvoice','0','','Warn librarians when they try to create a duplicate invoice','YesNo'),
