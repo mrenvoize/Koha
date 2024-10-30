@@ -694,7 +694,7 @@
                     }
                 })
                 .on('shown.bs.tab', function (e) {
-                    dtListResults.fnDraw();
+                    dtListResults.DataTable().draw();
                 });
 
                 $("body").on("click", ".deleteshelf", function(){

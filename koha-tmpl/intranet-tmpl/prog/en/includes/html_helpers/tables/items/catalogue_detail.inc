@@ -802,7 +802,7 @@
                 itemSelectionBuildActionLinks(tab_id);
             },
             drawCallback: function(settings){
-                var api = new $.fn.dataTable.Api(settings)
+                let api = this.api();
                 $.each(
                     $(this).find("tbody tr td:first-child"),
                     function (index, e) {
