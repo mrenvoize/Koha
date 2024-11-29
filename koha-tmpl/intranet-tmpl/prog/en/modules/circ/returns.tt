@@ -28,6 +28,15 @@
     [% PROCESS 'display-address-style' %]
 [% END %]
 
+[% BLOCK input_forward %]
+    [% FOREACH inputloo IN inputloop %]
+        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
+        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
+        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
+        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
+    [% END %]
+[% END %]
+
 [% INCLUDE 'doc-head-open.inc' %]
 <title>[% FILTER collapse %]
     [% tx("Check in {title}", { title = title }) | html %] &rsaquo;
@@ -431,12 +440,7 @@
                                                 <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
                                                 <input type="hidden" name="multiple_confirm" value="1" />
                                                 <input type="hidden" name="dropboxmode" value="[% dropboxmode | html %]" />
-                                                [% FOREACH inputloo IN inputloop %]
-                                                    <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                    <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                    <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                    <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                [% END %]
+                                                [% PROCESS 'input_forward' %]
                                                 <button type="submit" class="btn btn-default approve" accesskey="y"><i class="fa fa-check"></i> Yes, checkin (Y)</button>
                                             </form>
                                             <button type="button" data-bs-dismiss="modal" class="btn btn-default deny" accesskey="n"><i class="fa fa-times"></i> No, don't checkin (N)</button>
@@ -515,12 +519,7 @@
                                                 <input type="hidden" name="barcode" value="[% item.barcode | html %]">
                                                 <input type="hidden" name="op" value="cud-checkin">
                                                 <input type="hidden" name="confirm_items_bundle_return" value="1">
-                                                [% FOREACH inputloo IN inputloop %]
-                                                <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                [% END %]
+                                                [% PROCESS 'input_forward' %]
                                                 [% IF item.onloan %]
                                                 <button type="submit" class="btn btn-default"><i class="fa fa-check"></i> Confirm checkin and mark missing items as lost</button>
                                                 <button type="submit" class="btn btn-default" name="do_not_verify_items_bundle_contents" value="1"><i class="fa fa-check"></i> Confirm checkin without verifying bundle contents</button>
@@ -536,197 +535,202 @@
                         [% END %]
 
                         [% IF wrongbranch %]
-                            <div id="wrong-branch-modal" tabindex="-1" class="modal modal-lg block audio-alert-action block" data-bs-backdrop="static" data-bs-keyboard="false">
+                        <div id="wrong-branch-modal" tabindex="-1" class="modal modal-lg block audio-alert-action" 
+                            data-bs-backdrop="static" data-bs-keyboard="false">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h1 class="modal-title">Cannot check in</h1>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>
+                                            <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
+                                                [% item.barcode | html %]: [% title | html %]
+                                            </a>
+                                        </p>
+                                        <p>
+                                            <strong>NOT CHECKED IN</strong>
+                                        </p>
+                                        <p>
+                                            This item must be checked in at the following library:
+                                            <strong>[% Branches.GetName(rightbranch) | html %]</strong>
+                                        </p>
+                                        [% INCLUDE all_checkin_messages %]
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" data-bs-dismiss="modal" class="btn btn-primary">
+                                            <i class="fa fa-check"></i> OK
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        [% END %]
+                        
+                        [% UNLESS (hold_auto_filled && diffbranch) %]
+                            [% IF WrongTransfer && !transfertodo %]
+                            <div id="wrong-transfer-modal" class="modal modal-lg audio-alert-action 
+                                [% IF Koha.Preference('TransfersBlockCirc') %]block[% ELSE %]noblock[% END %]"
+                                data-bs-backdrop="static" data-bs-keyboard="false">
                                 <div class="modal-dialog">
                                     <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h1 class="modal-title">
-                                                Cannot check in
-                                            </h1>
-                                        </div>
-                                        <div class="modal-body">
-                                            <p>
-                                                <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
-                                                    [% item.barcode | html %]: [% title | html %]
-                                                </a>
-                                            </p>
-                                            <p>
-                                                <strong>
-                                                    NOT CHECKED IN
-                                                </strong>
-                                            </p>
-                                            <p>
-                                                This item must be checked in at following library:
-                                                <strong>
-                                                    [% Branches.GetName( rightbranch ) | html %]
-                                                </strong>
-                                            </p>
-                                            [% INCLUDE all_checkin_messages %]
-                                        </div> <!-- /.modal-body -->
-                                        <div class="modal-footer">
-                                            <button type="button" data-bs-dismiss="modal" class="btn btn-primary"><i class="fa fa-check"></i> OK</button>
-                                        </div>
-                                    </div> <!-- /.modal-content -->
-                                </div> <!-- /.modal-dialog -->
-                            </div> <!-- /#wrong-branch-modal -->
-                        [% END # /IF wrongbranch %]
+                                        <form method="post" action="returns.pl" name="wrongtransferform" id="wrongtransferform">
+                                            <div class="modal-header">
+                                                <h1 class="modal-title">
+                                                    Wrong transfer detected, please return item to:
+                                                    [% Branches.GetName(TransferWaitingAt) | html %]
+                                                </h1>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>
+                                                    <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
+                                                        [% item.barcode | html %]: [% title | html %]
+                                                    </a>
+                                                </p>
+                                                [% INCLUDE all_checkin_messages %]
+                                            </div>
+                                            <div class="modal-footer">
+                                                [% INCLUDE 'csrf-token.inc' %]
+                                                <input type="hidden" name="op" value="cud-transfer" />
+                                                <input type="hidden" name="itemnumber" value="[% itemnumber | html %]" />
+                                                <input type="hidden" name="return_date_override" value="[% return_date_override | html %]" />
+                                                <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
+                                                <input type="hidden" name="transit" value="[% NewTransfer | html %]" />
+                                                [% PROCESS 'input_forward' %]
 
-                        <!-- case of a mistake in transfer loop -->
-                        [% UNLESS ( hold_auto_filled && diffbranch ) %]
-                            [% IF WrongTransfer && !transfertodo %]
-                                [% IF Koha.Preference('TransfersBlockCirc') %]
-                                    <div id="wrong-transfer-modal" class="modal modal-lg audio-alert-action" data-bs-backdrop="static" data-bs-keyboard="false" >
-                                [% ELSE %]
-                                    <div id="wrong-transfer-modal" class="modal modal-lg audio-alert-action noblock">
-                                [% END %]
-                                    <div class="modal-dialog">
-                                        <div class="modal-content">
-                                            <form method="post" action="returns.pl" name="wrongtransferform" id="wrongtransferform">
-                                                <div class="modal-header">
-                                                    <h1 class="modal-title">
-                                                        Wrong transfer detected, please return item to: [% Branches.GetName( TransferWaitingAt ) | html %]
-                                                    </h1>
-                                                </div>
+                                                <!-- Confirm Transfer Button -->
+                                                <button class="btn btn-default approve" type="submit" accesskey="y">
+                                                    <i class="fa fa-check"></i> OK (Y)
+                                                </button>
 
-                                                <div class="modal-body">
-                                                    <p>
-                                                        <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
-                                                            [% item.barcode | html %]: [% title | html %]
-                                                        </a>
-                                                    </p>
-
-                                                    [% INCLUDE all_checkin_messages %]
-                                                </div> <!-- /.modal-body -->
-
-                                                <div class="modal-footer">
-                                                    [% INCLUDE 'csrf-token.inc' %]
-                                                    <input type="hidden" name="op" value="cud-transfer" />
-                                                    <input type="hidden" name="itemnumber" value="[% itemnumber | html %]" />
-                                                    <input type="hidden" name="return_date_override" value="[% return_date_override | html %]" />
-                                                    <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
-                                                    <input type="hidden" name="transit" value="[% NewTransfer | html %]" />
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
-
-                                                    <!-- CONFIRM -->
-                                                    <button class="btn btn-default approve" type="submit" accesskey="y">
-                                                        <i class="fa fa-check"></i> OK (Y)
-                                                    </button>
-                                                    <!-- PRINT SLIP -->
-                                                    <button type="button" data-bs-dismiss="modal" class="btn btn-default submit openWin" data-transfer="[% NewTransfer | html %]" data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;&amp;branchcode=[% TransferWaitingAt | uri %]&amp;op=slip" accesskey="p">
-                                                        <i class="fa fa-print"></i> Print transfer slip (P)
-                                                    </button>
-                                                    <!-- CANCEL TRANSFER -->
-                                                    <button type="button" data-bs-dismiss="modal" class="btn btn-default deny cancel" accesskey="x">
-                                                        <i class="fa fa-times"></i> Cancel transfer (X)
-                                                    </button>
-                                                </div> <!-- /.modal-footer -->
-                                            </form> <!-- /wrongtransferform -->
-                                        </div> <!-- /.modal-content -->
-                                    </div> <!-- /.modal-dialog -->
-                                </div> <!-- /#wrong-transfer-modal -->
-                            [% END # /IF WrongTransfer && !transfertodo %]
-                        [% END # /UNLESS hold_auto_filled && diffbranch %]
+                                                <!-- Print Slip Button -->
+                                                <button type="button" data-bs-dismiss="modal" class="btn btn-default submit openWin" 
+                                                    data-transfer="[% NewTransfer | html %]" 
+                                                    data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;branchcode=[% TransferWaitingAt | uri %]&amp;op=slip" 
+                                                    accesskey="p">
+                                                    <i class="fa fa-print"></i> Print transfer slip (P)
+                                                </button>
+                        
+                                                <!-- Cancel Transfer Button -->
+                                                <button type="button" data-bs-dismiss="modal" class="btn btn-default deny cancel" accesskey="x">
+                                                    <i class="fa fa-times"></i> Cancel transfer (X)
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                            [% END %]
+                        [% END %]
 
                         [% IF ( found ) %]
-                            [% IF ( waiting ) %]
-                                <div id="hold-found1" class="modal modal-lg audio-alert-action" data-bs-backdrop="static" data-bs-keyboard="false" >
+                            [% IF (waiting) %]
+                                <!-- Modal for Hold Found (Item Already Waiting) -->
+                                <div id="hold-found1" class="modal modal-lg audio-alert-action" data-bs-backdrop="static" data-bs-keyboard="false">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
+                                            <!-- Form for processing the hold -->
                                             <form method="post" action="returns.pl" class="confirm">
+                                                <!-- Modal Header -->
                                                 <div class="modal-header">
                                                     <h1 class="modal-title">
                                                         Hold found (item is already waiting):
+                                                        <!-- Link to item details -->
                                                         <br/>
-                                                        <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">[% title | html %]</a>
+                                                        <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
+                                                            [% title | html %]
+                                                        </a>
+                                                        <!-- Item barcode -->
                                                         <div class="hold-found-barcode">
-                                                            <a href="/cgi-bin/koha/catalogue/moredetail.pl?biblionumber=[% itembiblionumber | uri %]&amp;itemnumber=[% itemnumber | uri %]">[% item.barcode | html %]</a>
+                                                            <a href="/cgi-bin/koha/catalogue/moredetail.pl?biblionumber=[% itembiblionumber | uri %]&amp;itemnumber=[% itemnumber | uri %]">
+                                                                [% item.barcode | html %]
+                                                            </a>
                                                         </div>
                                                     </h1>
                                                 </div>
-
+                            
+                                                <!-- Modal Body -->
                                                 <div class="modal-body">
-                                                    [% IF ( reservenotes ) %]
+                                                    <!-- Display reserve notes if any -->
+                                                    [% IF (reservenotes) %]
                                                         <h4>Notes: [% reservenotes | html %]</h4>
                                                     [% END %]
-
+                            
+                                                    <!-- Patron Details -->
                                                     <h4>Hold for:</h4>
                                                     <ul>
+                                                        <!-- Patron Title and Details -->
                                                         <li>
                                                             [% INCLUDE 'patron-title.inc' patron=patron hide_patron_infos_if_needed=1 invert_name=1 link_to="circulation_reserves" %]
                                                             <span class="patron-category"> - [% patron.category.description | html %]</span>
                                                         </li>
+                                                        <!-- Patron Address -->
                                                         [% INCLUDE display_holdpatron_address %]
-                                                        [% IF ( patron.phone ) %]
-                                                            <li> [% patron.phone | html %]</li>
+                                                        <!-- Optional Patron Contact Information -->
+                                                        [% IF (patron.phone) %]
+                                                            <li>[% patron.phone | html %]</li>
                                                         [% END %]
-
-                                                        [% IF ( patron.email ) %]
-                                                            <li><a id="boremail" href="mailto:[% patron.email | html %]">[% patron.email | html %]</a></li>
+                                                        [% IF (patron.email) %]
+                                                            <li>
+                                                                <a id="boremail" href="mailto:[% patron.email | html %]">[% patron.email | html %]</a>
+                                                            </li>
                                                         [% END %]
-
-                                                        [% IF ( patron.is_debarred ) %]
+                                                        <!-- Patron Alerts -->
+                                                        [% IF (patron.is_debarred) %]
                                                             <li class="error">Patron is RESTRICTED</li>
                                                         [% END %]
-
-                                                        [% IF ( patron.gonenoaddress ) %]
+                                                        [% IF (patron.gonenoaddress) %]
                                                             <li class="error">Patron's address is in doubt</li>
                                                         [% END %]
                                                     </ul>
-
-                                                    [% IF ( transfertodo ) %]
-                                                        <h4><strong>Transfer to:</strong> [% Branches.GetName( destbranch ) | html %]</h4>
+                            
+                                                    <!-- Transfer Information -->
+                                                    [% IF (transfertodo) %]
+                                                        <h4><strong>Transfer to:</strong> [% Branches.GetName(destbranch) | html %]</h4>
                                                     [% ELSE %]
-                                                        <h4><strong>Hold at</strong> [% Branches.GetName( destbranch ) | html %]</h4>
+                                                        <h4><strong>Hold at:</strong> [% Branches.GetName(destbranch) | html %]</h4>
                                                     [% END %]
-
+                            
+                                                    <!-- Check-in Messages -->
                                                     [% INCLUDE all_checkin_messages %]
                                                 </div> <!-- /.modal-body -->
-
+                            
+                                                <!-- Modal Footer -->
                                                 <div class="modal-footer">
                                                     [% INCLUDE 'csrf-token.inc' %]
                                                     <input type="hidden" name="op" value="cud-affect_reserve" />
-                                                    <input type="hidden" name="itemnumber" value="[% itemnumber | html %]" />
-                                                    <input type="hidden" name="borrowernumber" value="[% patron.borrowernumber | html %]" />
+                                                    
+                                                    <!-- Hidden Inputs -->
+                                                    <input type="hidden" name="barcode" value="[% barcode | html %]" id="confirm-hold-barcode"/>
                                                     <input type="hidden" name="biblionumber" value="[% itembiblionumber | html %]" />
-                                                    <input type="hidden" name="reserve_id" value="[% reserve_id | html %]" />
+                                                    <input type="hidden" name="borrowernumber" value="[% patron.borrowernumber | html %]" />
+                                                    <input type="hidden" name="cancel_reason" value="" />
+                                                    <input type="hidden" name="cancel_reserve" value="0" />
                                                     <input type="hidden" name="diffBranch" value="[% destbranch | html %]" />
-                                                    <input type="hidden" name="exemptfine" value="[% exemptfine | html %]" />
                                                     <input type="hidden" name="dropboxmode" value="[% dropboxmode | html %]" />
+                                                    <input type="hidden" name="exemptfine" value="[% exemptfine | html %]" />
                                                     <input type="hidden" name="forgivemanualholdsexpire" value="[% forgivemanualholdsexpire | html %]" />
-
+                                                    <input type="hidden" name="itemnumber" value="[% itemnumber | html %]" />
+                                                    <input type="hidden" name="print_slip" value="0" />
+                                                    <input type="hidden" name="reserve_id" value="[% reserve_id | html %]" />
                                                     <input type="hidden" name="return_date_override" value="[% return_date_override | html %]" />
                                                     <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
+                                                    [% PROCESS 'input_forward' %]
 
-                                                    <input type="hidden" name="cancel_reserve" value="0" />
-                                                    <input type="hidden" name="cancel_reason" value="" />
-                                                    <input id="confirm-hold-barcode" type="hidden" name="barcode" value="[% barcode | html %]" />
-
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
-
-                                                    <!-- CONFIRM -->
+                                                    <!-- Action Buttons -->
+                                                    <!-- Confirm Hold -->
                                                     <button type="submit" class="btn btn-default approve" data-bs-dismiss="modal" accesskey="y">
                                                         <i class="fa fa-check"></i> Confirm hold (Y)
                                                     </button>
-                                                    <!-- PRINT SLIP -->
-                                                    <input type="hidden" name="print_slip" value="0" />
+                                                    <!-- Print Slip -->
                                                     <button type="button" class="btn btn-default print" accesskey="P">
                                                         <i class="fa fa-print"></i> Print slip and confirm (P)
                                                     </button>
-                                                    <!-- IGNORE -->
+                                                    <!-- Ignore -->
                                                     <button data-bs-dismiss="modal" type="submit" class="btn btn-default" accesskey="I">
                                                         <i class="fa fa-times"></i> Ignore (I)
                                                     </button>
-                                                    <!-- CANCEL -->
+                                                    <!-- Cancel Hold -->
                                                     <fieldset class="action">
                                                         [% SET hold_cancellation = AuthorisedValues.GetAuthValueDropbox('HOLD_CANCELLATION') %]
                                                         [% IF hold_cancellation.count %]
@@ -742,27 +746,26 @@
                                                         </button>
                                                     </fieldset>
                                                 </div> <!-- /.modal-footer -->
-                                            </form> <!-- /.confirm -->
+                                            </form>
                                         </div> <!-- /.modal-content -->
                                     </div> <!-- /.modal-dialog -->
                                 </div> <!-- /#hold-found1 -->
-                            [% END # /IF waiting %]
+                            [% END %]
 
-                            [% IF (transfer || needstransfer) && !(reserved and !recalled and !waitingrecall) %]
-                                [% IF Koha.Preference('TransfersBlockCirc') %]
-                                    <div id="item-transfer-modal" class="modal modal-lg block audio-alert-action" data-bs-backdrop="static" data-bs-keyboard="false">
-                                [% ELSE %]
-                                    <div id="item-transfer-modal" class="modal modal-lg noblock audio-alert-action">
-                                [% END %]
+                            [% IF (transfer || needstransfer) && !(reserved && !recalled && !waitingrecall) %]
+                                <div id="item-transfer-modal" class="modal modal-lg [% IF Koha.Preference('TransfersBlockCirc') %]block[% ELSE %]noblock[% END %] audio-alert-action" data-bs-backdrop="static" data-bs-keyboard="false">
                                     <div class="modal-dialog">
                                         <div class="modal-content">
                                             <form method="post" action="returns.pl" name="mainform" id="mainform">
+                                                <!-- Modal Header -->
                                                 <div class="modal-header">
                                                     <h1 class="modal-title">
-                                                        Please return this item to [% IF transferto %][% Branches.GetName( transferto ) | html %][% ELSE %][% Branches.GetName( returnbranch ) | html %][% END %]
+                                                        Please return this item to 
+                                                        [% IF transferto %][% Branches.GetName(transferto) | html %][% ELSE %][% Branches.GetName(returnbranch) | html %][% END %]
                                                     </h1>
                                                 </div>
-
+                            
+                                                <!-- Modal Body -->
                                                 <div class="modal-body">
                                                     <p>
                                                         <a href="/cgi-bin/koha/catalogue/detail.pl?type=intra&amp;biblionumber=[% itembiblionumber | uri %]">
@@ -770,47 +773,57 @@
                                                         </a>
                                                     </p>
                                                     [% IF !transfer %]
-                                                        <p>
-                                                            Transfer now?
-                                                        </p>
+                                                        <p>Transfer now?</p>
                                                     [% END %]
                                                     [% INCLUDE all_checkin_messages %]
                                                 </div> <!-- /.modal-body -->
-
+                            
+                                                <!-- Modal Footer -->
                                                 <div class="modal-footer">
                                                     [% INCLUDE 'csrf-token.inc' %]
-                                                    <input type="hidden" name="print_slip" value="0" />
                                                     <input type="hidden" name="op" value="cud-dotransfer" />
-                                                    <input type="hidden" name="tobranch" value="[% returnbranch | html %]" />
-                                                    <input type="hidden" name="transferitem" value="[% itemnumber | html %]" />
+
+                                                    <!-- Hidden Inputs -->
                                                     <input type="hidden" name="barcode" value="0" />
-                                                    <input type="hidden" name="trigger" value="[% trigger | html %]" />
-                                                    <input type="hidden" name="exemptfine" value="[% exemptfine | html %]" />
                                                     <input type="hidden" name="dropboxmode" value="[% dropboxmode | html %]" />
+                                                    <input type="hidden" name="exemptfine" value="[% exemptfine | html %]" />
                                                     <input type="hidden" name="forgivemanualholdsexpire" value="[% forgivemanualholdsexpire | html %]" />
+                                                    <input type="hidden" name="print_slip" value="0" />
                                                     <input type="hidden" name="return_date_override" value="[% return_date_override | html %]" />
                                                     <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
+                                                    <input type="hidden" name="tobranch" value="[% returnbranch | html %]" />
+                                                    <input type="hidden" name="transferitem" value="[% itemnumber | html %]" />
+                                                    <input type="hidden" name="trigger" value="[% trigger | html %]" />
+                                                    [% PROCESS 'input_forward' %]
+                            
+                                                    <!-- Action Buttons -->
                                                     [% IF !transfer %]
-                                                        <button type="submit" name="dotransfer" value="Yes" class="btn btn-default approve" accesskey="y"><i class="fa fa-check"></i> Yes (Y)</button>
-                                                        <button type="button" name="dotransfer" class="btn btn-default print openWin" data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;&amp;branchcode=[% returnbranch | uri %]&amp;op=slip"><i class="fa fa-print"></i> Yes, print slip</button>
-                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default deny" name="notransfer" value="No" accesskey="n"><i class="fa fa-times"></i> No (N)</button>
+                                                        <button type="submit" name="dotransfer" value="Yes" class="btn btn-default approve" accesskey="y">
+                                                            <i class="fa fa-check"></i> Yes (Y)
+                                                        </button>
+                                                        <button type="button" name="dotransfer" class="btn btn-default print openWin" 
+                                                            data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;branchcode=[% returnbranch | uri %]&amp;op=slip">
+                                                            <i class="fa fa-print"></i> Yes, print slip
+                                                        </button>
+                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default deny" name="notransfer" value="No" accesskey="n">
+                                                            <i class="fa fa-times"></i> No (N)
+                                                        </button>
                                                     [% ELSE %]
-                                                        <input type="hidden" name="transit" value="[% transfer | uri %]"/>
-                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default approve" accesskey="y"><i class="fa fa-check"></i> OK (Y)</button>
-                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default print openWin" data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;branchcode=[% transfer | uri %]&amp;op=slip" accesskey="p"><i class="fa fa-print"></i> Print slip (P)</button>
+                                                        <input type="hidden" name="transit" value="[% transfer | uri %]" />
+                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default approve" accesskey="y">
+                                                            <i class="fa fa-check"></i> OK (Y)
+                                                        </button>
+                                                        <button type="button" data-bs-dismiss="modal" class="btn btn-default print openWin" 
+                                                            data-url="transfer-slip.pl?transferitem=[% itemnumber | uri %]&amp;branchcode=[% transfer | uri %]&amp;op=slip" accesskey="p">
+                                                            <i class="fa fa-print"></i> Print slip (P)
+                                                        </button>
                                                     [% END %]
                                                 </div> <!-- /.modal-footer -->
                                             </form> <!-- /#mainform -->
                                         </div> <!-- /.modal-content -->
                                     </div> <!-- /.modal-dialog -->
                                 </div> <!-- /#item-transfer-modal -->
-                            [% END # /IF transfer || needstransfer %]
+                            [% END %]
 
                             <!-- case of simple return no issue or transfer but with a hold  -->
                             [% IF ( reserved and !recalled and !waitingrecall ) %]
@@ -912,12 +925,7 @@
                                                     <input type="hidden" name="forgivemanualholdsexpire" value="[% forgivemanualholdsexpire | html %]" />
                                                     <input type="hidden" name="return_date_override" value="[% return_date_override | html %]" />
                                                     <input type="hidden" name="return_date_override_remember" value="[% return_date_override_remember | html %]" />
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
+                                                    [% PROCESS 'input_forward' %]
                                                     [% IF ( transfertodo ) %]
                                                         <button type="submit" class="btn btn-default approve" accesskey="y">
                                                             <i class="fa fa-check"></i> Confirm hold and transfer (Y)
@@ -1019,12 +1027,7 @@
                                                     <input type="hidden" name="itemnumber" value="[% itemnumber | html %]">
                                                     <input type="hidden" name="returnbranch" value="[% Branches.GetLoggedInBranchcode | html %]">
                                                     <input type="hidden" name="recall_slip" value="0">
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
+                                                    [% PROCESS 'input_forward' %]
                                                     [% IF ( transfertodo ) %]
                                                         <button type="submit" class="btn btn-default approve" accesskey="Y">
                                                             <i class="fa fa-check"></i> Confirm recall and transfer (Y)
@@ -1126,12 +1129,7 @@
                                                     <input type="hidden" name="itemnumber" value="[% itemnumber | html %]">
                                                     <input type="hidden" name="returnbranch" value="[% Branches.GetLoggedInBranchcode | html %]">
                                                     <input type="hidden" name="recall_slip" value="0">
-                                                    [% FOREACH inputloo IN inputloop %]
-                                                        <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                        <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                        <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                        <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                    [% END %]
+                                                    [% PROCESS 'input_forward' %]
                                                     <button type="submit" class="btn btn-default approve" accesskey="Y">
                                                         <i class="fa fa-check"></i> Confirm recall (Y)
                                                     </button>
@@ -1174,12 +1172,7 @@
                                                 </div>
 
                                                 <button type="submit" class="btn btn-primary">Check in</button>
-                                                [% FOREACH inputloo IN inputloop %]
-                                                    <input type="hidden" name="ri-[% inputloo.counter | html %]" value="[% inputloo.barcode | html %]" />
-                                                    <input type="hidden" name="dd-[% inputloo.counter | html %]" value="[% inputloo.duedate | html %]" />
-                                                    <input type="hidden" name="bn-[% inputloo.counter | html %]" value="[% inputloo.borrowernumber | html %]" />
-                                                    <input type="hidden" name="nr-[% inputloo.counter | html %]" value="[% inputloo.not_returned | html %]" />
-                                                [% END %]
+                                                [% PROCESS 'input_forward' %]
                                             </div>
                                     </div>
                                     <div class="col-sm-6">
