@@ -190,6 +190,18 @@ our $RULE_KINDS = {
         scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
         can_be_blank => 0,
     },
+    overdue_X_set_lost_value => {
+        scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
+        can_be_blank => 0,
+    },
+    overdue_X_charge_replacement_cost => {
+        scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
+        can_be_blank => 0,
+    },
+    overdue_X_mark_as_returned => {
+        scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
+        can_be_blank => 0,
+    },
     renewalperiod => {
         scope => [ 'branchcode', 'categorycode', 'itemtype' ],
     },

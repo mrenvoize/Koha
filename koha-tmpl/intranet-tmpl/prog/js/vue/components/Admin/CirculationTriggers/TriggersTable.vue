@@ -390,7 +390,11 @@ export default {
                     (rule[`overdue_${number}_delay`] ||
                         rule[`overdue_${number}_notice`] ||
                         rule[`overdue_${number}_mtt`] ||
-                        rule[`overdue_${number}_restrict`])
+                        rule[`overdue_${number}_restrict`] ||
+                        // rule[`overdue_${number}_set_lost_value`])
+                        rule[`overdue_${number}_set_lost_value`] ||
+                        rule[`overdue_${number}_charge_replacement_cost`] ||
+                        rule[`overdue_${number}_mark_as_returned`])
             );
         },
         handleNotice(notice) {

@@ -97,6 +97,60 @@
                             </v-select>
                             <span class="required">{{ $__("Required") }}</span>
                         </li>
+                        <li>
+                            <label for="overdue_delay" class="required"
+                                >{{ $__("Delay") }}:
+                            </label>
+                            <div class="numeric-input-wrapper">
+                                <div class="input-with-clear">
+                                    <input
+                                        id="overdue_delay"
+                                        v-model="newRule.delay"
+                                        type="number"
+                                        :placeholder="fallbackRule.delay"
+                                        :min="minDelay"
+                                        :max="maxDelay"
+                                        class="numeric-input"
+                                    />
+                                    <button
+                                        v-if="
+                                            newRule.delay !== null &&
+                                            newRule.delay !== undefined
+                                        "
+                                        type="button"
+                                        class="clear-btn"
+                                        @click="newRule.delay = null"
+                                    >
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            width="10"
+                                            height="10"
+                                        >
+                                            <path
+                                                d="M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z"
+                                            ></path>
+                                        </svg>
+                                    </button>
+                                    <div class="chevron-buttons">
+                                        <button
+                                            type="button"
+                                            class="increment-btn"
+                                            @click="incrementDelay"
+                                        >
+                                            ▴
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="decrement-btn"
+                                            @click="decrementDelay"
+                                        >
+                                            ▾
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <span class="required">{{ $__("Required") }}</span>
+                        </li>
                     </ol>
 
                     <div
@@ -123,7 +177,7 @@
                         {{ $__("Edit trigger") }} {{ " " + newTriggerNumber }}
                     </legend>
                     <ol>
-                        <li>
+                        <!-- <li>
                             <label for="overdue_delay"
                                 >{{ $__("Delay") }}:
                             </label>
@@ -175,7 +229,204 @@
                                     </div>
                                 </div>
                             </div>
+                        </li> -->
+                        <li>
+                            <label for="restricts"
+                                >{{ $__("Restricts checkouts") }}:</label
+                            >
+                            <div>
+                                <input
+                                    type="radio"
+                                    id="restricts-yes"
+                                    v-model="newRule.restrict"
+                                    :value="1"
+                                />
+                                {{ $__("Yes") }}
+
+                                <input
+                                    type="radio"
+                                    id="restricts-no"
+                                    v-model="newRule.restrict"
+                                    :value="0"
+                                />
+                                {{ $__("No") }}
+
+                                <input
+                                    type="radio"
+                                    id="restricts-fallback"
+                                    v-model="newRule.restrict"
+                                    :value="null"
+                                />
+                                {{ $__("Fallback to default") }}
+                                <span v-if="fallbackRule.restricts !== null">
+                                    ({{
+                                        fallbackRule.restricts === 1
+                                            ? $__("Yes")
+                                            : $__("No")
+                                    }})
+                                </span>
+                            </div>
                         </li>
+                        <li>
+                            <label for="set_lost_value"
+                                >{{ $__("Set Lost Value") }}:</label
+                            >
+                            <div>
+                                <input
+                                    type="radio"
+                                    id="set_lost_value-yes"
+                                    v-model="newRule.set_lost_value"
+                                    :value="1"
+                                />
+                                {{ $__("Yes") }}
+
+                                <input
+                                    type="radio"
+                                    id="set_lost_value-no"
+                                    v-model="newRule.set_lost_value"
+                                    :value="0"
+                                />
+                                {{ $__("No") }}
+
+                                <input
+                                    type="radio"
+                                    id="set_lost_value-fallback"
+                                    v-model="newRule.set_lost_value"
+                                    :value="null"
+                                />
+                                {{ $__("Fallback to default") }}
+                                <span v-if="fallbackRule.set_lost_value !== null">
+                                    ({{
+                                        fallbackRule.set_lost_value === 1
+                                            ? $__("Yes")
+                                            : $__("No")
+                                    }})
+                                </span>
+                            </div>
+                        </li>
+                        <li>
+                            <label for="charge_replacement_cost"
+                                >{{ $__("Charge replacement cost") }}:</label
+                            >
+                            <div>
+                                <input
+                                    type="radio"
+                                    id="charge_replacement_cost-yes"
+                                    v-model="newRule.charge_replacement_cost"
+                                    :value="1"
+                                />
+                                {{ $__("Yes") }}
+
+                                <input
+                                    type="radio"
+                                    id="charge_replacement_cost-no"
+                                    v-model="newRule.charge_replacement_cost"
+                                    :value="0"
+                                />
+                                {{ $__("No") }}
+
+                                <input
+                                    type="radio"
+                                    id="charge_replacement_cost-fallback"
+                                    v-model="newRule.charge_replacement_cost"
+                                    :value="null"
+                                />
+                                {{ $__("Fallback to default") }}
+                                <span v-if="fallbackRule.charge_replacement_cost !== null">
+                                    ({{
+                                        fallbackRule.charge_replacement_cost === 1
+                                            ? $__("Yes")
+                                            : $__("No")
+                                    }})
+                                </span>
+                            </div>
+                        </li>
+                        <li>
+                            <label for="mark_as_returned"
+                                >{{ $__("Mark as returned") }}:</label
+                            >
+                            <div>
+                                <input
+                                    type="radio"
+                                    id="mark_as_returned-yes"
+                                    v-model="newRule.mark_as_returned"
+                                    :value="1"
+                                />
+                                {{ $__("Yes") }}
+
+                                <input
+                                    type="radio"
+                                    id="mark_as_returned-no"
+                                    v-model="newRule.mark_as_returned"
+                                    :value="0"
+                                />
+                                {{ $__("No") }}
+
+                                <input
+                                    type="radio"
+                                    id="mark_as_returned-fallback"
+                                    v-model="newRule.mark_as_returned"
+                                    :value="null"
+                                />
+                                {{ $__("Fallback to default") }}
+                                <span v-if="fallbackRule.mark_as_returned !== null">
+                                    ({{
+                                        fallbackRule.mark_as_returned === 1
+                                            ? $__("Yes")
+                                            : $__("No")
+                                    }})
+                                </span>
+                            </div>
+                        </li>
+                    </ol>
+                </fieldset>
+
+                <fieldset class="rows" v-if="editMode">
+                    <legend v-if="ruleInfo.numberOfTriggers < newTriggerNumber">
+                        {{ $__("Notice for trigger") }}
+                        {{ " " + newTriggerNumber }}
+                    </legend>
+                    <legend v-else>
+                        {{ $__("Edit notice for trigger") }} {{ " " + newTriggerNumber }}
+                    </legend>
+                    <ol>
+                        <!-- <li>
+                            <label for="send_notice"
+                                >{{ $__("Send notice") }}:</label
+                            >
+                            <div>
+                                <input
+                                    type="radio"
+                                    id="send_notice-yes"
+                                    v-model="newRule.send_notice"
+                                    :value="1"
+                                />
+                                {{ $__("Yes") }}
+
+                                <input
+                                    type="radio"
+                                    id="send_notice-no"
+                                    v-model="newRule.send_notice"
+                                    :value="0"
+                                />
+                                {{ $__("No") }}
+
+                                <input
+                                    type="radio"
+                                    id="send_notice-fallback"
+                                    v-model="newRule.send_notice"
+                                    :value="null"
+                                />
+                                {{ $__("Fallback to default") }}
+                                <span v-if="fallbackRule.send_notice !== null">
+                                    ({{
+                                        fallbackRule.send_notice === 1
+                                            ? $__("Yes")
+                                            : $__("No")
+                                    }})
+                                </span>
+                            </div> -->
+                        <!-- </li> -->
                         <li>
                             <label for="letter_code"
                                 >{{ $__("Letter") }}:</label
@@ -240,43 +491,6 @@
                                     />
                                 </template>
                             </v-select>
-                        </li>
-                        <li>
-                            <label for="restricts"
-                                >{{ $__("Restricts checkouts") }}:</label
-                            >
-                            <div>
-                                <input
-                                    type="radio"
-                                    id="restricts-yes"
-                                    v-model="newRule.restrict"
-                                    :value="1"
-                                />
-                                {{ $__("Yes") }}
-
-                                <input
-                                    type="radio"
-                                    id="restricts-no"
-                                    v-model="newRule.restrict"
-                                    :value="0"
-                                />
-                                {{ $__("No") }}
-
-                                <input
-                                    type="radio"
-                                    id="restricts-fallback"
-                                    v-model="newRule.restrict"
-                                    :value="null"
-                                />
-                                {{ $__("Fallback to default") }}
-                                <span v-if="fallbackRule.restricts !== null">
-                                    ({{
-                                        fallbackRule.restricts === 1
-                                            ? $__("Yes")
-                                            : $__("No")
-                                    }})
-                                </span>
-                            </div>
                         </li>
                     </ol>
                 </fieldset>
@@ -398,6 +612,12 @@ export default {
                 this.newRule.notice;
             circRule[`overdue_${this.newTriggerNumber}_restrict`] =
                 this.newRule.restrict;
+            circRule[`overdue_${this.newTriggerNumber}_set_lost_value`] =
+                this.newRule.set_lost_value
+            circRule[`overdue_${this.newTriggerNumber}_charge_replacement_cost`] =
+                this.newRule.charge_replacement_cost
+            circRule[`overdue_${this.newTriggerNumber}_mark_as_returned`] =
+                this.newRule.mark_as_returned
             circRule[`overdue_${this.newTriggerNumber}_mtt`] =
                 this.newRule.mtt && this.newRule.mtt.length
                     ? this.newRule.mtt.join(",")
