@@ -37,6 +37,15 @@
                     {{ $__("Restricts checkouts") }}
                 </th>
                 <th>
+                    {{ $__("Set Lost Value") }}
+                </th>
+                <th>
+                    {{ $__("Charge Replacement Cost") }}
+                </th>
+                <th>
+                    {{ $__("Mark as returned") }}
+                </th>
+                <th>
                     {{ $__("Actions") }}
                 </th>
             </thead>
@@ -246,6 +255,81 @@
                         </span>
                     </td>
 
+                    <!-- Set Lost Value -->
+                    <td>
+                        <span
+                            :class="{
+                                fallback: findEffectiveRule(
+                                    rule,
+                                    `overdue_${
+                                        modal ? i + 1 : triggerNumber
+                                    }_set_lost_value`
+                                ).isFallback,
+                            }"
+                        >
+                            {{
+                                handleRestrictions(
+                                    findEffectiveRule(
+                                        rule,
+                                        `overdue_${
+                                            modal ? i + 1 : triggerNumber
+                                        }_set_lost_value`
+                                    ).value
+                                )
+                            }}
+                        </span>
+                    </td>
+
+                    <!-- Charge Replacement Cost -->
+                    <td>
+                        <span
+                            :class="{
+                                fallback: findEffectiveRule(
+                                    rule,
+                                    `overdue_${
+                                        modal ? i + 1 : triggerNumber
+                                    }_charge_replacement_cost`
+                                ).isFallback,
+                            }"
+                        >
+                            {{
+                                handleRestrictions(
+                                    findEffectiveRule(
+                                        rule,
+                                        `overdue_${
+                                            modal ? i + 1 : triggerNumber
+                                        }_charge_replacement_cost`
+                                    ).value
+                                )
+                            }}
+                        </span>
+                    </td>
+
+                    <!-- Mark as returned -->
+                    <td>
+                        <span
+                            :class="{
+                                fallback: findEffectiveRule(
+                                    rule,
+                                    `overdue_${
+                                        modal ? i + 1 : triggerNumber
+                                    }_mark_as_returned`
+                                ).isFallback,
+                            }"
+                        >
+                            {{
+                                handleRestrictions(
+                                    findEffectiveRule(
+                                        rule,
+                                        `overdue_${
+                                            modal ? i + 1 : triggerNumber
+                                        }_mark_as_returned`
+                                    ).value
+                                )
+                            }}
+                        </span>
+                    </td>
+
                     <td class="actions">
                         <router-link
                             :to="{
@@ -362,6 +446,9 @@ export default {
                         [`overdue_${i}_notice`]: null,
                         [`overdue_${i}_mtt`]: null,
                         [`overdue_${i}_restrict`]: null,
+                        [`overdue_${i}_set_lost_value`]: null,
+                        [`overdue_${i}_charge_replacement_cost`]: null,
+                        [`overdue_${i}_mark_as_returned`]: null,
                     };
 
                     // Add the new rule to contextRules
@@ -391,7 +478,6 @@ export default {
                         rule[`overdue_${number}_notice`] ||
                         rule[`overdue_${number}_mtt`] ||
                         rule[`overdue_${number}_restrict`] ||
-                        // rule[`overdue_${number}_set_lost_value`])
                         rule[`overdue_${number}_set_lost_value`] ||
                         rule[`overdue_${number}_charge_replacement_cost`] ||
                         rule[`overdue_${number}_mark_as_returned`])
