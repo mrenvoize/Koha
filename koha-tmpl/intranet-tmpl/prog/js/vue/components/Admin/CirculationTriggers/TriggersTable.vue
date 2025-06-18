@@ -263,17 +263,17 @@
                                     rule,
                                     `overdue_${
                                         modal ? i + 1 : triggerNumber
-                                    }_set_lost_value`
+                                    }_set_lost`
                                 ).isFallback,
                             }"
                         >
                             {{
-                                handleRestrictions(
+                                handleLostValue(
                                     findEffectiveRule(
                                         rule,
                                         `overdue_${
                                             modal ? i + 1 : triggerNumber
-                                        }_set_lost_value`
+                                        }_set_lost`
                                     ).value
                                 )
                             }}
@@ -389,6 +389,7 @@ export default {
         "categories",
         "itemTypes",
         "letters",
+        "lostValues"
     ],
     data() {
         return {
@@ -446,7 +447,7 @@ export default {
                         [`overdue_${i}_notice`]: null,
                         [`overdue_${i}_mtt`]: null,
                         [`overdue_${i}_restrict`]: null,
-                        [`overdue_${i}_set_lost_value`]: null,
+                        [`overdue_${i}_set_lost`]: null,
                         [`overdue_${i}_charge_replacement_cost`]: null,
                         [`overdue_${i}_mark_as_returned`]: null,
                     };
@@ -478,7 +479,7 @@ export default {
                         rule[`overdue_${number}_notice`] ||
                         rule[`overdue_${number}_mtt`] ||
                         rule[`overdue_${number}_restrict`] ||
-                        rule[`overdue_${number}_set_lost_value`] ||
+                        rule[`overdue_${number}_set_lost`] ||
                         rule[`overdue_${number}_charge_replacement_cost`] ||
                         rule[`overdue_${number}_mark_as_returned`])
             );
@@ -486,6 +487,10 @@ export default {
         handleNotice(notice) {
             const letter = this.letters.find(letter => letter.code === notice);
             return letter ? letter.name : notice;
+        },
+        handleLostValue(authorised_value_id) {
+            const lost_value = this.lostValues.find(lost_value => lost_value.authorised_value_id.toString() === authorised_value_id);
+            return lost_value ? lost_value.description : authorised_value_id;
         },
         findEffectiveRule(ruleSet, key) {
             // Check if the current rule's value for the key is null

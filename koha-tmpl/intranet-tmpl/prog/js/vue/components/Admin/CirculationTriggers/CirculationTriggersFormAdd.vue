@@ -164,6 +164,7 @@
                             :ruleBeingEdited="ruleBeingEdited"
                             :triggerBeingEdited="triggerBeingEdited"
                             :letters="filteredLetters"
+                            :lostValues="this.lostValues"
                         />
                     </div>
                 </fieldset>

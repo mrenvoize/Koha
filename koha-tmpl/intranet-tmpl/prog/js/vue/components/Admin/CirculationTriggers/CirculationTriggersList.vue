@@ -146,6 +146,7 @@
                         :categories="categories"
                         :itemTypes="itemTypes"
                         :letters="letters"
+                        :lostValues="this.lostValues"
                     />
                 </div>
             </template>
@@ -194,15 +195,17 @@ export default {
     },
     beforeRouteEnter(to, from, next) {
         next(vm => {
-            vm.getLibraries().then(() =>
-                vm.getCategories().then(() =>
-                    vm.getItemTypes().then(() =>
-                        vm.getCircRules({}, true).then(() => {
-                            vm.tabSelected = to.query.trigger
-                                ? `Notice ${to.query.trigger}`
-                                : "Notice 1";
-                            vm.initialized = true;
-                        })
+            vm.getLostValues().then(
+                vm.getLibraries().then(() =>
+                    vm.getCategories().then(() =>
+                        vm.getItemTypes().then(() =>
+                            vm.getCircRules({}, true).then(() => {
+                                vm.tabSelected = to.query.trigger
+                                    ? `Notice ${to.query.trigger}`
+                                    : "Notice 1";
+                                vm.initialized = true;
+                            })
+                        )
                     )
                 )
             );
@@ -260,6 +263,12 @@ export default {
                 },
                 error => {}
             );
+        },
+        async getLostValues() {
+            const client = APIClient.authorised_values;
+            await client.values.get("lost").then(lostValues => {
+                this.lostValues = lostValues;
+            });
         },
         async handleLibrarySelection(e) {
             if (!e) e = "";

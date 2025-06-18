@@ -190,9 +190,9 @@ our $RULE_KINDS = {
         scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
         can_be_blank => 0,
     },
-    overdue_X_set_lost_value => {
+    overdue_X_set_lost => {
         scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
-        can_be_blank => 0,
+        can_be_blank => 1,
     },
     overdue_X_charge_replacement_cost => {
         scope        => [ 'branchcode', 'categorycode', 'itemtype' ],
