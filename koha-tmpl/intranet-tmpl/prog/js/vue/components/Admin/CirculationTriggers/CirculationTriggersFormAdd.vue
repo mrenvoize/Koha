@@ -268,41 +268,31 @@
                             </div>
                         </li>
                         <li>
-                            <label for="set_lost_value"
+                            <label for="set_lost"
                                 >{{ $__("Set Lost Value") }}:</label
                             >
-                            <div>
-                                <input
-                                    type="radio"
-                                    id="set_lost_value-yes"
-                                    v-model="newRule.set_lost_value"
-                                    :value="1"
-                                />
-                                {{ $__("Yes") }}
-
-                                <input
-                                    type="radio"
-                                    id="set_lost_value-no"
-                                    v-model="newRule.set_lost_value"
-                                    :value="0"
-                                />
-                                {{ $__("No") }}
-
-                                <input
-                                    type="radio"
-                                    id="set_lost_value-fallback"
-                                    v-model="newRule.set_lost_value"
-                                    :value="null"
-                                />
-                                {{ $__("Fallback to default") }}
-                                <span v-if="fallbackRule.set_lost_value !== null">
-                                    ({{
-                                        fallbackRule.set_lost_value === 1
-                                            ? $__("Yes")
-                                            : $__("No")
-                                    }})
-                                </span>
-                            </div>
+                            <v-select
+                                id="set_lost"
+                                v-model="newRule.set_lost"
+                                label="description"
+                                :reduce="val => val.authorised_value_id"
+                                :options="lostValues"
+                            >
+                                <template #search="{ attributes, events }">
+                                    <input
+                                        class="vs__search"
+                                        v-bind="attributes"
+                                        v-on="events"
+                                        :placeholder="
+                                            newRule.set_lost === null ||
+                                            newRule.set_lost === undefined ||
+                                            newRule.set_lost.length === 0
+                                                ? fallbackRule.set_lost
+                                                : ''
+                                        "
+                                    />
+                                </template>
+                            </v-select>
                         </li>
                         <li>
                             <label for="charge_replacement_cost"
@@ -332,9 +322,15 @@
                                     :value="null"
                                 />
                                 {{ $__("Fallback to default") }}
-                                <span v-if="fallbackRule.charge_replacement_cost !== null">
+                                <span
+                                    v-if="
+                                        fallbackRule.charge_replacement_cost !==
+                                        null
+                                    "
+                                >
                                     ({{
-                                        fallbackRule.charge_replacement_cost === 1
+                                        fallbackRule.charge_replacement_cost ===
+                                        1
                                             ? $__("Yes")
                                             : $__("No")
                                     }})
@@ -369,7 +365,11 @@
                                     :value="null"
                                 />
                                 {{ $__("Fallback to default") }}
-                                <span v-if="fallbackRule.mark_as_returned !== null">
+                                <span
+                                    v-if="
+                                        fallbackRule.mark_as_returned !== null
+                                    "
+                                >
                                     ({{
                                         fallbackRule.mark_as_returned === 1
                                             ? $__("Yes")
@@ -387,7 +387,8 @@
                         {{ " " + newTriggerNumber }}
                     </legend>
                     <legend v-else>
-                        {{ $__("Edit notice for trigger") }} {{ " " + newTriggerNumber }}
+                        {{ $__("Edit notice for trigger") }}
+                        {{ " " + newTriggerNumber }}
                     </legend>
                     <ol>
                         <!-- <li>
@@ -536,6 +537,7 @@ export default {
             libraries: null,
             categories: null,
             itemTypes: null,
+            lostValues: null,
             circRules: [],
             newRule: {
                 item_type_id: "*",
@@ -579,15 +581,17 @@ export default {
     },
     beforeRouteEnter(to, from, next) {
         next(vm => {
-            vm.getLibraries().then(() =>
-                vm.getCategories().then(() =>
-                    vm.getItemTypes().then(() =>
-                        vm.getCircRules().then(() => {
-                            const { query } = to;
-                            vm.checkForExistingRules(query).then(
-                                () => (vm.initialized = true)
-                            );
-                        })
+            vm.getLostValues().then(() =>
+                vm.getLibraries().then(() =>
+                    vm.getCategories().then(() =>
+                        vm.getItemTypes().then(() =>
+                            vm.getCircRules().then(() => {
+                                const { query } = to;
+                                vm.checkForExistingRules(query).then(
+                                    () => (vm.initialized = true)
+                                );
+                            })
+                        )
                     )
                 )
             );
@@ -612,12 +616,13 @@ export default {
                 this.newRule.notice;
             circRule[`overdue_${this.newTriggerNumber}_restrict`] =
                 this.newRule.restrict;
-            circRule[`overdue_${this.newTriggerNumber}_set_lost_value`] =
-                this.newRule.set_lost_value
-            circRule[`overdue_${this.newTriggerNumber}_charge_replacement_cost`] =
-                this.newRule.charge_replacement_cost
+            circRule[`overdue_${this.newTriggerNumber}_set_lost`] =
+                this.newRule.set_lost;
+            circRule[
+                `overdue_${this.newTriggerNumber}_charge_replacement_cost`
+            ] = this.newRule.charge_replacement_cost;
             circRule[`overdue_${this.newTriggerNumber}_mark_as_returned`] =
-                this.newRule.mark_as_returned
+                this.newRule.mark_as_returned;
             circRule[`overdue_${this.newTriggerNumber}_mtt`] =
                 this.newRule.mtt && this.newRule.mtt.length
                     ? this.newRule.mtt.join(",")
@@ -689,6 +694,12 @@ export default {
                 },
                 error => {}
             );
+        },
+        async getLostValues() {
+            const client = APIClient.authorised_values;
+            await client.values.get("lost").then(lostValues => {
+                this.lostValues = lostValues;
+            });
         },
         async handleContextChange() {
             await this.checkForExistingRules();
