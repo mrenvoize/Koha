@@ -351,7 +351,7 @@
                     </td>
                 </tr>
                 <tr v-if="modal">
-                    <td colspan="7"></td>
+                    <td colspan="10"></td>
                     <td class="actions">
                         <router-link
                             :to="{
