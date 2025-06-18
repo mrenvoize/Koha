@@ -253,13 +253,18 @@ export default {
         },
         async getCircRules(params = {}) {
             params.effective = false;
+            const library_id = params.library_id;
+            delete params.library_id;
+
             const client = APIClient.circRule;
+
+            // FIXME: update getAll so that it may retrieve all rows matching a WHERE col_name IN [...array of values] conditions
             await client.circRules.getAll({}, params).then(
                 rules => {
                     const { numberOfTabs, rulesPerTrigger: circRules } =
                         this.splitCircRulesByTriggerNumber(rules);
                     this.numberOfTabs = numberOfTabs;
-                    this.circRules = circRules;
+                    this.circRules = circRules.filter(circRule => circRule.context.library_id === library_id || circRule.context.library_id === "*");
                 },
                 error => {}
             );
