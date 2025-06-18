@@ -296,41 +296,41 @@
                             </v-select>
                         </li>
                         <li>
-                            <label for="charge_replacement_cost"
+                            <label for="charge_cost"
                                 >{{ $__("Charge replacement cost") }}:</label
                             >
                             <div>
                                 <input
                                     type="radio"
-                                    id="charge_replacement_cost-yes"
-                                    v-model="newRule.charge_replacement_cost"
+                                    id="charge_cost-yes"
+                                    v-model="newRule.charge_cost"
                                     :value="1"
                                 />
                                 {{ $__("Yes") }}
 
                                 <input
                                     type="radio"
-                                    id="charge_replacement_cost-no"
-                                    v-model="newRule.charge_replacement_cost"
+                                    id="charge_cost-no"
+                                    v-model="newRule.charge_cost"
                                     :value="0"
                                 />
                                 {{ $__("No") }}
 
                                 <input
                                     type="radio"
-                                    id="charge_replacement_cost-fallback"
-                                    v-model="newRule.charge_replacement_cost"
+                                    id="charge_cost-fallback"
+                                    v-model="newRule.charge_cost"
                                     :value="null"
                                 />
                                 {{ $__("Fallback to default") }}
                                 <span
                                     v-if="
-                                        fallbackRule.charge_replacement_cost !==
+                                        fallbackRule.charge_cost !==
                                         null
                                     "
                                 >
                                     ({{
-                                        fallbackRule.charge_replacement_cost ===
+                                        fallbackRule.charge_cost ===
                                         1
                                             ? $__("Yes")
                                             : $__("No")
@@ -620,8 +620,8 @@ export default {
             circRule[`overdue_${this.newTriggerNumber}_set_lost`] =
                 this.newRule.set_lost;
             circRule[
-                `overdue_${this.newTriggerNumber}_charge_replacement_cost`
-            ] = this.newRule.charge_replacement_cost;
+                `overdue_${this.newTriggerNumber}_charge_cost`
+            ] = this.newRule.charge_cost;
             circRule[`overdue_${this.newTriggerNumber}_mark_as_returned`] =
                 this.newRule.mark_as_returned;
             circRule[`overdue_${this.newTriggerNumber}_mtt`] =

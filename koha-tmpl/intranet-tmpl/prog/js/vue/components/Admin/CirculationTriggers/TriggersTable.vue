@@ -288,7 +288,7 @@
                                     rule,
                                     `overdue_${
                                         modal ? i + 1 : triggerNumber
-                                    }_charge_replacement_cost`
+                                    }_charge_cost`
                                 ).isFallback,
                             }"
                         >
@@ -298,7 +298,7 @@
                                         rule,
                                         `overdue_${
                                             modal ? i + 1 : triggerNumber
-                                        }_charge_replacement_cost`
+                                        }_charge_cost`
                                     ).value
                                 )
                             }}
@@ -448,7 +448,7 @@ export default {
                         [`overdue_${i}_mtt`]: null,
                         [`overdue_${i}_restrict`]: null,
                         [`overdue_${i}_set_lost`]: null,
-                        [`overdue_${i}_charge_replacement_cost`]: null,
+                        [`overdue_${i}_charge_cost`]: null,
                         [`overdue_${i}_mark_as_returned`]: null,
                     };
 
@@ -480,7 +480,7 @@ export default {
                         rule[`overdue_${number}_mtt`] ||
                         rule[`overdue_${number}_restrict`] ||
                         rule[`overdue_${number}_set_lost`] ||
-                        rule[`overdue_${number}_charge_replacement_cost`] ||
+                        rule[`overdue_${number}_charge_cost`] ||
                         rule[`overdue_${number}_mark_as_returned`])
             );
         },
