@@ -97,60 +97,6 @@
                             </v-select>
                             <span class="required">{{ $__("Required") }}</span>
                         </li>
-                        <li>
-                            <label for="overdue_delay" class="required"
-                                >{{ $__("Delay") }}:
-                            </label>
-                            <div class="numeric-input-wrapper">
-                                <div class="input-with-clear">
-                                    <input
-                                        id="overdue_delay"
-                                        v-model="newRule.delay"
-                                        type="number"
-                                        :placeholder="fallbackRule.delay"
-                                        :min="minDelay"
-                                        :max="maxDelay"
-                                        class="numeric-input"
-                                    />
-                                    <button
-                                        v-if="
-                                            newRule.delay !== null &&
-                                            newRule.delay !== undefined
-                                        "
-                                        type="button"
-                                        class="clear-btn"
-                                        @click="newRule.delay = null"
-                                    >
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            width="10"
-                                            height="10"
-                                        >
-                                            <path
-                                                d="M6.895455 5l2.842897-2.842898c.348864-.348863.348864-.914488 0-1.263636L9.106534.261648c-.348864-.348864-.914489-.348864-1.263636 0L5 3.104545 2.157102.261648c-.348863-.348864-.914488-.348864-1.263636 0L.261648.893466c-.348864.348864-.348864.914489 0 1.263636L3.104545 5 .261648 7.842898c-.348864.348863-.348864.914488 0 1.263636l.631818.631818c.348864.348864.914773.348864 1.263636 0L5 6.895455l2.842898 2.842897c.348863.348864.914772.348864 1.263636 0l.631818-.631818c.348864-.348864.348864-.914489 0-1.263636L6.895455 5z"
-                                            ></path>
-                                        </svg>
-                                    </button>
-                                    <div class="chevron-buttons">
-                                        <button
-                                            type="button"
-                                            class="increment-btn"
-                                            @click="incrementDelay"
-                                        >
-                                            ▴
-                                        </button>
-                                        <button
-                                            type="button"
-                                            class="decrement-btn"
-                                            @click="decrementDelay"
-                                        >
-                                            ▾
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            <span class="required">{{ $__("Required") }}</span>
-                        </li>
                     </ol>
 
                     <div
@@ -178,7 +124,7 @@
                         {{ $__("Edit trigger") }} {{ " " + newTriggerNumber }}
                     </legend>
                     <ol>
-                        <!-- <li>
+                        <li>
                             <label for="overdue_delay"
                                 >{{ $__("Delay") }}:
                             </label>
@@ -230,7 +176,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </li> -->
+                        </li>
                         <li>
                             <label for="restricts"
                                 >{{ $__("Restricts checkouts") }}:</label
