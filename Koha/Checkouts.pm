@@ -136,21 +136,19 @@ Fetches all overdues, and optionally filters by
 sub GetOverduesBy {
     my ($parameters) = shift;
 
-    # my $borrowernumber = $parameters->{'borrowernumber'} // '';
-    # warn $borrowernumber;
+    my %attributes;
 
-    my %attributes = (
-
-        # alternative to 'join' to be considered - would load much more data though, most of it likely being unecessary
-        # prefetch  => {
-        #     'patron' => 'category',
-        #     'item' => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
-        # },
-        join => {
+    if ( $parameters->{get_summary} != 1 ) {
+        $attributes{prefetch} = {
             'patron' => 'category',
             'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
-        },
-        '+select' => [
+        };
+    } else {
+        $attributes{join} = {
+            'patron' => 'category',
+            'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
+        };
+        $attributes{'+select'} = [
             'borrowernumber',
             'patron.firstname',
             'patron.surname',
@@ -168,8 +166,9 @@ sub GetOverduesBy {
             'biblioitem.itemtype',
             'homebranch.branchname',
             'category.overduenoticerequired',
-        ],
-        '+as' => [
+            'item.homebranch',
+        ];
+        $attributes{'+as'} = [
             'borrowernumber',
             'patron_firstname',
             'patron_surname',
@@ -187,10 +186,11 @@ sub GetOverduesBy {
             'biblioitem_itemtype',
             'homebranch_branchname',
             'category_overduenoticerequired',
-        ],
-    );
+            'item_homebranch',
+        ];
+    }
 
-    # # FILTERS:
+    # FILTERS:
 
     my %conditions;
 
