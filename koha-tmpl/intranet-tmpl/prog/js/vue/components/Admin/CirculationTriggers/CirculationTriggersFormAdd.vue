@@ -222,7 +222,7 @@
                                 id="set_lost"
                                 v-model="newRule.set_lost"
                                 label="description"
-                                :reduce="val => val.authorised_value_id"
+                                :reduce="val => val.value"
                                 :options="lostValues"
                             >
                                 <template #search="{ attributes, events }">
@@ -269,15 +269,9 @@
                                     :value="null"
                                 />
                                 {{ $__("Fallback to default") }}
-                                <span
-                                    v-if="
-                                        fallbackRule.charge_cost !==
-                                        null
-                                    "
-                                >
+                                <span v-if="fallbackRule.charge_cost !== null">
                                     ({{
-                                        fallbackRule.charge_cost ===
-                                        1
+                                        fallbackRule.charge_cost === 1
                                             ? $__("Yes")
                                             : $__("No")
                                     }})
@@ -565,9 +559,8 @@ export default {
                 this.newRule.restrict;
             circRule[`overdue_${this.newTriggerNumber}_set_lost`] =
                 this.newRule.set_lost;
-            circRule[
-                `overdue_${this.newTriggerNumber}_charge_cost`
-            ] = this.newRule.charge_cost;
+            circRule[`overdue_${this.newTriggerNumber}_charge_cost`] =
+                this.newRule.charge_cost;
             circRule[`overdue_${this.newTriggerNumber}_mark_as_returned`] =
                 this.newRule.mark_as_returned;
             circRule[`overdue_${this.newTriggerNumber}_mtt`] =
