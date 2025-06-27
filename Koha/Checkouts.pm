@@ -138,57 +138,59 @@ sub GetOverduesBy {
 
     my %attributes;
 
-    if ( $parameters->{get_summary} != 1 ) {
-        $attributes{prefetch} = {
-            'patron' => 'category',
-            'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
-        };
-    } else {
-        $attributes{join} = {
-            'patron' => 'category',
-            'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
-        };
-        $attributes{'+select'} = [
-            'borrowernumber',
-            'patron.firstname',
-            'patron.surname',
-            'patron.address',
-            'patron.address2',
-            'patron.city',
-            'patron.zipcode',
-            'patron.country',
-            'patron.email',
-            'patron.emailpro',
-            'patron.B_email',
-            'patron.smsalertnumber',
-            'patron.phone',
-            'patron.cardnumber',
-            'biblioitem.itemtype',
-            'homebranch.branchname',
-            'category.overduenoticerequired',
-            'item.homebranch',
-        ];
-        $attributes{'+as'} = [
-            'borrowernumber',
-            'patron_firstname',
-            'patron_surname',
-            'patron_address',
-            'patron_address2',
-            'patron_city',
-            'patron_zipcode',
-            'patron_country',
-            'patron_email',
-            'patron_emailpro',
-            'patron_B_email',
-            'patron_smsalertnumber',
-            'patron_phone',
-            'patron_cardnumber',
-            'biblioitem_itemtype',
-            'homebranch_branchname',
-            'category_overduenoticerequired',
-            'item_homebranch',
-        ];
-    }
+    # if ( $parameters->{get_summary} != 1 ) {
+    #     warn 'ran prefetch';
+    #     $attributes{prefetch} = {
+    #         'patron' => 'category',
+    #         'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
+    #     };
+    # } else {
+    $attributes{join} = {
+        'patron' => 'category',
+        'item'   => [ 'homebranch', { 'biblio' => 'biblioitem' } ]
+    };
+
+    # $attributes{'+select'} = [
+    #     'borrowernumber',
+    #     'patron.firstname',
+    #     'patron.surname',
+    #     'patron.address',
+    #     'patron.address2',
+    #     'patron.city',
+    #     'patron.zipcode',
+    #     'patron.country',
+    #     'patron.email',
+    #     'patron.emailpro',
+    #     'patron.B_email',
+    #     'patron.smsalertnumber',
+    #     'patron.phone',
+    #     'patron.cardnumber',
+    #     'biblioitem.itemtype',
+    #     'homebranch.branchname',
+    #     'category.overduenoticerequired',
+    #     'item.homebranch',
+    # ];
+    # $attributes{'+as'} = [
+    #     'borrowernumber',
+    #     'patron_firstname',
+    #     'patron_surname',
+    #     'patron_address',
+    #     'patron_address2',
+    #     'patron_city',
+    #     'patron_zipcode',
+    #     'patron_country',
+    #     'patron_email',
+    #     'patron_emailpro',
+    #     'patron_B_email',
+    #     'patron_smsalertnumber',
+    #     'patron_phone',
+    #     'patron_cardnumber',
+    #     'biblioitem_itemtype',
+    #     'homebranch_branchname',
+    #     'category_overduenoticerequired',
+    #     'item_homebranch',
+    # ];
+    # }
 
     # FILTERS:
 

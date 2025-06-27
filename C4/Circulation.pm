@@ -4298,8 +4298,10 @@ $params:
 
 =cut
 
+# TODO: consider using  C4::Accounts::chargelostitem directly instead of changing/ using this
+# TODO: if not, update tests
 sub LostItem {
-    my ( $itemnumber, $mark_lost_from, $force_mark_returned, $params ) = @_;
+    my ( $itemnumber, $mark_lost_from, $force_mark_returned, $override_charge_cost, $params ) = @_;
 
     unless ($mark_lost_from) {
 
@@ -4337,7 +4339,9 @@ sub LostItem {
         defined($fix)
             or warn "_FixOverduesOnReturn($borrowernumber, $itemnumber...) failed!";    # zero is OK, check defined
 
-        if ( C4::Context->preference('WhenLostChargeReplacementFee') ) {
+        if (   ( defined $override_charge_cost && $override_charge_cost == 1 )
+            || ( !defined $override_charge_cost && C4::Context->preference('WhenLostChargeReplacementFee') ) )
+        {
             C4::Accounts::chargelostitem(
                 $borrowernumber,
                 $itemnumber,
