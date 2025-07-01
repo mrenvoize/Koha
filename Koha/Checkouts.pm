@@ -333,7 +333,7 @@ END_SQL
         }
         push @borrower_parameters, @itemtypes;
     }
-    $borrower_sql .= '  ORDER BY issues.borrowernumber';
+    $borrower_sql .= '  AND categories.overduenoticerequired=1 ORDER BY issues.borrowernumber';
 
     # $sth gets borrower info if at least one overdue item has triggered the overdue action.
     my $sth = $dbh->prepare($borrower_sql);
