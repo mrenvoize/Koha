@@ -1,5 +1,16 @@
 #!/usr/bin/perl
 
+# TODO: determine which flags to allow if the script is run manually
+# -> update the help menu accordingly
+# -> update the code accordingly
+# TODO: test and amend functionality for
+#        - mark returned
+#        - restrict
+#        - notice (+ mtt)
+#        - charge_cost
+#      so far the focus has been on set_lost
+# TODO: set and test sys prefs, amend accordingly
+
 # Copyright 2008 Liblime
 # Copyright 2010 BibLibre
 #
@@ -29,16 +40,18 @@ use DateTime::Duration;
 use Koha::Script -cron;
 use C4::Context;
 use C4::Letters;
-use C4::Overdues    qw( parse_overdues_letter );
-use C4::Log         qw( cronlogaction );
-use C4::Circulation qw( LostItem MarkIssueReturned );
-
+use C4::Overdues             qw( parse_overdues_letter );
+use C4::Log                  qw( cronlogaction );
 use Koha::Patron::Debarments qw( AddUniqueDebarment );
 use Koha::DateUtils          qw( dt_from_string output_pref );
 use Koha::Calendar;
 use Koha::Libraries;
 use Koha::Acquisition::Currencies;
 use Koha::Patrons;
+
+# added (absent from longoverdues.pl)
+use C4::Circulation qw( LostItem MarkIssueReturned );
+use Koha::Checkouts;
 
 =head1 NAME
 
@@ -310,6 +323,7 @@ my $MAX         = 90;
 my $test_mode   = 0;
 my $frombranch  = 'item-issuebranch';
 my $itype_level = C4::Context->preference('item-level_itypes') ? 'item' : 'biblioitem';
+my @branchcodes;      # Branch(es) passed as parameter
 my @emails_to_use;    # Emails to use for messaging
 my @emails;           # Emails given in command-line parameters
 my $csvfilename;
@@ -353,7 +367,7 @@ GetOptions(
     'email=s'        => \@emails,
     'frombranch=s'   => \$frombranch,       # takes item-homebranch or item-issuebranch or patron-homebranch
 
-    # ADDED
+    # ADDED - currently not implemented (only read values from relevant circ rules)
     'mark-returned'           => \$mark_returned,
     'set-lost-value'          => \$set_lost,        # was 'lost' in longoverdues
     'charge-replacement-cost' => \$charge_cost,
@@ -379,6 +393,7 @@ my @branches;                                                          # Branche
 my $branchcount = scalar(@overduebranches);
 
 my $overduebranch_word = scalar @overduebranches > 1 ? 'branches' : 'branch';
+my $branchcodes_word   = scalar @branchcodes > 1     ? 'branches' : 'branch';
 
 my $PrintNoticesMaxLines = C4::Context->preference('PrintNoticesMaxLines');
 
@@ -390,8 +405,41 @@ if ($branchcount) {
     $verbose and die 'No branches with active overduerules';
 }
 
+if (@branchcodes) {
+    $verbose and warn "$branchcodes_word @branchcodes passed on parameter\n";
+
+    # Getting libraries which have overdue rules
+    my %seen = map { $_ => 1 } @branchcodes;
+    @branches = grep { $seen{$_} } @overduebranches;
+
+    if (@branches) {
+
+        my $branch_word = scalar @branches > 1 ? 'branches' : 'branch';
+        $verbose and warn "$branch_word @branches have overdue rules\n";
+
+    } else {
+
+        $verbose and warn "No active overduerules for $branchcodes_word  '@branchcodes'\n";
+        ( scalar grep { '' eq $_ } @branches )
+            or die "No active overduerules for DEFAULT either!";
+        $verbose and warn "Falling back on default rules for @branchcodes\n";
+        @branches = ('');
+    }
+}
 my $date_to_run = dt_from_string();
 my $date        = "NOW()";
+if ($date_input) {
+    eval { $date_to_run = dt_from_string( $date_input, 'iso' ); };
+    die "$date_input is not a valid date, aborting! Use a date in format YYYY-MM-DD."
+        if $@ or not $date_to_run;
+
+    # It's certainly useless to escape $date_input
+    # dt_from_string should not return something if $date_input is not correctly set.
+    $date = $dbh->quote($date_input);
+} else {
+    $date        = "NOW()";
+    $date_to_run = dt_from_string();
+}
 
 # these are the fields that will be substituted into <<item.content>>
 my @item_content_fields = split( /,/, $itemscontent );
@@ -467,11 +515,6 @@ if (@myitemtypes) {
 my %already_queued;
 my %seen = map { $_ => 1 } @branches;
 
-use Data::Dumper;
-
-#FIXME: is it best to iterate first, then fetch smaller amounts of data for each specific iteration, or is it best to fetch all the data in one go, then iterate through?
-#FIXME: any way to avoid the deeply nested loops?
-
 # # Work through branches
 my @output_chunks;
 foreach my $branchcode (@branches) {
@@ -491,7 +534,10 @@ foreach my $branchcode (@branches) {
     $verbose and print "======================================\n";
     $verbose and warn sprintf "branchcode : '%s' using %s\n", $branchcode, $branch_email_address;
 
-    # Work through patron categories
+    # ========================================================
+    # MOST CHANGES TO THE CODE FROM OVERDUENOTICES START HERE
+    # ========================================================
+
     # TODO: check if the following sys pref needs accounting for
     # my $categories = C4::Context->preference('DefaultLongOverduePatronCategories');
     # if ( $categories ) {
@@ -500,8 +546,6 @@ foreach my $branchcode (@branches) {
     # } -> IRRELEVANT - we run this for categories
 
     for my $borrower_category (@categories) {
-
-        use Koha::Checkouts;
         my $parameters = {};
         $parameters->{item_homebranch}     = $branchcode;
         $parameters->{patron_categorycode} = $borrower_category;
@@ -541,6 +585,7 @@ foreach my $branchcode (@branches) {
             my $itemtype = $overdue->{itype} // $overdue->{itemtype};
 
             # FIXME: not easily printed as the SQL was moved to Koha::Checkouts
+            # -> do we need to find a way to achieve this?
             # if ( $verbose > 1 ) {
             #     warn sprintf "--------Borrower SQL------\n";
             #     warn $borrower_sql
