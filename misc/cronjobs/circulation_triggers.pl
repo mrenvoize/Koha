@@ -514,17 +514,19 @@ foreach my $branchcode (@branches) {
         my $borrower_overdues_notices_triggers = {};
 
         foreach my $overdue (@overdues) {
-            if ( !defined $borrower_overdues_notices_triggers->{borrowernumber} ) {
+            unless ( defined $borrower_overdues_notices_triggers->{borrowernumber} ) {
                 if ($verbose) {
                     warn "\n-----------------------------------------\n";
                     warn "Collecting overdue triggers for borrower " . $overdue->{borrowernumber} . "\n";
                 }
                 $borrower_overdues_notices_triggers = {
                     borrowernumber => $overdue->{borrowernumber},
-                    branchcode => $branchcode
+                    branchcode     => $branchcode
                 };
             } elsif ( $borrower_overdues_notices_triggers->{borrowernumber} ne $overdue->{borrowernumber} ) {
-                $verbose and warn "Collected overdue triggers for " . $borrower_overdues_notices_triggers->{borrowernumber} . "\n";
+                $verbose
+                    and warn "Collected overdue triggers for "
+                    . $borrower_overdues_notices_triggers->{borrowernumber} . "\n";
                 _enact_notice_triggers_by_borrower($borrower_overdues_notices_triggers);
                 if ($verbose) {
                     warn "\n-----------------------------------------\n";
@@ -532,7 +534,7 @@ foreach my $branchcode (@branches) {
                 }
                 $borrower_overdues_notices_triggers = {
                     borrowernumber => $overdue->{borrowernumber},
-                    branchcode => $branchcode
+                    branchcode     => $branchcode
                 };
             }
 
@@ -559,11 +561,11 @@ foreach my $branchcode (@branches) {
             _collect_or_enact_applicable_triggers(
                 $borrower_overdues_notices_triggers,
                 {
-                    'borrower_category' => $borrower_category, 
-                    'branchcode' => $branchcode, 
-                    'itemtype' => $itemtype,
-                    'overdue' => $overdue ,
-                    'calendar' => $calendar
+                    'borrower_category' => $borrower_category,
+                    'branchcode'        => $branchcode,
+                    'itemtype'          => $itemtype,
+                    'overdue'           => $overdue,
+                    'calendar'          => $calendar
                 }
             );
         }
@@ -660,12 +662,12 @@ These methods are internal to the operation of circulation_triggers.pl.
 
 sub _collect_or_enact_applicable_triggers {
     my ($borrower_overdues_notices_triggers) = shift;
-    my ($parameters) = shift;
+    my ($parameters)                         = shift;
 
     my $i = 0;
-    PERIOD: while (1) {
+PERIOD: while (1) {
         $i++;
-        my $ii            = $i + 1;
+        my $ii = $i + 1;
 
         my $overdue_rules = Koha::CirculationRules->get_effective_rules(
             {
@@ -681,19 +683,18 @@ sub _collect_or_enact_applicable_triggers {
         );
 
         # end of overdue array reached, stop iterating.s
-        if ( !defined $overdue_rules->{ "overdue_$i" . '_delay' } ) {
+        unless ( defined $overdue_rules->{ "overdue_$i" . '_delay' } ) {
             last PERIOD;
         }
 
         # check period compatibility
         my $mindays =
-            $overdue_rules->{ "overdue_$i" . '_delay' }
-            ;    # the notice will be sent after mindays days (grace period)
+            $overdue_rules->{ "overdue_$i" . '_delay' };    # the notice will be sent after mindays days (grace period)
         my $maxdays = (
               $overdue_rules->{ "overdue_$ii" . '_delay' }
             ? $overdue_rules->{ "overdue_$ii" . '_delay' } - 1
             : ($MAX)
-        );       # issues being more than maxdays late are managed somewhere else. (borrower probably suspended)
+        );    # issues being more than maxdays late are managed somewhere else. (borrower probably suspended)
 
         my $days_between;
         if ( C4::Context->preference('OverdueNoticeCalendar') ) {
@@ -727,36 +728,42 @@ sub _collect_or_enact_applicable_triggers {
         }
 
         # immediately enact relevant long overdue triggers
-        my $set_lost = _get_set_lost_rule($overdue_rules->{"overdue_$i" . '_set_lost'});
-        if ( defined $set_lost) {
-            _enact_set_lost_trigger( $set_lost );
+        my $set_lost = _get_set_lost_rule( $overdue_rules->{ "overdue_$i" . '_set_lost' } );
+        if ( defined $set_lost ) {
+            _enact_set_lost_trigger( $set_lost, $parameters->{overdue}->{itemnumber} );
         }
 
-        my $charge_cost = _get_charge_cost_rule($overdue_rules->{"overdue_$i" . '_charge_cost'});
+        my $charge_cost = _get_charge_cost_rule( $overdue_rules->{ "overdue_$i" . '_charge_cost' } );
         if ($charge_cost) {
-            _enact_charge_cost_trigger($charge_cost, $mark_returned, $parameters->{overdue}->{itemnumber});
+            _enact_charge_cost_trigger( $charge_cost, $mark_returned, $parameters->{overdue}->{itemnumber} );
         }
 
-        if ($overdue_rules->{"overdue_$i" . '_mark_returned'}) {
-            _enact_mark_returned_trigger( $parameters->{overdue}->{borrowernumber}, $parameters->{overdue}->{itemnumber});
+        if ( $overdue_rules->{ "overdue_$i" . '_mark_returned' } ) {
+            _enact_mark_returned_trigger(
+                $parameters->{overdue}->{borrowernumber},
+                $parameters->{overdue}->{itemnumber}
+            );
         }
 
-        if ($overdue_rules->{"overdue_$i" . '_restrict'}) {
-            _enact_restrict_trigger({
-                borrowernumber => $parameters->{overdue}->{borrowernumber},
-                firstname => $parameters->{overdue}->{firstname},
-                surname => $parameters->{overdue}->{surname},
-            });
+        if ( $overdue_rules->{ "overdue_$i" . '_restrict' } ) {
+            _enact_restrict_trigger(
+                {
+                    borrowernumber => $parameters->{overdue}->{borrowernumber},
+                    firstname      => $parameters->{overdue}->{firstname},
+                    surname        => $parameters->{overdue}->{surname},
+                }
+            );
         }
 
         # notice triggers are to be enacted per letter, per transport type (and not per overdue).
         # -> add the notice triggers to the $borrower_overdues_notices_triggers hash so they may be processed later.
         if ( defined $overdue_rules->{ "overdue_$i" . '_notice' } ) {
-            _add_notice_rule_to_borrower_overdues_notices_triggers({
-                    notice => $overdue_rules->{ "overdue_$i" . '_notice' },
-                    restrict => $overdue_rules->{ "overdue_$i" . '_restrict' },
-                    mtt => $overdue_rules->{ "overdue_$i" . '_mtt' },
-                    overdue => $parameters->{overdue},
+            _add_notice_rule_to_borrower_overdues_notices_triggers(
+                {
+                    notice         => $overdue_rules->{ "overdue_$i" . '_notice' },
+                    restrict       => $overdue_rules->{ "overdue_$i" . '_restrict' },
+                    mtt            => $overdue_rules->{ "overdue_$i" . '_mtt' },
+                    overdue        => $parameters->{overdue},
                     trigger_number => $i,
                 },
                 $borrower_overdues_notices_triggers
@@ -772,8 +779,7 @@ sub _collect_or_enact_applicable_triggers {
                 $parameters->{overdue}->{borrowernumber}
             );
             warn sprintf "Overdue matched trigger %s with delay of %s days and overdue due date of %s\n",
-                $i,
-                $triggered, $overdue_rules->{ "overdue_$i" . '_delay' }, $parameters->{overdue}->{date_due};
+                $i, $overdue_rules->{ "overdue_$i" . '_delay' }, $parameters->{overdue}->{date_due};
             warn sprintf "Using letter code '%s'\n",
                 $overdue_rules->{ "overdue_$i" . '_notice' };
         }
@@ -781,12 +787,12 @@ sub _collect_or_enact_applicable_triggers {
 }
 
 sub _get_set_lost_rule {
-    my ( $set_lost_rule ) = @_;
+    my ($set_lost_rule) = @_;
     if ( defined $set_lost_rule ) {
-       return $set_lost_rule;
-    } 
+        return $set_lost_rule;
+    }
     my $longoverdue_value = C4::Context->preference('DefaultLongOverdueLostValue');
-    my $longoverdue_days  = C4::Context->preference('DefaultLongOverdueDays'); 
+    my $longoverdue_days  = C4::Context->preference('DefaultLongOverdueDays');
     if (    defined($longoverdue_value)
         and defined($longoverdue_days)
         and $longoverdue_value ne ''
@@ -799,36 +805,39 @@ sub _get_set_lost_rule {
 }
 
 sub _get_charge_cost_rule {
-    my ( $charge_cost_rule ) = @_;
-    if ( defined $charge_cost_rule ) {  
+    my ($charge_cost_rule) = @_;
+    if ( defined $charge_cost_rule ) {
         return $charge_cost_rule;
-    } 
+    }
     return C4::Context->preference('DefaultLongOverdueChargeValue');
 }
 
 # sub _get_mark_returned_rule {
-#     if ($mark_returned) { 
+#     if ($mark_returned) {
 #         return $mark_returned;
 #     }
 #     # TODO:check if sys pref or other to server as default?
 #     # TODO:if not, simplify
-#     return undef; 
+#     return undef;
 # }
 
 # sub _get_restrict_rule {
-#     if ($restrict) { 
+#     if ($restrict) {
 #         return $restrict;
 #     }
 #     # TODO:check if sys pref or other to server as default?
 #     # TODO:if not, simplify
-#     return undef; 
+#     return undef;
 # }
 
 sub _enact_set_lost_trigger {
     my ( $set_lost, $itemnumber ) = @_;
-    my $lostItem = Koha::Items->find( $itemnumber );
-    $lostItem->itemlost( $set_lost );
-    $lostItem->store;
+    my $lost_item = Koha::Items->find($itemnumber);
+    unless ( defined $lost_item ) {
+        return;
+    }
+    $lost_item->itemlost($set_lost);
+    $lost_item->store;
 }
 
 sub _enact_charge_cost_trigger {
@@ -841,12 +850,12 @@ sub _enact_charge_cost_trigger {
 
 sub _enact_mark_returned_trigger {
     my ( $borrowernumber, $itemnumber ) = @_;
-    my $patron = Koha::Patrons->find( $borrowernumber );
+    my $patron = Koha::Patrons->find($borrowernumber);
     MarkIssueReturned( $borrowernumber, $itemnumber, undef, $patron->privacy );
 }
 
 sub _enact_restrict_trigger {
-    my ( $borrower ) = @_;
+    my ($borrower) = @_;
     AddUniqueDebarment(
         {
             borrowernumber => $borrower->{borrowernumber},
@@ -869,8 +878,10 @@ sub _add_notice_rule_to_borrower_overdues_notices_triggers {
     my ( $parameters, $borrower_overdues_notices_triggers ) = @_;
 
     my @message_transport_types = split( /,/, $parameters->{mtt} );
+
     for my $mtt (@message_transport_types) {
-        push @{ $borrower_overdues_notices_triggers->{triggers}->{ $parameters->{trigger_index} }->{ $parameters->{notice} }->{$mtt} }, $parameters->{overdue};
+        push @{ $borrower_overdues_notices_triggers->{triggers}->{ $parameters->{trigger_number} }
+                ->{ $parameters->{notice} }->{$mtt} }, $parameters->{overdue};
     }
     if ( $parameters->{restrict} ) {
         $borrower_overdues_notices_triggers->{restrict} = 1;
@@ -903,7 +914,8 @@ sub _enact_notice_triggers_by_borrower {
     unless ($nomail) {
         if (@emails) {
             foreach (@emails) {
-                push @emails_to_use, $borrower_overdues_notices_triggers->{$_} if ( $borrower_overdues_notices_triggers->{$_} );
+                push @emails_to_use, $borrower_overdues_notices_triggers->{$_}
+                    if ( $borrower_overdues_notices_triggers->{$_} );
             }
         } else {
             push @emails_to_use, $notice_email if ($notice_email);
@@ -931,7 +943,9 @@ sub _enact_notice_triggers_by_borrower {
                 my $itemcount = 0;
                 my $titles    = "";
                 my @items     = ();
-                for my $item_info ( @{ $borrower_overdues_notices_triggers->{triggers}->{$trigger}->{$notice}->{$effective_mtt} } ) {
+                for my $item_info (
+                    @{ $borrower_overdues_notices_triggers->{triggers}->{$trigger}->{$notice}->{$effective_mtt} } )
+                {
                     if (   ( scalar(@emails_to_use) == 0 || $nomail )
                         && $PrintNoticesMaxLines
                         && $j >= $PrintNoticesMaxLines )
