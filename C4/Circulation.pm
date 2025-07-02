@@ -4285,13 +4285,19 @@ sub ReturnLostItem {
 
 =head2 LostItem
 
-  LostItem( $itemnumber, $mark_lost_from, $force_mark_returned, [$params] );
+  LostItem( $itemnumber, $mark_lost_from, $force_mark_returned, $override_charge_cost, [$params] );
 
 The final optional parameter, C<$params>, expected to contain
 'skip_record_index' key, which relayed down to Koha::Item/store,
 there it prevents calling of ModZebra index_records,
 which takes most of the time in batch adds/deletes: index_records better
 to be called later in C<additem.pl> after the whole loop.
+
+C<$override_charge_cost> allows to override the WhenLostChargeReplacementFee system preference
+and either prevent the replacement cost being charged or ensure it is.
+
+C<$override_mark_returned> allows to override the MarkLostItemsAsReturned system preference
+and either prevent the item being marked as returned or ensure it is.
 
 $params:
     skip_record_index => 1|0
@@ -4300,8 +4306,9 @@ $params:
 
 # TODO: consider using  C4::Accounts::chargelostitem directly instead of changing/ using this
 # TODO: if not, update tests
+# TODO: update other use of that method so parameter format is compatible
 sub LostItem {
-    my ( $itemnumber, $mark_lost_from, $force_mark_returned, $override_charge_cost, $params ) = @_;
+    my ( $itemnumber, $mark_lost_from, $sys_pref_overrides, $params ) = @_;
 
     unless ($mark_lost_from) {
 
@@ -4310,8 +4317,8 @@ sub LostItem {
     }
 
     my $mark_returned;
-    if ($force_mark_returned) {
-        $mark_returned = 1;
+    if ( defined $sys_pref_overrides->{mark_returned} ) {
+        $mark_returned = $sys_pref_overrides->{mark_returned};
     } else {
         my $pref = C4::Context->preference('MarkLostItemsAsReturned') // q{};
         $mark_returned = ( $pref =~ m|$mark_lost_from| );
@@ -4339,8 +4346,11 @@ sub LostItem {
         defined($fix)
             or warn "_FixOverduesOnReturn($borrowernumber, $itemnumber...) failed!";    # zero is OK, check defined
 
-        if (   ( defined $override_charge_cost && $override_charge_cost == 1 )
-            || ( !defined $override_charge_cost && C4::Context->preference('WhenLostChargeReplacementFee') ) )
+        if (
+            ( defined $sys_pref_overrides->{charge_cost} && $sys_pref_overrides->{charge_cost} == 1 )
+            || ( !defined $sys_pref_overrides->{charge_cost}
+                && C4::Context->preference('WhenLostChargeReplacementFee') )
+            )
         {
             C4::Accounts::chargelostitem(
                 $borrowernumber,

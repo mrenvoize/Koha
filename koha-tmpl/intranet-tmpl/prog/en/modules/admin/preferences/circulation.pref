@@ -1207,6 +1207,7 @@ Circulation:
                   1: Charge
                   0: "Don't charge"
             - the replacement price when a patron loses an item.
+            - <br><strong>NOTE:</strong> This system preference is supplementary to circulation triggers and will act as fall back if set.
         -
             - Charge a hold fee
             - pref: HoldFeeMode
