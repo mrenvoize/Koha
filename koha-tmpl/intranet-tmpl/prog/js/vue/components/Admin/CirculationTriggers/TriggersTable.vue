@@ -10,6 +10,9 @@
         <table>
             <thead>
                 <th v-if="!modal">
+                    {{ $__("Library") }}
+                </th>
+                <th v-if="!modal">
                     {{ $__("Patron category") }}
                 </th>
                 <th v-if="!modal">
@@ -60,6 +63,15 @@
                             modal && i + 1 === parseInt(triggerBeingEdited),
                     }"
                 >
+                    <td v-if="!modal">
+                        {{
+                            handleContext(
+                                rule.context.library_id,
+                                libraries,
+                                "library_id"
+                            )
+                        }}
+                    </td>
                     <td v-if="!modal">
                         {{
                             handleContext(
@@ -388,8 +400,9 @@ export default {
         "triggerBeingEdited",
         "categories",
         "itemTypes",
+        "libraries",
         "letters",
-        "lostValues"
+        "lostValues",
     ],
     data() {
         return {
@@ -489,7 +502,11 @@ export default {
             return letter ? letter.name : notice;
         },
         handleLostValue(authorised_value_id) {
-            const lost_value = this.lostValues.find(lost_value => lost_value.authorised_value_id.toString() === authorised_value_id);
+            const lost_value = this.lostValues.find(
+                lost_value =>
+                    lost_value.authorised_value_id.toString() ===
+                    authorised_value_id
+            );
             return lost_value ? lost_value.description : authorised_value_id;
         },
         findEffectiveRule(ruleSet, key) {

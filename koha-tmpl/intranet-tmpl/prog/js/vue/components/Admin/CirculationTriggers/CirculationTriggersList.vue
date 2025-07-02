@@ -145,6 +145,7 @@
                         :triggerNumber="number"
                         :categories="categories"
                         :itemTypes="itemTypes"
+                        :libraries="libraries"
                         :letters="letters"
                         :lostValues="this.lostValues"
                     />
@@ -264,7 +265,11 @@ export default {
                     const { numberOfTabs, rulesPerTrigger: circRules } =
                         this.splitCircRulesByTriggerNumber(rules);
                     this.numberOfTabs = numberOfTabs;
-                    this.circRules = circRules.filter(circRule => circRule.context.library_id === library_id || circRule.context.library_id === "*");
+                    this.circRules = circRules.filter(
+                        circRule =>
+                            circRule.context.library_id === library_id ||
+                            circRule.context.library_id === "*"
+                    );
                 },
                 error => {}
             );
