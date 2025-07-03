@@ -250,6 +250,83 @@ Kyle M Hall <kyle@bywatersolutions.com>
 
 =cut
 
+=head3 filter_by_overdue
+
+my $overdue_checkouts = Koha::Checkouts->filter_by_overdue({
+    date => $date,                     # optional, defaults to today
+    item_homebranch => $branchcode,    # optional
+    item_issuebranch => $branchcode,   # optional alternative to homebranch
+    patron_categorycode => $categorycode, # optional
+    borrowernumber => $borrowernumber,    # optional
+    include_lost => 0,                 # optional, defaults to 0 (exclude lost items)
+    require_notice => 1,               # optional, defaults to 1 (require overduenoticerequired)
+});
+
+Returns a Koha::Checkouts object containing overdue checkouts matching the specified criteria.
+This method uses modern SQL::Abstract syntax and DBIx::Class relationships.
+
+=cut
+
+sub filter_by_overdue {
+    my ( $self, $params ) = @_;
+    $params //= {};
+    
+    my $reference_date = $params->{date} || dt_from_string();
+    my $dtf = Koha::Database->new->schema->storage->datetime_parser;
+    
+    # Base overdue condition
+    my $conditions = {
+        date_due => { '<' => $dtf->format_datetime($reference_date) }
+    };
+    
+    # Optional: exclude lost items (default behavior)
+    unless ( $params->{include_lost} ) {
+        $conditions->{'item.itemlost'} = 0;
+    }
+    
+    # Optional: require overduenoticerequired (default behavior)
+    if ( $params->{require_notice} // 1 ) {
+        $conditions->{'borrower.category.overduenoticerequired'} = 1;
+    }
+    
+    # Optional: filter by patron
+    if ( $params->{borrowernumber} ) {
+        $conditions->{borrowernumber} = $params->{borrowernumber};
+    }
+    
+    # Optional: filter by patron category
+    if ( $params->{patron_categorycode} ) {
+        $conditions->{'borrower.categorycode'} = $params->{patron_categorycode};
+    }
+    
+    # Optional: filter by item homebranch or issuebranch
+    if ( $params->{item_homebranch} ) {
+        $conditions->{'item.homebranch'} = $params->{item_homebranch};
+    } elsif ( $params->{item_issuebranch} ) {
+        $conditions->{branchcode} = $params->{item_issuebranch};
+    }
+    
+    # Join with related tables for filtering and data access
+    my $join_conditions = {
+        join => {
+            item => {
+                biblio => 'biblioitems',
+                home_library => undef
+            },
+            borrower => 'category'
+        },
+        prefetch => {
+            item => {
+                biblio => 'biblioitems',
+                home_library => undef
+            },
+            borrower => 'category'
+        }
+    };
+    
+    return $self->search( $conditions, $join_conditions );
+}
+
 1;
 
 # GetOverdues - alternative SQL version

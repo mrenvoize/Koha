@@ -7,7 +7,8 @@
 #        - charge_cost
 #      (so far the focus has been on set_lost)
 # TODO: set and test sys prefs, amend accordingly
-# TODO: add test for Koha::Checkouts::GetOverduesBy()
+# TODO: add test for Koha::Checkouts->filter_by_overdue()
+# DONE: modernized GetOverduesBy() to use filter_by_overdue() with SQL::Abstract syntax
 # TODO: address the following questions:
 #           - do we need a 'nomail' option ?
 #           - how much logging to we want to do throughout the script?
@@ -129,12 +130,14 @@ foreach my $branchcode (@overduebranches) {
         C4::Context->preference('AddressForFailedOverdueNotices') || $library->inbound_email_address;
 
     for my $borrower_category (@categories) {
-        my $parameters = {};
-        $parameters->{item_homebranch}     = $branchcode;
-        $parameters->{patron_categorycode} = $borrower_category;
-        $parameters->{get_summary}         = 1;
+        my $overdue_checkouts = Koha::Checkouts->filter_by_overdue({
+            item_homebranch => $branchcode,
+            patron_categorycode => $borrower_category,
+            include_lost => 0,
+            require_notice => 1
+        });
 
-        my @overdues = Koha::Checkouts::GetOverduesBy($parameters);
+        my @overdues = map { $_->unblessed_all_relateds } $overdue_checkouts->as_list;
 
         my $borrowernumber;
         my $borrower_overdues_notices_triggers = {};
