@@ -9,13 +9,13 @@
         </div>
         <table>
             <thead>
-                <th v-if="!modal">
+                <th v-if="!modal" class="trigger_context">
                     {{ $__("Library") }}
                 </th>
-                <th v-if="!modal">
+                <th v-if="!modal" class="trigger_context">
                     {{ $__("Patron category") }}
                 </th>
-                <th v-if="!modal">
+                <th v-if="!modal" class="trigger_context border_right">
                     {{ $__("Item type") }}
                 </th>
                 <th v-if="modal">
@@ -63,7 +63,7 @@
                             modal && i + 1 === parseInt(triggerBeingEdited),
                     }"
                 >
-                    <td v-if="!modal">
+                    <td v-if="!modal" class="trigger_context">
                         {{
                             handleContext(
                                 rule.context.library_id,
@@ -72,7 +72,7 @@
                             )
                         }}
                     </td>
-                    <td v-if="!modal">
+                    <td v-if="!modal" class="trigger_context">
                         {{
                             handleContext(
                                 rule.context.patron_category_id,
@@ -81,7 +81,7 @@
                             )
                         }}
                     </td>
-                    <td v-if="!modal">
+                    <td v-if="!modal" class="trigger_context border_right">
                         {{
                             handleContext(
                                 rule.context.item_type_id,
@@ -574,5 +574,14 @@ export default {
 }
 .actions a {
     margin-right: 5px;
+}
+td.trigger_context {
+    color: black;
+}
+th.trigger_context {
+    color: blue;
+}
+.border_right {
+    border-right: solid 4px black;
 }
 </style>
