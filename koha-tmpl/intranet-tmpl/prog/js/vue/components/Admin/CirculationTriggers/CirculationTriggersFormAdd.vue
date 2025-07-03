@@ -2,11 +2,8 @@
     <div v-if="initialized" class="modal-content">
         <form @submit="addCircRule($event)">
             <div class="modal-header">
-                <h1 class="modal-title" v-if="!editMode">
-                    {{ $__("Circulation triggers") }}
-                </h1>
-                <h1 class="modal-title" v-else>
-                    {{ $__("Edit circulation trigger") }}
+                <h1 class="modal-title">
+                    {{ $__("Circulation Trigger Configuration") }}
                 </h1>
                 <router-link
                     class="btn-close"
@@ -23,7 +20,7 @@
                 </div>
 
                 <fieldset class="rows">
-                    <legend>{{ $__("Select trigger context") }}</legend>
+                    <legend>{{ $__("Confirm trigger context") }}</legend>
                     <ol>
                         <li>
                             <label for="library_id" class="required"
