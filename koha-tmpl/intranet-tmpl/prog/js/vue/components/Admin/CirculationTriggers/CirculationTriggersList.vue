@@ -3,7 +3,11 @@
         <ToolbarButton
             :to="{
                 name: 'CirculationTriggersFormAdd',
-                query: { library_id: selectedLibrary },
+                query: {
+                    library_id: selectedLibrary,
+                    patron_category_id: selectedCategory,
+                    item_type_id: selectedItemType,
+                },
             }"
             icon="plus"
             :title="$__('Add new trigger')"
@@ -86,24 +90,87 @@
             </p>
         </div>
         <div class="page-section" v-if="initialized">
-            <label for="library_select">{{ $__("Select a library") }}:</label>
-            <v-select
-                id="library_select"
-                v-model="selectedLibrary"
-                label="name"
-                :reduce="lib => lib.library_id"
-                :options="libraries"
-                @update:modelValue="handleLibrarySelection($event)"
-            >
-                <template #search="{ attributes, events }">
-                    <input
-                        :required="!selectedLibrary"
-                        class="vs__search"
-                        v-bind="attributes"
-                        v-on="events"
-                    />
-                </template>
-            </v-select>
+            <legend>Filter by context</legend>
+            <table>
+                <thead>
+                    <tr>
+                        <th>{{ $__("Library") }}</th>
+                        <th>{{ $__("Category") }}</th>
+                        <th>{{ $__("Item type") }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <v-select
+                                id="library_select"
+                                v-model="selectedLibrary"
+                                label="name"
+                                :reduce="lib => lib.library_id"
+                                :options="libraries"
+                                @update:modelValue="getCircRules()"
+                            >
+                                <template #search="{ attributes, events }">
+                                    <input
+                                        :required="!selectedLibrary"
+                                        class="vs__search"
+                                        v-bind="attributes"
+                                        v-on="events"
+                                    />
+                                </template>
+                            </v-select>
+                        </td>
+                        <td>
+                            <v-select
+                                id="patron_category_select"
+                                v-model="selectedCategory"
+                                label="name"
+                                :reduce="cat => cat.patron_category_id"
+                                :options="patronCategories"
+                                @update:modelValue="getCircRules()"
+                            >
+                                <template #search="{ attributes, events }">
+                                    <input
+                                        :required="!selectedCategory"
+                                        class="vs__search"
+                                        v-bind="attributes"
+                                        v-on="events"
+                                    />
+                                </template>
+                            </v-select>
+                        </td>
+                        <td>
+                            <v-select
+                                id="item_type_select"
+                                v-model="selectedItemType"
+                                label="description"
+                                :reduce="itype => itype.item_type_id"
+                                :options="itemTypes"
+                                @update:modelValue="getCircRules()"
+                            >
+                                <template #search="{ attributes, events }">
+                                    <input
+                                        :required="!selectedItemType"
+                                        class="vs__search"
+                                        v-bind="attributes"
+                                        v-on="events"
+                                    />
+                                </template>
+                            </v-select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="toggle-view-all-applicable-wrapper">
+                <label for="filter-rules">{{ $__("Display ") }}</label>
+                <select id="filter-rules">
+                    <option>
+                        all rules that apply to this context, including
+                        defaults.
+                    </option>
+                    <option>only rules specific to this context.</option>
+                </select>
+            </div>
         </div>
     </div>
     <div v-if="initialized">
@@ -143,7 +210,7 @@
                     <TriggersTable
                         :circRules="circRules"
                         :triggerNumber="number"
-                        :categories="categories"
+                        :categories="patronCategories"
                         :itemTypes="itemTypes"
                         :libraries="libraries"
                         :letters="letters"
@@ -188,10 +255,13 @@ export default {
             initialized: false,
             libraries: null,
             selectedLibrary: default_view,
+            selectedCategory: "*",
+            selectedItemType: "*",
             circRules: null,
             numberOfTabs: [1],
             tabSelected: "Notice 1",
             showModal: false,
+            lostValues: [],
         };
     },
     beforeRouteEnter(to, from, next) {
@@ -229,12 +299,12 @@ export default {
         async getCategories() {
             const client = APIClient.patron;
             await client.patronCategories.getAll().then(
-                categories => {
-                    categories.unshift({
+                patronCategories => {
+                    patronCategories.unshift({
                         patron_category_id: "*",
                         name: "Default rule",
                     });
-                    this.categories = categories;
+                    this.patronCategories = patronCategories;
                 },
                 error => {}
             );
@@ -252,23 +322,25 @@ export default {
                 error => {}
             );
         },
-        async getCircRules(params = {}) {
-            params.effective = false;
-            const library_id = params.library_id;
-            delete params.library_id;
+        async getCircRules() {
+            const library_id = this.selectedLibrary ?? "*";
+            const patron_category_id = this.selectedCategory ?? "*";
+            const item_type_id = this.selectedItemType ?? "*";
 
             const client = APIClient.circRule;
 
             // FIXME: update getAll so that it may retrieve all rows matching a WHERE col_name IN [...array of values] conditions
-            await client.circRules.getAll({}, params).then(
+            await client.circRules.getAll({}, { effective: false }).then(
                 rules => {
                     const { numberOfTabs, rulesPerTrigger: circRules } =
                         this.splitCircRulesByTriggerNumber(rules);
                     this.numberOfTabs = numberOfTabs;
                     this.circRules = circRules.filter(
                         circRule =>
-                            circRule.context.library_id === library_id ||
-                            circRule.context.library_id === "*"
+                            circRule.context.library_id === library_id &&
+                            circRule.context.patron_category_id ===
+                                patron_category_id &&
+                            circRule.context.item_type_id === item_type_id
                     );
                 },
                 error => {}
@@ -279,10 +351,6 @@ export default {
             await client.values.get("lost").then(lostValues => {
                 this.lostValues = lostValues;
             });
-        },
-        async handleLibrarySelection(e) {
-            if (!e) e = "";
-            await this.getCircRules({ library_id: e });
         },
         changeTabContent(e) {
             this.tabSelected = e.target.getAttribute("data-content");
@@ -301,17 +369,37 @@ export default {
 </script>
 
 <style scoped>
+.page-section table {
+    width: 100%;
+    table-layout: fixed;
+}
+.page-section th,
+.page-section td {
+    width: 33%;
+}
+.page-section td {
+    padding: 0.5em;
+    vertical-align: top;
+}
 .v-select {
-    display: inline-block;
+    display: block;
     background-color: white;
-    width: 30%;
-    margin-left: 10px;
+    margin: 10px;
+    height: auto; /* Restore original height */
+}
+.vs__search,
+.v__selected {
+    display: inline-block;
+    vertical-align: middle;
 }
 .active {
     cursor: pointer;
 }
 .toptabs {
     margin-bottom: 0;
+}
+.toggle-view-all-applicable-wrapper {
+    margin: 10px;
 }
 
 .modal {
