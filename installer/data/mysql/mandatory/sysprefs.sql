@@ -65,7 +65,7 @@ INSERT INTO systempreferences ( `variable`, `value` ) VALUES
 ('AlwaysShowHoldingsTableFilters','0'),
 ('AmazonAssocTag',''),
 ('AmazonCoverImages','0'),
-('AmazonLocale','US'),
+('AmazonLocaleTld','com'),
 ('AnonSuggestions','0'),
 ('AnonymizeLastBorrower','0'),
 ('AnonymizeLastBorrowerDays','0'),
