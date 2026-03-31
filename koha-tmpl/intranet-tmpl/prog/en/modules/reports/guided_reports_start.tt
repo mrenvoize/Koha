@@ -1823,7 +1823,7 @@
     [% Asset.js( "js/mana.js" ) | $raw %]
     [% Asset.js( "js/throttledButton.js" ) | $raw %]
     [% INCLUDE 'select2.inc' %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         let op = "";
         [% IF create %]
             op = "create";

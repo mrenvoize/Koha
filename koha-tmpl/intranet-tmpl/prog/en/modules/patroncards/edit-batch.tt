@@ -175,7 +175,7 @@
 [% MACRO jsinclude BLOCK %]
     [% INCLUDE 'datatables.inc' %]
     [% Asset.js("js/tools-menu.js") | $raw %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         const batch_id = "[% batch_id | html %]";
         Koha.addPrefs({
             PatronsPerPage: "[% Koha.Preference('PatronsPerPage') | html %]",

@@ -243,7 +243,7 @@
 [% MACRO jsinclude BLOCK %]
     [% INCLUDE 'format_price.inc' %]
     [% INCLUDE 'datatables.inc' %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         var items_table_settings = [% TablesSettings.GetTableSettings('pos', 'pay', 'invoices', 'json') | $raw %];
         var zero_formatted = "[% 0 | $Price %]";
         const payment_id = "[% payment_id | html %]";

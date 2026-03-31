@@ -400,7 +400,7 @@
     [% Asset.js("js/modals/cashup_summary_modal.js") | $raw %]
     [% Asset.js("js/modals/cashup_modals.js") | $raw %]
     [% Asset.js("js/modal_printer.js") | $raw %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         $(document).ready(function () {
             [%# js used here as we don't have access to these template variables where we need them #%]
             $("#bankable").text('[% bankable | $Price %]');

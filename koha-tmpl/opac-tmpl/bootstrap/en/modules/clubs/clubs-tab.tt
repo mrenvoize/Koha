@@ -68,7 +68,7 @@
         </tbody>
     </table>
 [% END %]
-<script nonce="[% Koha.CSPNonce | $raw %]">
+<script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
     const patron_id = "[% borrower.borrowernumber | html %]";
     Koha.addPrefs({
         OPACTableColExpandedByDefault: [% Koha.Preference('OPACTableColExpandedByDefault') ? 1 : 0 | html %],

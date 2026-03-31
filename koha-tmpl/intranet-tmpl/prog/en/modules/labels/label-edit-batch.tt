@@ -231,7 +231,7 @@
 [% MACRO jsinclude BLOCK %]
     [% INCLUDE 'datatables.inc' %]
     [% Asset.js("js/labels-menu.js") | $raw %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         const batch_id = "[% batch_id | html %]";
         const has_entries = [% table_loop ? 1 : 0 | html %];
     </script>

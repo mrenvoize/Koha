@@ -489,7 +489,7 @@
     [% Asset.js("js/modals/cashup_modals.js") | $raw %]
     [% Asset.js("js/modal_printer.js") | $raw %]
     [% INCLUDE 'calendar.inc' %]
-    <script nonce="[% Koha.CSPNonce | $raw %]">
+    <script nonce="[% Koha.CSPNonce | $raw %]" data-tt-allowed="true">
         const register = {
             id: "[% register.id | html %]",
             description: "[% register.description | html %]",
