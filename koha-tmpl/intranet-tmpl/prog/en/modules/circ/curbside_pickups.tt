@@ -699,8 +699,7 @@
     [% END %]
 [% END # /BLOCK disabled %]
 
-[% SET aside = Koha.Preference('CircSidebar') ? 'circ-nav' : '' %]
-[% WRAPPER 'main-container.inc' aside=aside %]
+[% WRAPPER 'main-container.inc' aside='circ-nav' %]
     [% IF !disabled_for_branch %]
         [% PROCESS curbside_pickups_enabled %]
     [% ELSE %]

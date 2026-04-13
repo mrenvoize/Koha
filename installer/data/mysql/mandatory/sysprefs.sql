@@ -171,7 +171,6 @@ INSERT INTO systempreferences ( `variable`, `value` ) VALUES
 ('CircConfirmItemParts', '0'),
 ('CircControl','ItemHomeLibrary'),
 ('CircControlReturnsBranch','ItemHomeLibrary'),
-('CircSidebar','1'),
 ('CirculateILL','0'),
 ('ClaimReturnedChargeFee', 'ask'),
 ('ClaimReturnedLostValue', ''),

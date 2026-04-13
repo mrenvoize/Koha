@@ -32,8 +32,7 @@
     [% END #/ WRAPPER breadcrumbs %]
 [% END #/ WRAPPER sub-header.inc %]
 
-[% SET aside = Koha.Preference('CircSidebar') ? 'circ-nav' : '' %]
-[% WRAPPER 'main-container.inc' aside=aside %]
+[% WRAPPER 'main-container.inc' aside='circ-nav' %]
     <h1>Checkout notes</h1>
 
     <div class="alert alert-warning" id="error" style="display:none;"></div>

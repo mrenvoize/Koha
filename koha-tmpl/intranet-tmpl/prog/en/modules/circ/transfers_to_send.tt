@@ -33,8 +33,7 @@
     [% END #/ WRAPPER breadcrumbs %]
 [% END #/ WRAPPER sub-header.inc %]
 
-[% SET aside = Koha.Preference('CircSidebar') ? 'circ-nav' : '' %]
-[% WRAPPER 'main-container.inc' aside=aside %]
+[% WRAPPER 'main-container.inc' aside='circ-nav' %]
     <h1>Transfers requested of your library as of [% show_date | $KohaDates %]</h1>
 
     [% IF libraries.count %]

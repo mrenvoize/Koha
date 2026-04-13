@@ -28,8 +28,7 @@
     [% END #/ WRAPPER breadcrumbs %]
 [% END #/ WRAPPER sub-header.inc %]
 
-[% SET aside = Koha.Preference('CircSidebar') ? 'circ-nav' : '' %]
-[% WRAPPER 'main-container.inc' aside=aside %]
+[% WRAPPER 'main-container.inc' aside='circ-nav' %]
     <h1>Overdues with fines at [% Branches.GetLoggedInBranchname | html %]</h1>
 
     <form name="selectlocation" action="branchoverdues.pl" method="get">

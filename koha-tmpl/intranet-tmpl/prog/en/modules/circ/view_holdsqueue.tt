@@ -61,14 +61,10 @@
 [% END #/ WRAPPER sub-header.inc %]
 
 [% aside = BLOCK %]
-    [%~ IF ( total || Koha.Preference('CircSidebar') ) %]
-        [% IF ( total ) %]
-            [% PROCESS filter_form %]
-        [% END %]
-        [% IF Koha.Preference('CircSidebar') %]
-            [% INCLUDE 'circ-nav.inc' %]
-        [% END %]
-    [% END ~%]
+    [% IF ( total ) %]
+        [% PROCESS filter_form %]
+    [% END %]
+    [% INCLUDE 'circ-nav.inc' %]
 [% END %]
 
 [% WRAPPER 'main-container.inc' aside_block=aside %]

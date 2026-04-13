@@ -61,7 +61,7 @@
 [% END #/ WRAPPER sub-header.inc %]
 
 [% SET asides = [] %]
-[% IF Koha.Preference('CircSidebar') && !( borrowernumber && patron ) %][% asides.push('circ-nav') %][% END %]
+[% IF !( borrowernumber && patron ) %][% asides.push('circ-nav') %][% END %]
 [% IF borrowernumber && patron %][% asides.push('circ-menu') %][% END %]
 [% WRAPPER 'main-container.inc' asides=asides %]
 

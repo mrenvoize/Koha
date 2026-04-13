@@ -1,12 +1,6 @@
 Circulation:
     Interface:
         -
-            - pref: CircSidebar
-              choices:
-                  1: Activate
-                  0: Deactivate
-            - the navigation sidebar on all circulation pages.
-        -
             - pref: CircConfirmItemParts
               choices:
                   1: "Require"
