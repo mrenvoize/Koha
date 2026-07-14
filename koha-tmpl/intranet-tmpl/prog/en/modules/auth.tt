@@ -294,45 +294,42 @@
         const notice_email_address_missing = [% !notice_email_address ? 1 : 0 | html %];
     </script>
     <script nonce="[% Koha.CSPNonce | $raw %]">
-        $(document).ready( function() {
-            if ( document.location.hash ) {
-                const input = $('<input name="auth_forwarded_hash" type="hidden">')
+        $(document).ready(function () {
+            if (document.location.hash) {
+                const input = $('<input name="auth_forwarded_hash" type="hidden">');
                 input.val(document.location.hash);
-                $( '#loginform' ).append( input );
+                $("#loginform").append(input);
             }
             // Clear last borrowers, remembered sql reports, carts, etc.
             logOut();
 
-            $("#send_otp").on("click", function(e){
+            $("#send_otp").on("click", function (e) {
                 e.preventDefault();
-                if (notice_email_address_missing)
-                    return alert("Cannot send the notice, you don't have an email address defined.")
+                if (notice_email_address_missing) return alert("Cannot send the notice, you don't have an email address defined.");
 
                 $("#email_success").hide();
                 $("#email_error").hide();
-                    $.ajax({
-                        url: '/api/v1/auth/otp/token_delivery',
-                        type: 'POST',
-                        success: function(data){
-                            let message = _("The code has been sent by email, please check your inbox.")
-                            $("#email_success").show().html(message);
-                        },
-                        error: function(data){
-                            let error = data.responseJSON && data.responseJSON.error == "email_not_sent"
-                                ? _("Email not sent, please contact the Koha administrator")
-                                : _("Something wrong happened, please contact the Koha administrator");
-                            $("#email_error").show().html(error);
-                        }
-                    });
+                $.ajax({
+                    url: "/api/v1/auth/otp/token_delivery",
+                    type: "POST",
+                    success: function (data) {
+                        let message = _("The code has been sent by email, please check your inbox.");
+                        $("#email_success").show().html(message);
+                    },
+                    error: function (data) {
+                        let error = data.responseJSON && data.responseJSON.error == "email_not_sent" ? _("Email not sent, please contact the Koha administrator") : _("Something wrong happened, please contact the Koha administrator");
+                        $("#email_error").show().html(error);
+                    },
+                });
             });
 
-            if( $("#registration-form").length ) {
+            if ($("#registration-form").length) {
                 $.ajax({
                     data: {},
-                    type: 'POST',
-                    url: '/api/v1/auth/two-factor/registration',
+                    type: "POST",
+                    url: "/api/v1/auth/two-factor/registration",
                     success: function (data) {
-                        $("#qr_code").attr('src', data.qr_code);
+                        $("#qr_code").attr("src", data.qr_code);
                         $("#secret32").val(data.secret32);
                         $("#issuer").html(data.issuer);
                         $("#key_id").html(data.key_id);
@@ -343,9 +340,9 @@
                         alert(data);
                     },
                 });
-            };
+            }
 
-            $("#register-2FA").on("click", function(e){
+            $("#register-2FA").on("click", function (e) {
                 e.preventDefault();
                 const data = {
                     secret32: $("#secret32").val(),
@@ -355,25 +352,24 @@
 
                 $.ajax({
                     data: data,
-                    type: 'POST',
-                    url: '/api/v1/auth/two-factor/registration/verification',
+                    type: "POST",
+                    url: "/api/v1/auth/two-factor/registration/verification",
                     success: function (data) {
                         return;
                     },
                     error: function (data) {
                         const error = data.responseJSON.error;
-                        if ( error == 'Invalid pin' ) {
+                        if (error == "Invalid pin") {
                             $("#errors").html(_("Invalid PIN code")).show();
                         } else {
                             alert(error);
                         }
                     },
-                }).then(function(){
+                }).then(function () {
                     alert(_("Two-factor authentication correctly configured. You will be redirected to the login screen."));
                     window.location = "/cgi-bin/koha/mainpage.pl";
                 });
             });
-
         });
     </script>
 [% END %]
