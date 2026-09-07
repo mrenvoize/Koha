@@ -5817,6 +5817,23 @@ CREATE TABLE `repeatable_holidays` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `reports_branches`
+--
+
+DROP TABLE IF EXISTS `reports_branches`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reports_branches` (
+  `report_id` int(11) NOT NULL,
+  `branchcode` varchar(10) NOT NULL,
+  KEY `report_id` (`report_id`),
+  KEY `branchcode` (`branchcode`),
+  CONSTRAINT `reports_branches_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `saved_sql` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `reports_branches_ibfk_2` FOREIGN KEY (`branchcode`) REFERENCES `branches` (`branchcode`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `reports_dictionary`
 --
 
@@ -5980,19 +5997,6 @@ CREATE TABLE `saved_reports` (
   `report` longtext DEFAULT NULL,
   `date_run` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `reports_branches`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `reports_branches` (
-  `report_id` int(11) NOT NULL,
-  `branchcode` varchar(10) NOT NULL,
-  KEY `report_id` (`report_id`),
-  KEY `branchcode` (`branchcode`),
-  CONSTRAINT `reports_branches_ibfk_1` FOREIGN KEY (`report_id`) REFERENCES `saved_sql` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `reports_branches_ibfk_2` FOREIGN KEY (`branchcode`) REFERENCES `branches` (`branchcode`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
