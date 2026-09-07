@@ -2950,7 +2950,7 @@ CREATE TABLE `edifact_errors` (
   `details` mediumtext DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `messageid` (`message_id`),
-  KEY `message_id_invoicenumber` (`message_id`, `invoicenumber`),
+  KEY `message_id_invoicenumber` (`message_id`,`invoicenumber`),
   CONSTRAINT `emfk_message` FOREIGN KEY (`message_id`) REFERENCES `edifact_messages` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
