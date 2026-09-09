@@ -1443,11 +1443,13 @@ sub has_restricting_overdues {
 
         # Short circuit if we're looking at the same branch and itemtype combination as last time as we've
         # checked the oldest for this combination already
-        next if ( ( $overdue->branchcode eq $branchcode ) && ( $overdue->item->itemtype eq $itemtype ) );
+        my $current_branchcode = $overdue->branchcode;
+        my $current_itemtype   = $overdue->item->effective_itemtype;
+        next if ( ( $current_branchcode eq $branchcode ) && ( $current_itemtype eq $itemtype ) );
 
         # Capture the current branchcode and itemtype
-        $branchcode = $overdue->branchcode;
-        $itemtype   = $overdue->item->itemtype;
+        $branchcode = $current_branchcode;
+        $itemtype   = $current_itemtype;
 
         my $i = 0;
     DELAY: while (1) {
