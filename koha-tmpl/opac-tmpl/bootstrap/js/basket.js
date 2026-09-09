@@ -234,13 +234,13 @@ function delSingleRecord(biblionumber) {
     var valCookie = readCookie(nameCookie);
     var arrayRecords = valCookie.split("/");
     var pos = jQuery.inArray(biblionumber, arrayRecords);
-    arrayRecords.splice(pos, 1);
 
     // if pos is -1, the cart is empty, bail
     if (pos === -1) {
         return;
     }
 
+    arrayRecords.splice(pos, 1);
     valCookie = arrayRecords.join("/");
     writeCookie(nameCookie, valCookie);
     updateBasket(arrayRecords.length - 1);
